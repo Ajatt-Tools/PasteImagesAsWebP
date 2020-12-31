@@ -1,5 +1,8 @@
 {
     "context_menu_entry": true,
     "shortcut": "Ctrl+Meta+v",
-    "show_editor_button": true
+    "show_editor_button": true,
+    "width": 0,
+    "height": 200,
+    "quality": 20
 }

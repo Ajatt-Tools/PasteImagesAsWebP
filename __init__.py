@@ -47,11 +47,10 @@ def find_cwebp():
     return exe
 
 
-def apply_resize_args(args):
+def apply_resize_args(args: list):
     width = Conf.get('width', 0)
     height = Conf.get('height', 200)
     if not (width == 0 and height == 0):
-        print(f"image will be resized to {width}x{height}")
         args.extend(['-resize', width, height])
     return args
 
@@ -67,7 +66,7 @@ def convert_file(source_path, destination_path):
         '-af',
         '-blend_alpha', '0xffffff',
         '-m', '6',
-        '-q', '33',
+        '-q', Conf.get('quality', 20),
         '-o', destination_path
     ]
     args = apply_resize_args(args)
@@ -94,7 +93,7 @@ def insert_webp(editor: Editor):
     if image.save(tmp_filepath, 'png') is True:
         out_filename: str = str(int(time.time())) + '.webp'
         out_filepath: str = os.path.join(mw.col.media.dir(), out_filename)
-        if convert_file(tmp_filepath, out_filepath):
+        if convert_file(tmp_filepath, out_filepath) is True:
             image_html = f'<img src="{out_filename}">'
             editor.web.eval("""setFormat("insertHtml", %s);""" % json.dumps(image_html))  # calls document.execCommand
     os.close(fd)

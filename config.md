@@ -5,6 +5,7 @@
 * `show_editor_button` - Add a button to the editor toolbar
 * `width` - Desired width
 * `height` - Desired height
+* `quality` - Compression factor between `0` and `100`. `0` produces the worst quality.
 
 If one of the dimensions is set to `0`, images will be resized
 preserving the aspect ratio.
