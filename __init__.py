@@ -199,6 +199,8 @@ def insert_webp(editor: Editor):
         if convert_file(tmp_filepath, out_filepath) is True:
             image_html = f'<img src="{out_filename}">'
             editor.web.eval("""setFormat("insertHtml", %s);""" % json.dumps(image_html))  # calls document.execCommand
+            filesize_kib = str(os.stat(out_filepath).st_size / 1024)
+            tooltip(f"Image added. File size: {filesize_kib[:filesize_kib.find('.') + 3]} KiB.", period=5000)
     os.close(fd)
     os.remove(tmp_filepath)
 
