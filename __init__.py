@@ -47,12 +47,16 @@ def static_vars(**kwargs):
     return decorate
 
 
-class Conf:
-    dict = mw.addonManager.getConfig(__name__) or dict()
+def getConfig() -> dict:
+    cfg: dict = mw.addonManager.getConfig(__name__) or dict()
+    cfg['show_context_menu_entry']: bool = cfg.get('show_context_menu_entry', True)
+    cfg['show_editor_button']: bool = cfg.get('show_editor_button', True)
+    cfg['shortcut']: str = cfg.get('shortcut', "Ctrl+Meta+v")
+    cfg['width']: int = cfg.get('width', 0)
+    cfg['height']: int = cfg.get('height', 200)
+    cfg['quality']: str = cfg.get('quality', 20)
 
-    @classmethod
-    def get(cls, key, default: Any = False):
-        return cls.dict.get(key, default)
+    return cfg
 
 
 def find_cwebp():
@@ -69,10 +73,10 @@ def find_cwebp():
 
 
 def apply_resize_args(args: list):
-    width = Conf.get('width', 0)
-    height = Conf.get('height', 200)
+    width = config.get('width')
+    height = config.get('height')
     if not (width == 0 and height == 0):
-        args.extend(['-resize', width, height])
+        args.extend(['-resize', str(width), str(height)])
     return args
 
 
@@ -87,7 +91,7 @@ def convert_file(source_path, destination_path):
         '-af',
         '-blend_alpha', '0xffffff',
         '-m', '6',
-        '-q', Conf.get('quality', 20),
+        '-q', str(config.get('quality')),
         '-o', destination_path
     ]
     args = apply_resize_args(args)
@@ -131,12 +135,12 @@ def key_to_str(shortcut: str) -> str:
 
 
 def setup_menus():
-    shortcut: str = Conf.get("shortcut", "")
+    shortcut: str = config.get("shortcut")
     action_tooltip: str = "Paste as webp"
     if shortcut:
         action_tooltip += f" ({key_to_str(shortcut)})"
 
-    if Conf.get("context_menu_entry") is True:
+    if config.get("show_context_menu_entry") is True:
         def add_context_menu_item(webview: EditorWebView, menu: QMenu):
             editor = webview.editor
             a: QAction = menu.addAction(action_tooltip)
@@ -144,7 +148,7 @@ def setup_menus():
 
         addHook('EditorWebView.contextMenuEvent', add_context_menu_item)
 
-    if Conf.get("show_editor_button") is True:
+    if config.get("show_editor_button") is True:
         def add_editor_button(buttons, editor):
             b = editor.addButton(
                 os.path.join(addon_path, "webp_icon.png"),
@@ -165,4 +169,5 @@ def setup_menus():
         addHook("setupEditorShortcuts", add_editor_shortcut)
 
 
+config = getConfig()
 setup_menus()

@@ -1,8 +1,8 @@
-## Paste Images In Webp - configuration
+## Paste Images As WebP - configuration
 
-* `context_menu_entry` - Add an entry to the editor context menu
-* `shortcut` - Define a keyboard shortcut for pasting images as webp
+* `show_context_menu_entry` - Add an entry to the editor context menu
 * `show_editor_button` - Add a button to the editor toolbar
+* `shortcut` - Define a keyboard shortcut for pasting images as webp
 * `width` - Desired width
 * `height` - Desired height
 * `quality` - Compression factor between `0` and `100`. `0` produces the worst quality.
