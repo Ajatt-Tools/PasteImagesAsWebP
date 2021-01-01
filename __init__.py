@@ -24,6 +24,7 @@ import subprocess
 import time
 from distutils.spawn import find_executable
 from tempfile import mkstemp
+from typing import List
 
 from anki.hooks import addHook
 from aqt import mw
@@ -173,7 +174,7 @@ class ConvertSettingsDialog(QDialog):
         self.cancelButton.clicked.connect(dialogReject)
 
     @staticmethod
-    def limits() -> list[int]:
+    def limits() -> List[int]:
         return [800, 600, 100]
 
     def setInitialValues(self):
@@ -192,7 +193,7 @@ def insert_webp(editor: Editor):
 
     image: QImage = mime.imageData()
     if image.save(tmp_filepath, 'png') is True:
-        dlg = ConvertSettingsDialog(editor.mw)
+        dlg = ConvertSettingsDialog(editor.parentWindow)
         dlg.exec_()
         out_filename: str = str(int(time.time())) + '.webp'
         out_filepath: str = os.path.join(mw.col.media.dir(), out_filename)
