@@ -108,9 +108,45 @@ def convert_file(source_path, destination_path):
     return True
 
 
+def insert_webp(editor: Editor):
+    mime: QMimeData = editor.mw.app.clipboard().mimeData()
+
+    if not mime.hasImage():
+        return
+
+    fd, tmp_filepath = mkstemp()
+
+    image: QImage = mime.imageData()
+    if image.save(tmp_filepath, 'png') is True:
+        if config.get("dialog_on_paste") is True:
+            dlg = ConvertSettingsDialog(editor.parentWindow)
+            if not dlg.exec_():
+                # the user pressed `Cancel`.
+                return
+        out_filename: str = str(int(time.time())) + '.webp'
+        out_filepath: str = os.path.join(mw.col.media.dir(), out_filename)
+        if convert_file(tmp_filepath, out_filepath) is True:
+            image_html = f'<img src="{out_filename}">'
+            editor.web.eval("""setFormat("insertHtml", %s);""" % json.dumps(image_html))  # calls document.execCommand
+            filesize_kib = str(os.stat(out_filepath).st_size / 1024)
+            tooltip(f"Image added. File size: {filesize_kib[:filesize_kib.find('.') + 3]} KiB.", period=5000)
+        else:
+            tooltip("cwebp failed.")
+    os.close(fd)
+    os.remove(tmp_filepath)
+
+
+def key_to_str(shortcut: str) -> str:
+    return QKeySequence(shortcut).toString(QKeySequence.NativeText)
+
+
+######################################################################
+# Settings dialog
+######################################################################
+
 class ConvertSettingsDialog(QDialog):
-    def __init__(self, *args, **kwargs):
-        super(ConvertSettingsDialog, self).__init__(*args, **kwargs)
+    def __init__(self, parent, *args, **kwargs):
+        super(ConvertSettingsDialog, self).__init__(parent, *args, **kwargs)
 
         self.cancelButton = QPushButton("Cancel")
         self.okButton = QPushButton("Ok")
@@ -186,33 +222,6 @@ class ConvertSettingsDialog(QDialog):
         self.widthSlider.setValue(config.get("width"))
         self.heightSlider.setValue(config.get("height"))
         self.qualitySlider.setValue(config.get("quality"))
-
-
-def insert_webp(editor: Editor):
-    mime: QMimeData = editor.mw.app.clipboard().mimeData()
-
-    if not mime.hasImage():
-        return
-
-    fd, tmp_filepath = mkstemp()
-
-    image: QImage = mime.imageData()
-    if image.save(tmp_filepath, 'png') is True:
-        dlg = ConvertSettingsDialog(editor.parentWindow)
-        dlg.exec_()
-        out_filename: str = str(int(time.time())) + '.webp'
-        out_filepath: str = os.path.join(mw.col.media.dir(), out_filename)
-        if convert_file(tmp_filepath, out_filepath) is True:
-            image_html = f'<img src="{out_filename}">'
-            editor.web.eval("""setFormat("insertHtml", %s);""" % json.dumps(image_html))  # calls document.execCommand
-            filesize_kib = str(os.stat(out_filepath).st_size / 1024)
-            tooltip(f"Image added. File size: {filesize_kib[:filesize_kib.find('.') + 3]} KiB.", period=5000)
-    os.close(fd)
-    os.remove(tmp_filepath)
-
-
-def key_to_str(shortcut: str) -> str:
-    return QKeySequence(shortcut).toString(QKeySequence.NativeText)
 
 
 ######################################################################
