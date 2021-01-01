@@ -4,5 +4,6 @@
     "shortcut": "Ctrl+Meta+v",
     "width": 0,
     "height": 200,
-    "quality": 20
+    "quality": 20,
+    "dialog_on_paste": true
 }

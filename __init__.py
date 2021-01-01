@@ -48,7 +48,7 @@ def static_vars(**kwargs):
     return decorate
 
 
-def getConfig() -> dict:
+def get_config() -> dict:
     cfg: dict = mw.addonManager.getConfig(__name__) or dict()
     cfg['show_context_menu_entry']: bool = cfg.get('show_context_menu_entry', True)
     cfg['show_editor_button']: bool = cfg.get('show_editor_button', True)
@@ -56,6 +56,7 @@ def getConfig() -> dict:
     cfg['width']: int = cfg.get('width', 0)
     cfg['height']: int = cfg.get('height', 200)
     cfg['quality']: str = cfg.get('quality', 20)
+    cfg['dialog_on_paste']: bool = cfg.get('dialog_on_paste', True)
 
     return cfg
 
@@ -120,6 +121,7 @@ class ConvertSettingsDialog(QDialog):
         self.qualitySlider = QSlider(Qt.Horizontal)
         self.qualitySlider.title = "Quality"
         self.setWindowTitle("WebP settings")
+        self.showEachTimeCheckBox = QCheckBox("Show this dialog on each paste")
         self.setLayout(self.createMainLayout())
         self.createLogic()
         self.setInitialValues()
@@ -129,6 +131,7 @@ class ConvertSettingsDialog(QDialog):
         layout = QVBoxLayout()
         for slider in (self.widthSlider, self.heightSlider, self.qualitySlider):
             layout.addWidget(self.makeSliderGroupBox(slider))
+        layout.addWidget(self.showEachTimeCheckBox)
         layout.addStretch()
         layout.addLayout(self.createButtonRow())
         return layout
@@ -159,6 +162,7 @@ class ConvertSettingsDialog(QDialog):
             config["width"] = self.widthSlider.value()
             config["height"] = self.heightSlider.value()
             config["quality"] = self.qualitySlider.value()
+            config["dialog_on_paste"] = self.showEachTimeCheckBox.isChecked()
             mw.addonManager.writeConfig(__name__, config)
             self.accept()
 
@@ -172,6 +176,7 @@ class ConvertSettingsDialog(QDialog):
 
         self.okButton.clicked.connect(dialogAccept)
         self.cancelButton.clicked.connect(dialogReject)
+        self.showEachTimeCheckBox.setChecked(config.get("dialog_on_paste"))
 
     @staticmethod
     def limits() -> List[int]:
@@ -215,7 +220,7 @@ def key_to_str(shortcut: str) -> str:
 ######################################################################
 
 
-def setup_menus():
+def setup_editor_menus():
     shortcut: str = config.get("shortcut")
     action_tooltip: str = "Paste as webp"
     if shortcut:
@@ -250,5 +255,5 @@ def setup_menus():
         addHook("setupEditorShortcuts", add_editor_shortcut)
 
 
-config = getConfig()
-setup_menus()
+config = get_config()
+setup_editor_menus()
