@@ -24,12 +24,12 @@ import subprocess
 import time
 from distutils.spawn import find_executable
 from tempfile import mkstemp
-from typing import Any
 
 from anki.hooks import addHook
 from aqt import mw
 from aqt.editor import Editor, EditorWebView
 from aqt.qt import *
+from aqt.utils import tooltip
 
 addon_path = os.path.dirname(__file__)
 
@@ -106,6 +106,82 @@ def convert_file(source_path, destination_path):
     return True
 
 
+class ConvertSettingsDialog(QDialog):
+    def __init__(self, *args, **kwargs):
+        super(ConvertSettingsDialog, self).__init__(*args, **kwargs)
+
+        self.cancelButton = QPushButton("Cancel")
+        self.okButton = QPushButton("Ok")
+        self.widthSlider = QSlider(Qt.Horizontal)
+        self.widthSlider.title = "Width"
+        self.heightSlider = QSlider(Qt.Horizontal)
+        self.heightSlider.title = "Height"
+        self.qualitySlider = QSlider(Qt.Horizontal)
+        self.qualitySlider.title = "Quality"
+        self.setWindowTitle("WebP settings")
+        self.setLayout(self.createMainLayout())
+        self.createLogic()
+        self.setInitialValues()
+        self.setMinimumWidth(320)
+
+    def createMainLayout(self):
+        layout = QVBoxLayout()
+        for slider in (self.widthSlider, self.heightSlider, self.qualitySlider):
+            layout.addWidget(self.makeSliderGroupBox(slider))
+        layout.addStretch()
+        layout.addLayout(self.createButtonRow())
+        return layout
+
+    @staticmethod
+    def makeSliderGroupBox(slider: QSlider):
+        def makeSliderHbox():
+            hbox = QHBoxLayout()
+            label = QLabel()
+            hbox.addWidget(slider)
+            hbox.addWidget(label)
+            slider.valueChanged.connect(lambda val, lbl=label: lbl.setText(str(val)))
+            return hbox
+
+        gbox = QGroupBox(slider.title)
+        gbox.setLayout(makeSliderHbox())
+        return gbox
+
+    def createButtonRow(self):
+        layout = QHBoxLayout()
+        for button in (self.okButton, self.cancelButton):
+            layout.addWidget(button)
+        layout.addStretch()
+        return layout
+
+    def createLogic(self):
+        def dialogAccept():
+            config["width"] = self.widthSlider.value()
+            config["height"] = self.heightSlider.value()
+            config["quality"] = self.qualitySlider.value()
+            mw.addonManager.writeConfig(__name__, config)
+            self.accept()
+
+        def dialogReject():
+            self.reject()
+
+        for slider, limit in zip((self.widthSlider, self.heightSlider, self.qualitySlider), self.limits()):
+            slider.setRange(0, limit)
+            slider.setSingleStep(5)
+            slider.setTickPosition(QSlider.TicksBelow)
+
+        self.okButton.clicked.connect(dialogAccept)
+        self.cancelButton.clicked.connect(dialogReject)
+
+    @staticmethod
+    def limits() -> list[int]:
+        return [800, 600, 100]
+
+    def setInitialValues(self):
+        self.widthSlider.setValue(config.get("width"))
+        self.heightSlider.setValue(config.get("height"))
+        self.qualitySlider.setValue(config.get("quality"))
+
+
 def insert_webp(editor: Editor):
     mime: QMimeData = editor.mw.app.clipboard().mimeData()
 
@@ -116,6 +192,8 @@ def insert_webp(editor: Editor):
 
     image: QImage = mime.imageData()
     if image.save(tmp_filepath, 'png') is True:
+        dlg = ConvertSettingsDialog(editor.mw)
+        dlg.exec_()
         out_filename: str = str(int(time.time())) + '.webp'
         out_filepath: str = os.path.join(mw.col.media.dir(), out_filename)
         if convert_file(tmp_filepath, out_filepath) is True:
