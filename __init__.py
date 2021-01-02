@@ -228,6 +228,19 @@ class ConvertSettingsDialog(QDialog):
 # Main
 ######################################################################
 
+def setup_mainwindow_menu():
+    """
+    setup menu in anki
+    """
+
+    def open_settings():
+        dialog = ConvertSettingsDialog(mw)
+        dialog.exec_()
+
+    action = QAction("WebP settings", mw)
+    action.triggered.connect(open_settings)
+    mw.form.menuTools.addAction(action)
+
 
 def setup_editor_menus():
     shortcut: str = config.get("shortcut")
@@ -266,3 +279,4 @@ def setup_editor_menus():
 
 config = get_config()
 setup_editor_menus()
+setup_mainwindow_menu()
