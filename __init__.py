@@ -108,32 +108,67 @@ def convert_file(source_path, destination_path):
     return True
 
 
+class TempFile:
+    def __init__(self):
+        self.fd, self.tmp_filepath = mkstemp()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, trace_back):
+        os.close(self.fd)
+        os.remove(self.tmp_filepath)
+
+    def path(self) -> str:
+        if len(self.tmp_filepath) < 1:
+            raise Exception
+        return self.tmp_filepath
+
+
+def image_from_mime(mime: QMimeData) -> Optional[QImage]:
+    image: QImage = mime.imageData()
+    if image is None:
+        try:
+            src = re.search('(?<=src=")[^"]+\\.(png|jpeg|jpg|webp)', mime.html()).group(0)
+            image = QImage()
+            req = urllib.request.Request(src, None, {'User-Agent': 'Mozilla/5.0 (compatible; Anki)'})
+            file_contents = urllib.request.urlopen(req).read()
+            image.loadFromData(file_contents)
+        except AttributeError:
+            pass
+    return image
+
+
 def insert_webp(editor: Editor):
     mime: QMimeData = editor.mw.app.clipboard().mimeData()
 
     if not mime.hasImage():
         return
 
-    fd, tmp_filepath = mkstemp()
+    with TempFile() as tmp_file:
+        image: QImage = image_from_mime(mime)
 
-    image: QImage = mime.imageData()
-    if image.save(tmp_filepath, 'png') is True:
-        if config.get("dialog_on_paste") is True:
-            dlg = ConvertSettingsDialog(editor.parentWindow)
-            if not dlg.exec_():
-                # the user pressed `Cancel`.
-                return
-        out_filename: str = str(int(time.time())) + '.webp'
-        out_filepath: str = os.path.join(mw.col.media.dir(), out_filename)
-        if convert_file(tmp_filepath, out_filepath) is True:
-            image_html = f'<img src="{out_filename}">'
-            editor.web.eval("""setFormat("insertHtml", %s);""" % json.dumps(image_html))  # calls document.execCommand
-            filesize_kib = str(os.stat(out_filepath).st_size / 1024)
-            tooltip(f"Image added. File size: {filesize_kib[:filesize_kib.find('.') + 3]} KiB.", period=5000)
-        else:
-            tooltip("cwebp failed.")
-    os.close(fd)
-    os.remove(tmp_filepath)
+        if image is None:
+            tooltip("Failed to fetch image.")
+            return
+
+        if image.save(tmp_file.path(), 'png') is True:
+            if config.get("dialog_on_paste") is True:
+                dlg = ConvertSettingsDialog(editor.parentWindow)
+                if not dlg.exec_():
+                    # the user pressed `Cancel`.
+                    return
+            out_filename: str = str(int(time.time())) + '.webp'
+            out_filepath: str = os.path.join(mw.col.media.dir(), out_filename)
+            if convert_file(tmp_file.path(), out_filepath) is True:
+                image_html = f'<img src="{out_filename}">'
+                editor.web.eval(
+                    """setFormat("insertHtml", %s);""" % json.dumps(image_html)  # calls document.execCommand
+                )
+                filesize_kib = str(os.stat(out_filepath).st_size / 1024)
+                tooltip(f"Image added. File size: {filesize_kib[:filesize_kib.find('.') + 3]} KiB.", period=5000)
+            else:
+                tooltip("cwebp failed.")
 
 
 def key_to_str(shortcut: str) -> str:
