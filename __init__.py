@@ -289,7 +289,7 @@ def setup_editor_menus():
             a: QAction = menu.addAction(action_tooltip)
             a.triggered.connect(lambda _, e=editor: insert_webp(e))
 
-        addHook('EditorWebView.contextMenuEvent', add_context_menu_item)
+        gui_hooks.editor_will_show_context_menu.append(add_context_menu_item)
 
     if config.get("show_editor_button") is True:
         def add_editor_button(buttons, editor):
@@ -303,13 +303,13 @@ def setup_editor_menus():
             buttons.extend([b])
             return buttons
 
-        addHook("setupEditorButtons", add_editor_button)
+        gui_hooks.editor_did_init_buttons.append(add_editor_button)
 
     elif shortcut:
         def add_editor_shortcut(cuts, self):
             cuts.append((shortcut, lambda e=self: insert_webp(e)))
 
-        addHook("setupEditorShortcuts", add_editor_shortcut)
+        gui_hooks.editor_did_init_shortcuts.append(add_editor_shortcut)
 
 
 config = get_config()
