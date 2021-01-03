@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import List
 
 from aqt import mw
 from aqt.qt import *
@@ -89,14 +88,13 @@ class ConvertSettingsDialog(QDialog):
             slider.setRange(0, limit)
             slider.setSingleStep(5)
             slider.setTickInterval(5)
-            slider.setTickPosition(QSlider.TicksBelow)
 
         self.okButton.clicked.connect(self.dialogAccept)
         self.cancelButton.clicked.connect(self.dialogReject)
 
     @staticmethod
-    def limits() -> List[int]:
-        return [800, 600, 100]
+    def limits() -> tuple:
+        return 800, 600, 100
 
     def setInitialValues(self):
         self.widthSlider.setValue(self.config.get("image_width"))

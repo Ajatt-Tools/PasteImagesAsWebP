@@ -6,15 +6,12 @@ from urllib.error import URLError
 from aqt.qt import *
 
 
-def url_from_html_data(html):
-    try:
-        return re.search('(?<= src=")[^"]+(?=")', html).group(0)
-    except AttributeError:
-        return None
+def urls_from_html_data(html):
+    return re.findall('(?<= src=")[^"]+(?=")', html)
 
 
-def first_url(mime: QMimeData):
-    return mime.urls()[0].toString() if len(mime.urls()) > 0 else None
+def urls(mime: QMimeData):
+    return (url.toString() for url in mime.urls())
 
 
 def q_image_from_url(src_url) -> Optional[QImage]:
@@ -30,8 +27,10 @@ def q_image_from_url(src_url) -> Optional[QImage]:
 
 def q_image_candidates(mime: QMimeData) -> Iterable[Optional[QImage]]:
     yield mime.imageData()
-    yield q_image_from_url(first_url(mime))
-    yield q_image_from_url(url_from_html_data(mime.html()))
+    for url in urls(mime):
+        yield q_image_from_url(url)
+    for url in urls_from_html_data(mime.html()):
+        yield q_image_from_url(url)
 
 
 def save_image(tmp_path: str, mime: QMimeData) -> bool:

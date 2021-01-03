@@ -168,10 +168,11 @@ def insert_webp(editor: Editor):
 
 
 def process_mime(editor: EditorWebView, mime: QMimeData, *args, _old):
+    """Called when you paste anything in Anki"""
+
     if config.get("drag_and_drop") is False:
         return _old(editor, mime, *args)
 
-    """Called when you paste anything in Anki"""
     p = editor.editor.web.mapFromGlobal(QCursor.pos())
 
     with TempFile() as tmp_file:
