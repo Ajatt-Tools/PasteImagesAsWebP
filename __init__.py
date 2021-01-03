@@ -23,14 +23,16 @@ import json
 import subprocess
 import time
 from distutils.spawn import find_executable
-from tempfile import mkstemp
-from typing import List
 
-from anki.hooks import addHook
-from aqt import mw
+from anki.hooks import wrap
+from aqt import mw, gui_hooks
 from aqt.editor import Editor, EditorWebView
 from aqt.qt import *
 from aqt.utils import tooltip
+
+from .utils.gui import ConvertSettingsDialog
+from .utils.imagehelper import save_image
+from .utils.tempfile import TempFile
 
 addon_path = os.path.dirname(__file__)
 
@@ -82,6 +84,23 @@ def apply_resize_args(args: list):
     return args
 
 
+def make_webp_filename(target_dir_path: str):
+    """Returns a unique (filename, filepath) for the new webp image"""
+
+    def new_filename() -> str:
+        import random
+        return f"paste_{int(time.time())}{random.randint(100, 999)}.webp"
+
+    def make_full_path(name) -> str:
+        return os.path.join(target_dir_path, name)
+
+    out_filename: str = new_filename()
+    while os.path.isfile(make_full_path(out_filename)):
+        out_filename = new_filename()
+
+    return out_filename, make_full_path(out_filename)
+
+
 @static_vars(cwebp=find_cwebp())
 def convert_file(source_path, destination_path):
     args = [
@@ -108,155 +127,73 @@ def convert_file(source_path, destination_path):
     return True
 
 
-class TempFile:
-    def __init__(self):
-        self.fd, self.tmp_filepath = mkstemp()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, trace_back):
-        os.close(self.fd)
-        os.remove(self.tmp_filepath)
-
-    def path(self) -> str:
-        if len(self.tmp_filepath) < 1:
-            raise Exception
-        return self.tmp_filepath
+def key_to_str(shortcut: str) -> str:
+    return QKeySequence(shortcut).toString(QKeySequence.NativeText)
 
 
-def image_from_mime(mime: QMimeData) -> Optional[QImage]:
-    image: QImage = mime.imageData()
-    if image is None:
-        try:
-            src = re.search('(?<=src=")[^"]+\\.(png|jpeg|jpg|webp)', mime.html()).group(0)
-            image = QImage()
-            req = urllib.request.Request(src, None, {'User-Agent': 'Mozilla/5.0 (compatible; Anki)'})
-            file_contents = urllib.request.urlopen(req).read()
-            image.loadFromData(file_contents)
-        except AttributeError:
-            pass
-    return image
+def tooltip_filesize(filepath):
+    filesize_kib = str(os.stat(filepath).st_size / 1024)
+    tooltip(f"Image added. File size: {filesize_kib[:filesize_kib.find('.') + 3]} KiB.", period=5000)
+
+
+def decide_show_settings(dialog_parent):
+    if config.get("dialog_on_paste") is True:
+        dlg = ConvertSettingsDialog(dialog_parent, config)
+        return dlg.exec_()
+    return True
 
 
 def insert_webp(editor: Editor):
     mime: QMimeData = editor.mw.app.clipboard().mimeData()
 
-    if not mime.hasImage():
-        return
-
     with TempFile() as tmp_file:
-        image: QImage = image_from_mime(mime)
-
-        if image is None:
-            tooltip("Failed to fetch image.")
+        if not save_image(tmp_file.path(), mime):
+            tooltip("Couldn't save the image.")
             return
 
-        if image.save(tmp_file.path(), 'png') is True:
-            if config.get("dialog_on_paste") is True:
-                dlg = ConvertSettingsDialog(editor.parentWindow)
-                if not dlg.exec_():
-                    # the user pressed `Cancel`.
-                    return
-            out_filename: str = str(int(time.time())) + '.webp'
-            out_filepath: str = os.path.join(mw.col.media.dir(), out_filename)
-            if convert_file(tmp_file.path(), out_filepath) is True:
-                image_html = f'<img src="{out_filename}">'
-                editor.web.eval(
-                    """setFormat("insertHtml", %s);""" % json.dumps(image_html)  # calls document.execCommand
+        if not decide_show_settings(editor.parentWindow):
+            tooltip("Canceled.")
+            return
+
+        out_filename, out_filepath = make_webp_filename(mw.col.media.dir())
+        if convert_file(tmp_file.path(), out_filepath) is True:
+            image_html = f'<img src="{out_filename}">'
+            editor.web.eval(
+                """setFormat("insertHtml", %s);""" % json.dumps(image_html)  # calls document.execCommand
+            )
+            tooltip_filesize(out_filepath)
+        else:
+            tooltip("cwebp failed.")
+
+
+def process_mime(editor: EditorWebView, mime: QMimeData, *args, _old):
+    """Called when you paste anything in Anki"""
+    p = editor.editor.web.mapFromGlobal(QCursor.pos())
+
+    with TempFile() as tmp_file:
+        if not save_image(tmp_file.path(), mime):
+            return _old(editor, mime, *args)
+
+        if not decide_show_settings(editor.parent()):
+            tooltip("Canceled.")
+            return _old(editor, mime, *args)
+
+        out_filename, out_filepath = make_webp_filename(mw.col.media.dir())
+
+        if convert_file(tmp_file, out_filepath) is True:
+            tooltip_filesize(out_filepath)
+            mime = QMimeData()  # erase old data from mime
+
+            def pasteField(_):
+                editor.editor.web.eval(
+                    "pasteHTML(%s);" % json.dumps(f'<img src="{out_filename}">')
                 )
-                filesize_kib = str(os.stat(out_filepath).st_size / 1024)
-                tooltip(f"Image added. File size: {filesize_kib[:filesize_kib.find('.') + 3]} KiB.", period=5000)
-            else:
-                tooltip("cwebp failed.")
 
+            editor.editor.web.evalWithCallback(f"focusIfField({p.x()}, {p.y()});", pasteField)
+        else:
+            tooltip("cwebp failed.")
 
-def key_to_str(shortcut: str) -> str:
-    return QKeySequence(shortcut).toString(QKeySequence.NativeText)
-
-
-######################################################################
-# Settings dialog
-######################################################################
-
-class ConvertSettingsDialog(QDialog):
-    def __init__(self, parent, *args, **kwargs):
-        super(ConvertSettingsDialog, self).__init__(parent, *args, **kwargs)
-
-        self.cancelButton = QPushButton("Cancel")
-        self.okButton = QPushButton("Ok")
-        self.widthSlider = QSlider(Qt.Horizontal)
-        self.widthSlider.title = "Width"
-        self.heightSlider = QSlider(Qt.Horizontal)
-        self.heightSlider.title = "Height"
-        self.qualitySlider = QSlider(Qt.Horizontal)
-        self.qualitySlider.title = "Quality"
-        self.setWindowTitle("WebP settings")
-        self.showEachTimeCheckBox = QCheckBox("Show this dialog on each paste")
-        self.setLayout(self.createMainLayout())
-        self.createLogic()
-        self.setInitialValues()
-        self.setMinimumWidth(320)
-
-    def createMainLayout(self):
-        layout = QVBoxLayout()
-        for slider in (self.widthSlider, self.heightSlider, self.qualitySlider):
-            layout.addWidget(self.makeSliderGroupBox(slider))
-        layout.addWidget(self.showEachTimeCheckBox)
-        layout.addStretch()
-        layout.addLayout(self.createButtonRow())
-        return layout
-
-    @staticmethod
-    def makeSliderGroupBox(slider: QSlider):
-        def makeSliderHbox():
-            hbox = QHBoxLayout()
-            label = QLabel()
-            hbox.addWidget(slider)
-            hbox.addWidget(label)
-            slider.valueChanged.connect(lambda val, lbl=label: lbl.setText(str(val)))
-            return hbox
-
-        gbox = QGroupBox(slider.title)
-        gbox.setLayout(makeSliderHbox())
-        return gbox
-
-    def createButtonRow(self):
-        layout = QHBoxLayout()
-        for button in (self.okButton, self.cancelButton):
-            layout.addWidget(button)
-        layout.addStretch()
-        return layout
-
-    def createLogic(self):
-        def dialogAccept():
-            config["width"] = self.widthSlider.value()
-            config["height"] = self.heightSlider.value()
-            config["quality"] = self.qualitySlider.value()
-            config["dialog_on_paste"] = self.showEachTimeCheckBox.isChecked()
-            mw.addonManager.writeConfig(__name__, config)
-            self.accept()
-
-        def dialogReject():
-            self.reject()
-
-        for slider, limit in zip((self.widthSlider, self.heightSlider, self.qualitySlider), self.limits()):
-            slider.setRange(0, limit)
-            slider.setSingleStep(5)
-            slider.setTickPosition(QSlider.TicksBelow)
-
-        self.okButton.clicked.connect(dialogAccept)
-        self.cancelButton.clicked.connect(dialogReject)
-        self.showEachTimeCheckBox.setChecked(config.get("dialog_on_paste"))
-
-    @staticmethod
-    def limits() -> List[int]:
-        return [800, 600, 100]
-
-    def setInitialValues(self):
-        self.widthSlider.setValue(config.get("width"))
-        self.heightSlider.setValue(config.get("height"))
-        self.qualitySlider.setValue(config.get("quality"))
+    return _old(editor, mime, *args)
 
 
 ######################################################################
@@ -267,21 +204,26 @@ def setup_mainwindow_menu():
     """
     setup menu in anki
     """
+    tools_menu = mw.form.menuTools
 
     def open_settings():
-        dialog = ConvertSettingsDialog(mw)
+        dialog = ConvertSettingsDialog(tools_menu, config)
         dialog.exec_()
 
-    action = QAction("WebP settings", mw)
+    action = QAction("WebP settings", tools_menu)
     action.triggered.connect(open_settings)
-    mw.form.menuTools.addAction(action)
+    tools_menu.addAction(action)
 
 
-def setup_editor_menus():
+def wrap_process_mime():
+    EditorWebView._processMime = wrap(EditorWebView._processMime, process_mime, 'around')
+
+
+def setup_menus():
+    setup_mainwindow_menu()
+    wrap_process_mime()
     shortcut: str = config.get("shortcut")
-    action_tooltip: str = "Paste as webp"
-    if shortcut:
-        action_tooltip += f" ({key_to_str(shortcut)})"
+    action_tooltip: str = "Paste as WebP" if not shortcut else f"Paste as WebP ({key_to_str(shortcut)})"
 
     if config.get("show_context_menu_entry") is True:
         def add_context_menu_item(webview: EditorWebView, menu: QMenu):
@@ -313,5 +255,4 @@ def setup_editor_menus():
 
 
 config = get_config()
-setup_editor_menus()
-setup_mainwindow_menu()
+setup_menus()
