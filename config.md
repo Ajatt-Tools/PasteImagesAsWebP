@@ -1,16 +1,21 @@
 ## Paste Images As WebP - configuration
 
+* `drag_and_drop` - Convert images to webp on drag and drop
+* `image_height` - Desired height
+* `image_width` - Desired width
+* `image_quality` - Compression factor between `0` and `100`. `0` produces the worst quality.
+* `shortcut` - Define a keyboard shortcut for pasting images as webp
 * `show_context_menu_entry` - Add an entry to the editor context menu
 * `show_editor_button` - Add a button to the editor toolbar
-* `shortcut` - Define a keyboard shortcut for pasting images as webp
-* `width` - Desired width
-* `height` - Desired height
-* `quality` - Compression factor between `0` and `100`. `0` produces the worst quality.
-* `dialog_on_paste` - Ask image dimensions and quality on each paste.
+* `show_settings` - When to show the settings dialog:
+    * `always` - Every time you paste a new image
+    * `toolbar` - When the toolbar button is pressed
+    * `drag_and_drop` - On drag-and-drop (if enabled)
+    * `never` - Only when you press `Tools > WebP settings`
 
 If one of the dimensions is set to `0`, images will be resized
 preserving the aspect ratio.
-If both `wdith` and `height` are `0`, no resizing is performed (not recommended).
+If both `width` and `height` are `0`, no resizing is performed (not recommended).
 
 ****
 

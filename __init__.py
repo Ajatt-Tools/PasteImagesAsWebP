@@ -30,7 +30,7 @@ from aqt.editor import Editor, EditorWebView
 from aqt.qt import *
 from aqt.utils import tooltip
 
-from .utils.gui import ConvertSettingsDialog
+from .utils.gui import ConvertSettingsDialog, ShowOptions, ConvertSettingsMenuDialog
 from .utils.imagehelper import save_image
 from .utils.tempfile import TempFile
 
@@ -54,11 +54,12 @@ def get_config() -> dict:
     cfg: dict = mw.addonManager.getConfig(__name__) or dict()
     cfg['show_context_menu_entry']: bool = cfg.get('show_context_menu_entry', True)
     cfg['show_editor_button']: bool = cfg.get('show_editor_button', True)
-    cfg['shortcut']: str = cfg.get('shortcut', "Ctrl+Meta+v")
-    cfg['width']: int = cfg.get('width', 0)
-    cfg['height']: int = cfg.get('height', 200)
-    cfg['quality']: str = cfg.get('quality', 20)
-    cfg['dialog_on_paste']: bool = cfg.get('dialog_on_paste', True)
+    cfg['shortcut']: str = cfg.get('shortcut', 'Ctrl+Meta+v')
+    cfg['image_width']: int = cfg.get('image_width', 0)
+    cfg['image_height']: int = cfg.get('image_height', 200)
+    cfg['image_quality']: str = cfg.get('image_quality', 20)
+    cfg['show_settings']: str = cfg.get('show_settings', 'toolbar')
+    cfg["drag_and_drop"]: bool = cfg.get('drag_and_drop', True)
 
     return cfg
 
@@ -77,8 +78,8 @@ def find_cwebp():
 
 
 def apply_resize_args(args: list):
-    width = config.get('width')
-    height = config.get('height')
+    width = config.get('image_width')
+    height = config.get('image_height')
     if not (width == 0 and height == 0):
         args.extend(['-resize', str(width), str(height)])
     return args
@@ -112,7 +113,7 @@ def convert_file(source_path, destination_path):
         '-af',
         '-blend_alpha', '0xffffff',
         '-m', '6',
-        '-q', str(config.get('quality')),
+        '-q', str(config.get('image_quality')),
         '-o', destination_path
     ]
     args = apply_resize_args(args)
@@ -136,9 +137,9 @@ def tooltip_filesize(filepath):
     tooltip(f"Image added. File size: {filesize_kib[:filesize_kib.find('.') + 3]} KiB.", period=5000)
 
 
-def decide_show_settings(dialog_parent):
-    if config.get("dialog_on_paste") is True:
-        dlg = ConvertSettingsDialog(dialog_parent, config)
+def decide_show_settings(dialog_parent, parent_action: ShowOptions):
+    if config.get("show_settings") == ShowOptions.always or config.get("show_settings") == parent_action:
+        dlg = ConvertSettingsDialog(config, dialog_parent)
         return dlg.exec_()
     return True
 
@@ -151,7 +152,7 @@ def insert_webp(editor: Editor):
             tooltip("Couldn't save the image.")
             return
 
-        if not decide_show_settings(editor.parentWindow):
+        if not decide_show_settings(editor.parentWindow, ShowOptions.toolbar):
             tooltip("Canceled.")
             return
 
@@ -167,6 +168,9 @@ def insert_webp(editor: Editor):
 
 
 def process_mime(editor: EditorWebView, mime: QMimeData, *args, _old):
+    if config.get("drag_and_drop") is False:
+        return _old(editor, mime, *args)
+
     """Called when you paste anything in Anki"""
     p = editor.editor.web.mapFromGlobal(QCursor.pos())
 
@@ -174,7 +178,7 @@ def process_mime(editor: EditorWebView, mime: QMimeData, *args, _old):
         if not save_image(tmp_file.path(), mime):
             return _old(editor, mime, *args)
 
-        if not decide_show_settings(editor.parent()):
+        if not decide_show_settings(editor.parent(), ShowOptions.drag_and_drop):
             tooltip("Canceled.")
             return _old(editor, mime, *args)
 
@@ -207,7 +211,7 @@ def setup_mainwindow_menu():
     tools_menu = mw.form.menuTools
 
     def open_settings():
-        dialog = ConvertSettingsDialog(tools_menu, config)
+        dialog = ConvertSettingsMenuDialog(config, tools_menu)
         dialog.exec_()
 
     action = QAction("WebP settings", tools_menu)

@@ -1,9 +1,10 @@
 {
-    "show_context_menu_entry": true,
+    "show_context_menu_entry": false,
     "show_editor_button": true,
     "shortcut": "Ctrl+Meta+v",
-    "width": 0,
-    "height": 200,
-    "quality": 20,
-    "dialog_on_paste": true
+    "image_width": 0,
+    "image_height": 200,
+    "image_quality": 20,
+    "show_settings": "toolbar",
+    "drag_and_drop": true
 }
