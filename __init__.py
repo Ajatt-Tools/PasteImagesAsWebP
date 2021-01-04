@@ -106,6 +106,7 @@ def process_mime(editor: EditorWebView, mime: QMimeData, *args, _old):
 
             def pasteField(_):
                 insert_image_html(editor.editor, out_filename)
+                editor.activateWindow()  # Fix for windows users
 
             editor.editor.web.evalWithCallback(f"focusIfField({p.x()}, {p.y()});", pasteField)
         else:
