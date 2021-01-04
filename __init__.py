@@ -82,37 +82,42 @@ def insert_webp(editor: Editor):
             tooltip("cwebp failed.")
 
 
-def process_mime(editor: EditorWebView, mime: QMimeData, *args, _old):
-    """Called when you paste anything in Anki"""
-
+def drop_event(editor: EditorWebView, event, _old):
     if config.get("drag_and_drop") is False:
-        return _old(editor, mime, *args)
+        return _old(editor, event)
 
+    if event.source():
+        # don't filter html from other fields
+        return _old(editor, event)
+
+    # grab cursor position before it's moved by the user
     p = editor.editor.web.mapFromGlobal(QCursor.pos())
+
+    mime = event.mimeData()
 
     with TempFile() as tmp_file:
         if not save_image(tmp_file.path(), mime):
-            return _old(editor, mime, *args)
+            return _old(editor, event)
 
-        if not decide_show_settings(editor.parent(), ShowOptions.drag_and_drop):
+        if not decide_show_settings(editor.window(), ShowOptions.drag_and_drop):
             tooltip("Canceled.")
-            return _old(editor, mime, *args)
+            return
 
         out_filename, out_filepath = webp.construct_filename(mw.col.media.dir())
 
         if webp.convert_file(tmp_file.path(), out_filepath) is True:
             tooltip_filesize(out_filepath)
-            mime = QMimeData()  # erase old data from mime
 
             def pasteField(_):
                 insert_image_html(editor.editor, out_filename)
                 editor.activateWindow()  # Fix for windows users
 
             editor.editor.web.evalWithCallback(f"focusIfField({p.x()}, {p.y()});", pasteField)
+            return
         else:
             tooltip("cwebp failed.")
 
-    return _old(editor, mime, *args)
+    return _old(editor, event)
 
 
 ######################################################################
@@ -134,13 +139,13 @@ def setup_mainwindow_menu():
     tools_menu.addAction(action)
 
 
-def wrap_process_mime():
-    EditorWebView._processMime = wrap(EditorWebView._processMime, process_mime, 'around')
+def wrap_drop_event():
+    EditorWebView.dropEvent = wrap(EditorWebView.dropEvent, drop_event, 'around')
 
 
 def setup_menus():
     setup_mainwindow_menu()
-    wrap_process_mime()
+    wrap_drop_event()
     shortcut: str = config.get("shortcut")
     action_tooltip: str = "Paste as WebP" if not shortcut else f"Paste as WebP ({key_to_str(shortcut)})"
 
