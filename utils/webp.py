@@ -59,25 +59,40 @@ def construct_filename(target_dir_path: str):
     return out_filename, make_full_path(out_filename)
 
 
-def convert_file(source_path: str, destination_path: str):
-    args = [
-        cwebp,
-        source_path,
-        '-o', destination_path,
-        '-q', str(config.get('image_quality')),
-    ]
-    args.extend(config.get('cwebp_args', []))
+def get_resize_args():
     if not (config['image_width'] == 0 and config['image_height'] == 0):
-        args.extend(['-resize', str(config['image_width']), str(config['image_height'])])
+        return ['-resize', str(config['image_width']), str(config['image_height'])]
+    else:
+        return []
 
-    try:
-        subprocess.check_output(args)
-    except subprocess.CalledProcessError as ex:
+
+def convert_file(source_path: str, destination_path: str) -> bool:
+    args = [cwebp, source_path, '-o', destination_path, '-q', str(config.get('image_quality'))]
+    args.extend(config.get('cwebp_args', []))
+    args.extend(get_resize_args())
+
+    p = subprocess.Popen(args,
+                         shell=False,
+                         bufsize=-1,
+                         universal_newlines=True,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT,
+                         startupinfo=si)
+    stdout = p.communicate()[0]
+    if p.wait() != 0:
         print(f"cwebp failed.")
-        print(f"\texit code = {ex.returncode}")
-        print(f"\toutput = {ex.output}")
+        print(f"exit code = {p.returncode}")
+        print(stdout)
         return False
+
     return True
 
 
 cwebp = find_cwebp()
+
+if isWin:
+    # Prevents a console window from popping up on Windows
+    si = subprocess.STARTUPINFO()
+    si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+else:
+    si = None
