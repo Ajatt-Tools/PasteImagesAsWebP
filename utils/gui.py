@@ -23,10 +23,7 @@ from enum import Enum
 from aqt import mw
 from aqt.qt import *
 
-from ..consts import ADDON_PATH, ABOUT_MSG
-
-BUTTON_MIN_HEIGHT = 29
-ICON_SIDE_LEN = 17
+from ..consts import *
 
 
 class ShowOptions(Enum):
@@ -46,19 +43,58 @@ class ShowOptions(Enum):
         return 0
 
 
+class RichSlider:
+    def __init__(self, title: str, unit: str = "px"):
+        self.title = title
+        self.step = 1
+        self.slider = QSlider(Qt.Horizontal)
+        self.spinbox = QSpinBox()
+        self.unitLabel = QLabel(unit)
+        self.slider.valueChanged.connect(self._setSpinBoxValue)
+        self.spinbox.valueChanged.connect(self._setDiscreteValue)
+
+    def setValue(self, value: int):
+        self.slider.setValue(value)
+        self.spinbox.setValue(value)
+
+    def _setSpinBoxValue(self, value: int):
+        """Set the slider value to the spinbox"""
+        # Prevent the spinbox from backfiring, then update.
+        self.spinbox.blockSignals(True)
+        self.spinbox.setValue(value)
+        self.spinbox.blockSignals(False)
+
+    def _setDiscreteValue(self, value: int):
+        """Spinbox changes its value in steps"""
+        discrete_value = int(value / self.step) * self.step
+        self.slider.setValue(discrete_value)
+        self.spinbox.setValue(discrete_value)
+
+    def value(self) -> int:
+        return self.slider.value()
+
+    def setRange(self, start: int, stop: int):
+        self.slider.setRange(start, stop)
+        self.spinbox.setRange(start, stop)
+
+    def setStep(self, step: int):
+        self.step = step
+        self.spinbox.setSingleStep(step)
+
+    def asTuple(self):
+        return self.slider, self.spinbox, self.unitLabel
+
+
 class SettingsDialog(QDialog):
     def __init__(self, config, *args, **kwargs):
         super(SettingsDialog, self).__init__(*args, **kwargs)
         self.config = config
         self.cancelButton = QPushButton("Cancel")
         self.okButton = QPushButton("Ok")
-        self.widthSlider = QSlider(Qt.Horizontal)
-        self.widthSlider.title = "Width"
-        self.heightSlider = QSlider(Qt.Horizontal)
-        self.heightSlider.title = "Height"
-        self.qualitySlider = QSlider(Qt.Horizontal)
-        self.qualitySlider.title = "Quality"
-        self.setWindowTitle("WebP settings")
+        self.widthSlider = RichSlider("Width", "px")
+        self.heightSlider = RichSlider("Height", "px")
+        self.qualitySlider = RichSlider("Quality", "%")
+        self.setWindowTitle(ADDON_NAME)
         self.settingsLayout = QVBoxLayout()
         self.buttonRow = QHBoxLayout()
         self.setLayout(self.createMainLayout())
@@ -66,7 +102,7 @@ class SettingsDialog(QDialog):
         self.createButtonRow()
         self.createLogic()
         self.setInitialValues()
-        self.setMinimumWidth(320)
+        self.setMinimumWidth(WINDOW_MIN_WIDTH)
 
     def createMainLayout(self):
         layout = QVBoxLayout()
@@ -76,21 +112,20 @@ class SettingsDialog(QDialog):
         return layout
 
     def populateSettingsLayout(self):
-        for slider in (self.widthSlider, self.heightSlider, self.qualitySlider):
-            self.settingsLayout.addWidget(self.createSliderGroupBox(slider))
+        self.settingsLayout.addWidget(
+            self.createSlidersGroupBox(self.widthSlider, self.heightSlider, self.qualitySlider)
+        )
 
     @staticmethod
-    def createSliderGroupBox(slider: QSlider):
-        def createSliderHbox():
-            hbox = QHBoxLayout()
-            label = QLabel("0")
-            hbox.addWidget(slider)
-            hbox.addWidget(label)
-            slider.valueChanged.connect(lambda val, lbl=label: lbl.setText(str(val)))
-            return hbox
+    def createSlidersGroupBox(*sliders):
+        gbox = QGroupBox("Settings")
+        grid = QGridLayout()
+        for y_index, slider in enumerate(sliders):
+            grid.addWidget(QLabel(slider.title), y_index, 0)
+            for x_index, widget in enumerate(slider.asTuple()):
+                grid.addWidget(widget, y_index, x_index + 1)
 
-        gbox = QGroupBox(slider.title)
-        gbox.setLayout(createSliderHbox())
+        gbox.setLayout(grid)
         return gbox
 
     def createButtonRow(self):
@@ -98,6 +133,22 @@ class SettingsDialog(QDialog):
             button.setMinimumHeight(BUTTON_MIN_HEIGHT)
             self.buttonRow.addWidget(button)
         self.buttonRow.addStretch()
+
+    def createLogic(self):
+        for slider, limit in zip((self.widthSlider, self.heightSlider, self.qualitySlider), self.limits()):
+            slider.setRange(0, limit)
+            slider.setStep(SLIDER_STEP)
+
+        self.okButton.clicked.connect(self.dialogAccept)
+        self.cancelButton.clicked.connect(self.dialogReject)
+
+    def limits(self) -> tuple:
+        return self.config.get("max_image_width", 800), self.config.get("max_image_height", 600), 100
+
+    def setInitialValues(self):
+        self.widthSlider.setValue(self.config.get("image_width"))
+        self.heightSlider.setValue(self.config.get("image_height"))
+        self.qualitySlider.setValue(self.config.get("image_quality"))
 
     def dialogAccept(self):
         self.config["image_width"] = self.widthSlider.value()
@@ -108,24 +159,6 @@ class SettingsDialog(QDialog):
 
     def dialogReject(self):
         self.reject()
-
-    def createLogic(self):
-        for slider, limit in zip((self.widthSlider, self.heightSlider, self.qualitySlider), self.limits()):
-            slider.setRange(0, limit)
-            slider.setSingleStep(5)
-            slider.setTickInterval(5)
-
-        self.okButton.clicked.connect(self.dialogAccept)
-        self.cancelButton.clicked.connect(self.dialogReject)
-
-    @staticmethod
-    def limits() -> tuple:
-        return 800, 600, 100
-
-    def setInitialValues(self):
-        self.widthSlider.setValue(self.config.get("image_width"))
-        self.heightSlider.setValue(self.config.get("image_height"))
-        self.qualitySlider.setValue(self.config.get("image_quality"))
 
 
 class SettingsMenuDialog(SettingsDialog):
@@ -142,11 +175,6 @@ class SettingsMenuDialog(SettingsDialog):
         hbox.addWidget(QLabel("Show this dialog"))
         hbox.addWidget(self.showDialogComboBox, 1)
         return hbox
-
-    def dialogAccept(self):
-        self.config["show_settings"] = self.showDialogComboBox.currentData()
-        self.config["drag_and_drop"] = self.convertOnDragAndDropCheckBox.isChecked()
-        super(SettingsMenuDialog, self).dialogAccept()
 
     def setAdditionalInitialValues(self):
         self.convertOnDragAndDropCheckBox.setChecked(self.config.get("drag_and_drop"))
@@ -186,3 +214,8 @@ class SettingsMenuDialog(SettingsDialog):
     def createButtonRow(self):
         super(SettingsMenuDialog, self).createButtonRow()
         self.buttonRow.addWidget(self.createHeartButton())
+
+    def dialogAccept(self):
+        self.config["show_settings"] = self.showDialogComboBox.currentData()
+        self.config["drag_and_drop"] = self.convertOnDragAndDropCheckBox.isChecked()
+        super(SettingsMenuDialog, self).dialogAccept()

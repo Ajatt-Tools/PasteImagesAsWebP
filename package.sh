@@ -25,7 +25,7 @@ zip -r "$package_name" \
 	./utils/*.py \
 	./$manifest \
 	./config.* \
-	./*icon.png \
+	./icons/* \
 	./$support_dir \
 
 rm -- $manifest 2>/dev/null

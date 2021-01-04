@@ -58,6 +58,8 @@ def get_config() -> dict:
     cfg['image_quality']: str = cfg.get('image_quality', 20)
     cfg['show_settings']: str = cfg.get('show_settings', 'toolbar')
     cfg["drag_and_drop"]: bool = cfg.get('drag_and_drop', True)
+    cfg['max_image_width']: int = cfg.get('max_image_width', 800)
+    cfg['max_image_height']: int = cfg.get('max_image_height', 600)
 
     return cfg
 

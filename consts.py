@@ -28,6 +28,11 @@ PATREON_LINK = "https://www.patreon.com/tatsumoto_ren"
 OTHER_ADDONS = "https://ankiweb.net/shared/byauthor/1425504015"
 CHAT_LINK = "https://app.element.io/#/room/#djt:g33k.se"
 
+WINDOW_MIN_WIDTH = 400
+BUTTON_MIN_HEIGHT = 29
+ICON_SIDE_LEN = 17
+SLIDER_STEP = 5
+
 ABOUT_MSG = f"""\
 If <b>{ADDON_NAME}</b> or any of my <a href="{OTHER_ADDONS}">other addons</a>
 have been useful to you, please consider supporting me on <a href="{PATREON_LINK}">Patreon</a>.
