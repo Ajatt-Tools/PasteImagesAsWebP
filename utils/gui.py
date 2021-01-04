@@ -1,7 +1,32 @@
+# -*- coding: utf-8 -*-
+
+# Paste Images As WebP add-on for Anki 2.1
+# Copyright (C) 2021  Ren Tatsumoto. <tatsu at autistici.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+# Any modifications to this file must keep this entire header intact.
+
 from enum import Enum
 
 from aqt import mw
 from aqt.qt import *
+
+from ..consts import ADDON_PATH, ABOUT_MSG
+
+BUTTON_MIN_HEIGHT = 29
+ICON_SIDE_LEN = 17
 
 
 class ShowOptions(Enum):
@@ -21,9 +46,9 @@ class ShowOptions(Enum):
         return 0
 
 
-class ConvertSettingsDialog(QDialog):
+class SettingsDialog(QDialog):
     def __init__(self, config, *args, **kwargs):
-        super(ConvertSettingsDialog, self).__init__(*args, **kwargs)
+        super(SettingsDialog, self).__init__(*args, **kwargs)
         self.config = config
         self.cancelButton = QPushButton("Cancel")
         self.okButton = QPushButton("Ok")
@@ -35,8 +60,10 @@ class ConvertSettingsDialog(QDialog):
         self.qualitySlider.title = "Quality"
         self.setWindowTitle("WebP settings")
         self.settingsLayout = QVBoxLayout()
+        self.buttonRow = QHBoxLayout()
         self.setLayout(self.createMainLayout())
         self.populateSettingsLayout()
+        self.createButtonRow()
         self.createLogic()
         self.setInitialValues()
         self.setMinimumWidth(320)
@@ -45,7 +72,7 @@ class ConvertSettingsDialog(QDialog):
         layout = QVBoxLayout()
         layout.addLayout(self.settingsLayout)
         layout.addStretch()
-        layout.addLayout(self.createButtonRow())
+        layout.addLayout(self.buttonRow)
         return layout
 
     def populateSettingsLayout(self):
@@ -67,11 +94,10 @@ class ConvertSettingsDialog(QDialog):
         return gbox
 
     def createButtonRow(self):
-        layout = QHBoxLayout()
         for button in (self.okButton, self.cancelButton):
-            layout.addWidget(button)
-        layout.addStretch()
-        return layout
+            button.setMinimumHeight(BUTTON_MIN_HEIGHT)
+            self.buttonRow.addWidget(button)
+        self.buttonRow.addStretch()
 
     def dialogAccept(self):
         self.config["image_width"] = self.widthSlider.value()
@@ -102,14 +128,14 @@ class ConvertSettingsDialog(QDialog):
         self.qualitySlider.setValue(self.config.get("image_quality"))
 
 
-class ConvertSettingsMenuDialog(ConvertSettingsDialog):
+class SettingsMenuDialog(SettingsDialog):
     def __init__(self, *args, **kwargs):
-        super(ConvertSettingsMenuDialog, self).__init__(*args, **kwargs)
+        super(SettingsMenuDialog, self).__init__(*args, **kwargs)
         self.showDialogComboBox = QComboBox()
         self.convertOnDragAndDropCheckBox = QCheckBox("Convert images on drag and drop")
-        self.settingsLayout.addWidget(self.createAdditionalSettingsGroupBox())
+        self.createAdditionalSettingsGroupBox()
         self.populateShowDialogComboBox()
-        self.setInitialAdditionalSettingsValues()
+        self.setAdditionalInitialValues()
 
     def createShowSettingsLayout(self):
         hbox = QHBoxLayout()
@@ -120,9 +146,9 @@ class ConvertSettingsMenuDialog(ConvertSettingsDialog):
     def dialogAccept(self):
         self.config["show_settings"] = self.showDialogComboBox.currentData()
         self.config["drag_and_drop"] = self.convertOnDragAndDropCheckBox.isChecked()
-        super(ConvertSettingsMenuDialog, self).dialogAccept()
+        super(SettingsMenuDialog, self).dialogAccept()
 
-    def setInitialAdditionalSettingsValues(self):
+    def setAdditionalInitialValues(self):
         self.convertOnDragAndDropCheckBox.setChecked(self.config.get("drag_and_drop"))
         self.showDialogComboBox.setCurrentIndex(ShowOptions.indexOf(self.config.get("show_settings")))
 
@@ -135,8 +161,28 @@ class ConvertSettingsMenuDialog(ConvertSettingsDialog):
 
         gbox = QGroupBox("Additional settings")
         gbox.setLayout(createInnerVbox())
-        return gbox
+        self.settingsLayout.addWidget(gbox)
 
     def populateShowDialogComboBox(self):
         for option in ShowOptions:
             self.showDialogComboBox.addItem(option.value, option.name)
+
+    def showAboutDialog(self):
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Information)
+        msg.setWindowTitle("Love this add-on?")
+        msg.setText(ABOUT_MSG)
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec_()
+
+    def createHeartButton(self):
+        heart_button = QPushButton()
+        heart_button.setToolTip("Support me")
+        heart_button.setIcon(QIcon(os.path.join(ADDON_PATH, "icons", "heart.svg")))
+        heart_button.setIconSize(QSize(ICON_SIDE_LEN, ICON_SIDE_LEN))
+        heart_button.clicked.connect(self.showAboutDialog)
+        return heart_button
+
+    def createButtonRow(self):
+        super(SettingsMenuDialog, self).createButtonRow()
+        self.buttonRow.addWidget(self.createHeartButton())

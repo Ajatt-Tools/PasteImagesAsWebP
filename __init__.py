@@ -18,7 +18,6 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
-
 import json
 import subprocess
 import time
@@ -30,11 +29,10 @@ from aqt.editor import Editor, EditorWebView
 from aqt.qt import *
 from aqt.utils import tooltip
 
-from .utils.gui import ConvertSettingsDialog, ShowOptions, ConvertSettingsMenuDialog
+from .consts import ADDON_PATH
+from .utils.gui import SettingsDialog, ShowOptions, SettingsMenuDialog
 from .utils.imagehelper import save_image
 from .utils.tempfile import TempFile
-
-addon_path = os.path.dirname(__file__)
 
 
 ######################################################################
@@ -70,9 +68,9 @@ def find_cwebp():
         # https://developers.google.com/speed/webp/download
         support_dir = "support"
         if isWin:
-            exe = os.path.join(addon_path, support_dir, "cwebp.exe")
+            exe = os.path.join(ADDON_PATH, support_dir, "cwebp.exe")
         else:
-            exe = os.path.join(addon_path, support_dir, "cwebp")
+            exe = os.path.join(ADDON_PATH, support_dir, "cwebp")
             os.chmod(exe, 0o755)
     return exe
 
@@ -139,7 +137,7 @@ def tooltip_filesize(filepath):
 
 def decide_show_settings(dialog_parent, parent_action: ShowOptions):
     if config.get("show_settings") == ShowOptions.always or config.get("show_settings") == parent_action:
-        dlg = ConvertSettingsDialog(config, dialog_parent)
+        dlg = SettingsDialog(config, dialog_parent)
         return dlg.exec_()
     return True
 
@@ -212,7 +210,7 @@ def setup_mainwindow_menu():
     tools_menu = mw.form.menuTools
 
     def open_settings():
-        dialog = ConvertSettingsMenuDialog(config, tools_menu)
+        dialog = SettingsMenuDialog(config, tools_menu)
         dialog.exec_()
 
     action = QAction("WebP settings", tools_menu)
@@ -241,7 +239,7 @@ def setup_menus():
     if config.get("show_editor_button") is True:
         def add_editor_button(buttons, editor):
             b = editor.addButton(
-                os.path.join(addon_path, "webp_icon.png"),
+                os.path.join(ADDON_PATH, "icons", "webp.png"),
                 "paste_webp_button",
                 lambda e=editor: insert_webp(e),
                 tip=action_tooltip,

@@ -19,37 +19,23 @@
 # Any modifications to this file must keep this entire header intact.
 
 import os
-from tempfile import mkstemp
 
+ADDON_PATH = os.path.dirname(__file__)
+ADDON_NAME = "Paste Images As WebP"
 
-class TempFile(os.PathLike):
-    """A simple class for automatic management of temp file paths"""
-    def __init__(self):
-        self.fd, self.tmp_filepath = mkstemp()
-        self.opened = True
+GITHUB_LINK = "todo"
+PATREON_LINK = "https://www.patreon.com/tatsumoto_ren"
+OTHER_ADDONS = "https://ankiweb.net/shared/byauthor/1425504015"
+CHAT_LINK = "https://app.element.io/#/room/#djt:g33k.se"
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, trace_back):
-        self.close()
-
-    def __del__(self):
-        self.close()
-
-    def __fspath__(self) -> str:
-        return self.path()
-
-    def __repr__(self) -> str:
-        return self.path()
-
-    def path(self) -> str:
-        if len(self.tmp_filepath) < 1:
-            raise Exception
-        return self.tmp_filepath
-
-    def close(self):
-        if self.opened is True:
-            os.close(self.fd)
-            os.remove(self.tmp_filepath)
-            self.opened = False
+ABOUT_MSG = f"""\
+If <b>{ADDON_NAME}</b> or any of my <a href="{OTHER_ADDONS}">other addons</a>
+have been useful to you, please consider supporting me on <a href="{PATREON_LINK}">Patreon</a>.
+It allows me to put more time and focus into developing them. Thanks so much!
+<br><br>
+If you have any questions/issues, or if you want to learn Japanese with us,
+join <a href="{CHAT_LINK}">our study room</a>.
+<br>
+If you want to study the source code of this add-on and change it to make the add-on do what you wish,
+explore the <a href="{GITHUB_LINK}">repository on github</a>.\
+"""
