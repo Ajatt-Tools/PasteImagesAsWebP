@@ -1,2 +1,46 @@
-# PasteImagesAsWebP
-An Anki add-on that makes your images small
+<p align="center">
+<img src="">
+</p>
+
+# Paste Images As WebP
+
+![GitHub](https://img.shields.io/github/license/Ajatt-Tools/PasteImagesAsWebP)
+[![Patreon](https://img.shields.io/badge/support-patreon-orange)](https://www.patreon.com/tatsumoto_ren)
+![Lines of code](https://img.shields.io/tokei/lines/github/Ajatt-Tools/PasteImagesAsWebP)
+[![Matrix](https://img.shields.io/badge/Japanese_study_room-join-green.svg)](https://app.element.io/#/room/#djt:g33k.se)
+
+> An Anki add-on that makes your images small.
+
+We all know that people who don't store their images in
+[WebP](https://developers.google.com/speed/webp)
+are wasting a lot of disk space.
+Not only on their hard drives, but on AnkiWeb as well.
+Unfortunately Anki doesn't convert images to WebP when you paste them from elsewhere,
+and it takes time to convert and resize images manually.
+
+For the longest time I used a bash script
+to automatically convert images in my Anki collection to WebP
+until I decided that we simply need an add-on for this.
+
+> WebP lossy images are 25-34% smaller than comparable JPEG images at equivalent SSIM quality index.
+
+Storing images in WebP is a great way to reduce the size of your Anki collection.
+
+## Installation
+Install from [AnkiWeb](https://ankiweb.net/shared/info/xxxxx), or manually with `git`:
+
+```
+git clone 'https://github.com/Ajatt-Tools/PasteImagesAsWebP.git' ~/.local/share/Anki2/addons21/PasteImagesAsWebP
+```
+
+## Configuration
+
+To configure the add-on select `Tools > WebP settings` from the top menu bar.
+To view hidden settings open the Anki Add-on Menu
+via `Tools > Add-ons` and select `PasteImagesAsWebP`.
+Then click the Config button on the right-side of the screen.
+
+## Usage
+
+After installation images will be automatically converted to `WebP` and resized on pasting or drag-and-dropping.
+There's also a button in the Editor toolbar that lets you do the same.
