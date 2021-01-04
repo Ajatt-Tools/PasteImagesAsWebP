@@ -28,13 +28,6 @@ from anki.utils import isWin
 from ..config import config
 from ..consts import ADDON_PATH
 
-CWEBP_ARGS = ['-short',
-              '-mt',
-              '-pass', '10',
-              '-af',
-              '-blend_alpha', '0xffffff',
-              '-m', '6']
-
 
 def find_cwebp():
     exe = find_executable('cwebp')
@@ -73,7 +66,7 @@ def convert_file(source_path: str, destination_path: str):
         '-o', destination_path,
         '-q', str(config.get('image_quality')),
     ]
-    args.extend(CWEBP_ARGS)
+    args.extend(config.get('cwebp_args', []))
     if not (config['image_width'] == 0 and config['image_height'] == 0):
         args.extend(['-resize', str(config['image_width']), str(config['image_height'])])
 

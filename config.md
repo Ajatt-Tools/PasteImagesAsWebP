@@ -1,5 +1,10 @@
 ## Paste Images As WebP - configuration
 
+*You have to restart Anki to apply changes to this file.*
+
+****
+
+* `cwebp_args` - Extra cwebp arguments you want to add.
 * `drag_and_drop` - Convert images to webp on drag and drop
 * `image_height` - Desired height
 * `image_width` - Desired width

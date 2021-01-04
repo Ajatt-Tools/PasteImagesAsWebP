@@ -96,7 +96,7 @@ def process_mime(editor: EditorWebView, mime: QMimeData, *args, _old):
 
         out_filename, out_filepath = webp.construct_filename(mw.col.media.dir())
 
-        if webp.convert_file(tmp_file, out_filepath) is True:
+        if webp.convert_file(tmp_file.path(), out_filepath) is True:
             tooltip_filesize(out_filepath)
             mime = QMimeData()  # erase old data from mime
 

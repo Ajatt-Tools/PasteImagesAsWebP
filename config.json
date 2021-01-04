@@ -8,5 +8,13 @@
     "max_image_height": 600,
     "image_quality": 20,
     "show_settings": "toolbar",
-    "drag_and_drop": true
+    "drag_and_drop": true,
+    "cwebp_args": [
+        "-short",
+        "-mt",
+        "-pass", "10",
+        "-af",
+        "-blend_alpha", "0xffffff",
+        "-m", "6"
+    ]
 }

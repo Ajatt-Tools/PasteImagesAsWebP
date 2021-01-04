@@ -26,7 +26,7 @@ from urllib.error import URLError
 from aqt.qt import *
 
 
-def urls_from_html_data(html):
+def urls_from_html_data(html) -> list:
     return re.findall('(?<= src=")[^"]+(?=")', html)
 
 
@@ -51,6 +51,7 @@ def image_candidates(mime: QMimeData) -> Iterable[Optional[QImage]]:
         yield image_from_url(url)
     for url in urls_from_html_data(mime.html()):
         yield image_from_url(url)
+    # yield image_from_url(mime.text())
 
 
 def save_image(tmp_path: str, mime: QMimeData) -> bool:

@@ -44,6 +44,9 @@ class TempFile(os.PathLike):
     def __repr__(self) -> str:
         return self.path()
 
+    def __str__(self) -> str:
+        return self.path()
+
     def path(self) -> str:
         if len(self.tmp_filepath) < 1:
             raise Exception
