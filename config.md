@@ -4,6 +4,8 @@
 * `image_height` - Desired height
 * `image_width` - Desired width
 * `image_quality` - Compression factor between `0` and `100`. `0` produces the worst quality.
+* `max_image_height` - Limit for the height slider
+* `max_image_width` - Limit for the width slider
 * `shortcut` - Define a keyboard shortcut for pasting images as webp
 * `show_context_menu_entry` - Add an entry to the editor context menu
 * `show_editor_button` - Add a button to the editor toolbar
