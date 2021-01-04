@@ -23,7 +23,7 @@ import os
 ADDON_PATH = os.path.dirname(__file__)
 ADDON_NAME = "Paste Images As WebP"
 
-GITHUB_LINK = "todo"
+GITHUB_LINK = "https://github.com/Ajatt-Tools/PasteImagesAsWebP"
 PATREON_LINK = "https://www.patreon.com/tatsumoto_ren"
 OTHER_ADDONS = "https://ankiweb.net/shared/byauthor/1425504015"
 CHAT_LINK = "https://app.element.io/#/room/#djt:g33k.se"
