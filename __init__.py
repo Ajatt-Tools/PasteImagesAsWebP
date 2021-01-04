@@ -55,6 +55,13 @@ def decide_show_settings(dialog_parent, parent_action: ShowOptions):
     return True
 
 
+def insert_image_html(editor: Editor, image_filename: str):
+    image_html = f'<img src="{image_filename}">'
+    editor.web.eval(
+        "setFormat('insertHtml', %s);" % json.dumps(image_html)  # calls document.execCommand
+    )
+
+
 def insert_webp(editor: Editor):
     mime: QMimeData = editor.mw.app.clipboard().mimeData()
 
@@ -69,10 +76,7 @@ def insert_webp(editor: Editor):
 
         out_filename, out_filepath = webp.construct_filename(mw.col.media.dir())
         if webp.convert_file(tmp_file.path(), out_filepath) is True:
-            image_html = f'<img src="{out_filename}">'
-            editor.web.eval(
-                """setFormat("insertHtml", %s);""" % json.dumps(image_html)  # calls document.execCommand
-            )
+            insert_image_html(editor, out_filename)
             tooltip_filesize(out_filepath)
         else:
             tooltip("cwebp failed.")
@@ -101,9 +105,7 @@ def process_mime(editor: EditorWebView, mime: QMimeData, *args, _old):
             mime = QMimeData()  # erase old data from mime
 
             def pasteField(_):
-                editor.editor.web.eval(
-                    "pasteHTML(%s);" % json.dumps(f'<img src="{out_filename}">')
-                )
+                insert_image_html(editor.editor, out_filename)
 
             editor.editor.web.evalWithCallback(f"focusIfField({p.x()}, {p.y()});", pasteField)
         else:
