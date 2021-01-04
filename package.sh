@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 
 readonly target=${1:?Please provide build target: \"ankiweb\" or \"github\"}
-readonly package_name="PasteImagesAsWebP.ankiaddon"
+readonly addon_name="Paste Images As WebP"
+readonly package_filename="${addon_name// /}.ankiaddon"
 readonly support_dir="support"
 readonly manifest=manifest.json
 
-rm -- $package_name 2>/dev/null
+readonly webp_windows="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0-windows-x64.zip"
+readonly webp_linux="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0-linux-x86-64.tar.gz"
+
+rm -- "$package_filename" 2>/dev/null
 
 if [[ "$target" != 'ankiweb' ]]; then
     # https://addon-docs.ankiweb.net/#/sharing?id=sharing-outside-ankiweb
@@ -13,14 +17,28 @@ if [[ "$target" != 'ankiweb' ]]; then
     # your add-on folder needs to contain a ‘manifest.json’ file.
     {
         echo '{'
-        echo -e "\t\"package\": \"${package_name%.*}\","
-        echo -e '\t"name": "Paste Images As WebP",'
+        echo -e "\t\"package\": \"${package_filename%.*}\","
+        echo -e "\t\"name\": \"$addon_name\","
         echo -e "\t\"mod\": $(date -u '+%s')"
         echo '}'
     } > $manifest
 fi
 
-zip -r "$package_name" \
+if ! [[ -f ./$support_dir/cwebp && -f ./$support_dir/cwebp.exe ]]; then
+	readonly tmp_dir=./$support_dir/temp/
+	mkdir -p -- $tmp_dir
+	for url in "$webp_windows" "$webp_linux"; do
+		filename=${url##*/}
+		if [[ ! -f $tmp_dir/$filename ]]; then
+			curl --output $tmp_dir/$filename -- "$url"
+		fi
+		atool -f -X $tmp_dir/ -- $tmp_dir/$filename
+	done
+	find $tmp_dir -type f  \( -name 'cwebp' -o -name 'cwebp.exe' \) -exec mv -- {} ./$support_dir/ \;
+	rm -rf $tmp_dir
+fi
+
+zip -r "$package_filename" \
 	./*.py \
 	./utils/*.py \
 	./$manifest \
