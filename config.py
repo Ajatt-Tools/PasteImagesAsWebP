@@ -18,39 +18,23 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
-import os
-from tempfile import mkstemp
+from aqt import mw
 
 
-class TempFile(os.PathLike):
-    """A simple class for automatic management of temp file paths"""
+def get_config() -> dict:
+    cfg: dict = mw.addonManager.getConfig(__name__) or dict()
+    cfg['show_context_menu_entry']: bool = cfg.get('show_context_menu_entry', True)
+    cfg['show_editor_button']: bool = cfg.get('show_editor_button', True)
+    cfg['shortcut']: str = cfg.get('shortcut', 'Ctrl+Meta+v')
+    cfg['image_width']: int = cfg.get('image_width', 0)
+    cfg['image_height']: int = cfg.get('image_height', 200)
+    cfg['image_quality']: str = cfg.get('image_quality', 20)
+    cfg['show_settings']: str = cfg.get('show_settings', 'toolbar')
+    cfg["drag_and_drop"]: bool = cfg.get('drag_and_drop', True)
+    cfg['max_image_width']: int = cfg.get('max_image_width', 800)
+    cfg['max_image_height']: int = cfg.get('max_image_height', 600)
 
-    def __init__(self):
-        self.fd, self.tmp_filepath = mkstemp()
-        self.opened = True
+    return cfg
 
-    def __enter__(self):
-        return self
 
-    def __exit__(self, exc_type, exc_value, trace_back):
-        self.close()
-
-    def __del__(self):
-        self.close()
-
-    def __fspath__(self) -> str:
-        return self.path()
-
-    def __repr__(self) -> str:
-        return self.path()
-
-    def path(self) -> str:
-        if len(self.tmp_filepath) < 1:
-            raise Exception
-        return self.tmp_filepath
-
-    def close(self):
-        if self.opened is True:
-            os.close(self.fd)
-            os.remove(self.tmp_filepath)
-            self.opened = False
+config = get_config()

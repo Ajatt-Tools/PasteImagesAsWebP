@@ -34,6 +34,7 @@ if ! [[ -f ./$support_dir/cwebp && -f ./$support_dir/cwebp.exe ]]; then
 		fi
 		atool -f -X $tmp_dir/ -- $tmp_dir/$filename
 	done
+	unset filename
 	find $tmp_dir -type f  \( -name 'cwebp' -o -name 'cwebp.exe' \) -exec mv -- {} ./$support_dir/ \;
 	rm -rf $tmp_dir
 fi
@@ -44,6 +45,6 @@ zip -r "$package_filename" \
 	./$manifest \
 	./config.* \
 	./icons/* \
-	./$support_dir \
+	./$support_dir/cwebp* \
 
 rm -- $manifest 2>/dev/null

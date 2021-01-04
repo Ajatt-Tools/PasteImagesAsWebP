@@ -23,6 +23,7 @@ from enum import Enum
 from aqt import mw
 from aqt.qt import *
 
+from ..config import config
 from ..consts import *
 
 
@@ -86,9 +87,8 @@ class RichSlider:
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, config, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(SettingsDialog, self).__init__(*args, **kwargs)
-        self.config = config
         self.cancelButton = QPushButton("Cancel")
         self.okButton = QPushButton("Ok")
         self.widthSlider = RichSlider("Width", "px")
@@ -143,18 +143,18 @@ class SettingsDialog(QDialog):
         self.cancelButton.clicked.connect(self.dialogReject)
 
     def limits(self) -> tuple:
-        return self.config.get("max_image_width", 800), self.config.get("max_image_height", 600), 100
+        return config.get("max_image_width", 800), config.get("max_image_height", 600), 100
 
     def setInitialValues(self):
-        self.widthSlider.setValue(self.config.get("image_width"))
-        self.heightSlider.setValue(self.config.get("image_height"))
-        self.qualitySlider.setValue(self.config.get("image_quality"))
+        self.widthSlider.setValue(config.get("image_width"))
+        self.heightSlider.setValue(config.get("image_height"))
+        self.qualitySlider.setValue(config.get("image_quality"))
 
     def dialogAccept(self):
-        self.config["image_width"] = self.widthSlider.value()
-        self.config["image_height"] = self.heightSlider.value()
-        self.config["image_quality"] = self.qualitySlider.value()
-        mw.addonManager.writeConfig(__name__, self.config)
+        config["image_width"] = self.widthSlider.value()
+        config["image_height"] = self.heightSlider.value()
+        config["image_quality"] = self.qualitySlider.value()
+        mw.addonManager.writeConfig(__name__, config)
         self.accept()
 
     def dialogReject(self):
@@ -177,8 +177,8 @@ class SettingsMenuDialog(SettingsDialog):
         return hbox
 
     def setAdditionalInitialValues(self):
-        self.convertOnDragAndDropCheckBox.setChecked(self.config.get("drag_and_drop"))
-        self.showDialogComboBox.setCurrentIndex(ShowOptions.indexOf(self.config.get("show_settings")))
+        self.convertOnDragAndDropCheckBox.setChecked(config.get("drag_and_drop"))
+        self.showDialogComboBox.setCurrentIndex(ShowOptions.indexOf(config.get("show_settings")))
 
     def createAdditionalSettingsGroupBox(self):
         def createInnerVbox():
@@ -216,6 +216,6 @@ class SettingsMenuDialog(SettingsDialog):
         self.buttonRow.addWidget(self.createHeartButton())
 
     def dialogAccept(self):
-        self.config["show_settings"] = self.showDialogComboBox.currentData()
-        self.config["drag_and_drop"] = self.convertOnDragAndDropCheckBox.isChecked()
+        config["show_settings"] = self.showDialogComboBox.currentData()
+        config["drag_and_drop"] = self.convertOnDragAndDropCheckBox.isChecked()
         super(SettingsMenuDialog, self).dialogAccept()
