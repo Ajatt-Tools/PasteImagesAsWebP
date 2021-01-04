@@ -27,7 +27,7 @@ from aqt.qt import *
 
 
 def urls_from_html_data(html) -> list:
-    return re.findall('(?<= src=")[^"]+(?=")', html)
+    return re.findall('(?<= src=")http[^"]+(?=")', html)
 
 
 def urls(mime: QMimeData):
