@@ -205,6 +205,7 @@ class SettingsMenuDialog(SettingsDialog):
 
     def createHeartButton(self):
         heart_button = QPushButton()
+        heart_button.setMinimumHeight(BUTTON_MIN_HEIGHT)
         heart_button.setToolTip("Support me")
         heart_button.setIcon(QIcon(os.path.join(ADDON_PATH, "icons", "heart.svg")))
         heart_button.setIconSize(QSize(ICON_SIDE_LEN, ICON_SIDE_LEN))
