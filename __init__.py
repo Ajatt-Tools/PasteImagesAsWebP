@@ -56,10 +56,8 @@ def decide_show_settings(dialog_parent, parent_action: ShowOptions):
 
 
 def insert_image_html(editor: Editor, image_filename: str):
-    image_html = f'<img src="{image_filename}">'
-    editor.web.eval(
-        "setFormat('insertHtml', %s);" % json.dumps(image_html)  # calls document.execCommand
-    )
+    html = f'<img src="{image_filename}">'
+    editor.doPaste(html=html, internal=True)
 
 
 def insert_webp(editor: Editor):
