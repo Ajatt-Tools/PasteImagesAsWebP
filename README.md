@@ -30,8 +30,17 @@ Storing images in WebP is a great way to reduce the size of your Anki collection
 Install from [AnkiWeb](https://ankiweb.net/shared/info/1151815987), or manually with `git`:
 
 ```
-git clone 'https://github.com/Ajatt-Tools/PasteImagesAsWebP.git' ~/.local/share/Anki2/addons21/PasteImagesAsWebP
+$ git clone 'https://github.com/Ajatt-Tools/PasteImagesAsWebP.git' ~/.local/share/Anki2/addons21/PasteImagesAsWebP
 ```
+
+You also need `cwebp` installed:
+```
+$ sudo pacman -S libwebp
+```
+
+Or download it from [google.com](https://developers.google.com/speed/webp/download)
+and save the `cwebp` executable in `~/.local/share/Anki2/addons21/PasteImagesAsWebP/support/`.
+cwebp comes included in the AnkiWeb package.
 
 ## Configuration
 
