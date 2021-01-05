@@ -19,6 +19,7 @@
 # Any modifications to this file must keep this entire header intact.
 
 import os
+import random
 import subprocess
 import time
 from distutils.spawn import find_executable
@@ -46,7 +47,6 @@ def construct_filename(target_dir_path: str):
     """Returns a unique (filename, filepath) for the new webp image"""
 
     def new_filename() -> str:
-        import random
         return f"paste_{int(time.time())}{random.randint(100, 999)}.webp"
 
     def make_full_path(name) -> str:
@@ -61,17 +61,21 @@ def construct_filename(target_dir_path: str):
 
 def get_resize_args():
     if not (config['image_width'] == 0 and config['image_height'] == 0):
-        return ['-resize', str(config['image_width']), str(config['image_height'])]
+        return ['-resize', config['image_width'], config['image_height']]
     else:
         return []
 
 
+def stringify_args(args: list) -> list:
+    return [str(arg) for arg in args]
+
+
 def convert_file(source_path: str, destination_path: str) -> bool:
-    args = [cwebp, source_path, '-o', destination_path, '-q', str(config.get('image_quality'))]
+    args = [cwebp, source_path, '-o', destination_path, '-q', config.get('image_quality')]
     args.extend(config.get('cwebp_args', []))
     args.extend(get_resize_args())
 
-    p = subprocess.Popen(args,
+    p = subprocess.Popen(stringify_args(args),
                          shell=False,
                          bufsize=-1,
                          universal_newlines=True,
