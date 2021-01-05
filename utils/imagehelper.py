@@ -20,14 +20,18 @@
 
 import re
 import urllib
-from typing import Optional, Iterable
+from typing import Optional, Iterable, List
 from urllib.error import URLError
 
 from aqt.qt import *
 
 
-def urls_from_html_data(html) -> list:
+def urls_from_html(html: str) -> list:
     return re.findall('(?<= src=")http[^"]+(?=")', html)
+
+
+def data_from_html(html: str) -> List[QByteArray]:
+    return [QByteArray.fromBase64(data.encode('ascii')) for data in re.findall('(?<=;base64,)[^"]+(?=")', html)]
 
 
 def urls(mime: QMimeData):
@@ -47,11 +51,12 @@ def image_from_url(src_url) -> Optional[QImage]:
 
 def image_candidates(mime: QMimeData) -> Iterable[Optional[QImage]]:
     yield mime.imageData()
+    for data in data_from_html(mime.html()):
+        yield QImage.fromData(data)
     for url in urls(mime):
         yield image_from_url(url)
-    for url in urls_from_html_data(mime.html()):
+    for url in urls_from_html(mime.html()):
         yield image_from_url(url)
-    # yield image_from_url(mime.text())
 
 
 def save_image(tmp_path: str, mime: QMimeData) -> bool:
