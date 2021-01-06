@@ -32,6 +32,7 @@ WINDOW_MIN_WIDTH = 400
 BUTTON_MIN_HEIGHT = 29
 ICON_SIDE_LEN = 17
 SLIDER_STEP = 5
+REQUEST_TIMEOUTS = (3.05, 12.05)
 
 ABOUT_MSG = f"""\
 If <b>{ADDON_NAME}</b> or any of my <a href="{OTHER_ADDONS}">other addons</a>

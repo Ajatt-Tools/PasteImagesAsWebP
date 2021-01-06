@@ -19,11 +19,13 @@
 # Any modifications to this file must keep this entire header intact.
 
 import re
-import urllib
 from typing import Optional, Iterable, List
-from urllib.error import URLError
 
+import requests
 from aqt.qt import *
+from requests.exceptions import Timeout
+
+from ..consts import REQUEST_TIMEOUTS
 
 
 def urls_from_html(html: str) -> list:
@@ -41,10 +43,10 @@ def urls(mime: QMimeData):
 def image_from_url(src_url) -> Optional[QImage]:
     image = QImage()
     try:
-        req = urllib.request.Request(src_url, None, {'User-Agent': 'Mozilla/5.0 (compatible; Anki)'})
-        file_contents = urllib.request.urlopen(req).read()
+        headers = {'User-Agent': 'Mozilla/5.0 (compatible; Anki)'}
+        file_contents = requests.get(src_url, timeout=REQUEST_TIMEOUTS, headers=headers).content
         image.loadFromData(file_contents)
-    except (ValueError, URLError):
+    except Timeout:
         return None
     return image
 
