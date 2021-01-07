@@ -25,7 +25,7 @@ import requests
 from aqt.qt import *
 from requests.exceptions import Timeout
 
-from ..consts import REQUEST_TIMEOUTS
+from ..consts import REQUEST_TIMEOUTS, REQUEST_HEADERS
 
 
 def urls_from_html(html: str) -> list:
@@ -43,8 +43,7 @@ def urls(mime: QMimeData):
 def image_from_url(src_url) -> Optional[QImage]:
     image = QImage()
     try:
-        headers = {'User-Agent': 'Mozilla/5.0 (compatible; Anki)'}
-        file_contents = requests.get(src_url, timeout=REQUEST_TIMEOUTS, headers=headers).content
+        file_contents = requests.get(src_url, timeout=REQUEST_TIMEOUTS, headers=REQUEST_HEADERS).content
         image.loadFromData(file_contents)
     except Timeout:
         return None

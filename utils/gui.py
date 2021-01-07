@@ -89,30 +89,34 @@ class RichSlider:
 class SettingsDialog(QDialog):
     def __init__(self, *args, **kwargs):
         super(SettingsDialog, self).__init__(*args, **kwargs)
-        self.cancelButton = QPushButton("Cancel")
-        self.okButton = QPushButton("Ok")
+        self.sliderRow = QVBoxLayout()
         self.widthSlider = RichSlider("Width", "px")
         self.heightSlider = RichSlider("Height", "px")
         self.qualitySlider = RichSlider("Quality", "%")
-        self.setWindowTitle(ADDON_NAME)
-        self.settingsLayout = QVBoxLayout()
         self.buttonRow = QHBoxLayout()
-        self.setLayout(self.createMainLayout())
-        self.populateSettingsLayout()
-        self.createButtonRow()
-        self.createLogic()
-        self.setInitialValues()
+        self.okButton = QPushButton("Ok")
+        self.cancelButton = QPushButton("Cancel")
+        self._setupUI()
+
+    def _setupUI(self):
+        self.setWindowTitle(ADDON_NAME)
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
+
+        self.setLayout(self.createMainLayout())
+        self.populateSliderRow()
+        self.populateButtonRow()
+        self.setupLogic()
+        self.setInitialValues()
 
     def createMainLayout(self):
         layout = QVBoxLayout()
-        layout.addLayout(self.settingsLayout)
+        layout.addLayout(self.sliderRow)
         layout.addStretch()
         layout.addLayout(self.buttonRow)
         return layout
 
-    def populateSettingsLayout(self):
-        self.settingsLayout.addWidget(
+    def populateSliderRow(self):
+        self.sliderRow.addWidget(
             self.createSlidersGroupBox(self.widthSlider, self.heightSlider, self.qualitySlider)
         )
 
@@ -128,13 +132,13 @@ class SettingsDialog(QDialog):
         gbox.setLayout(grid)
         return gbox
 
-    def createButtonRow(self):
+    def populateButtonRow(self):
         for button in (self.okButton, self.cancelButton):
             button.setMinimumHeight(BUTTON_MIN_HEIGHT)
             self.buttonRow.addWidget(button)
         self.buttonRow.addStretch()
 
-    def createLogic(self):
+    def setupLogic(self):
         for slider, limit in zip((self.widthSlider, self.heightSlider, self.qualitySlider), self.limits()):
             slider.setRange(0, limit)
             slider.setStep(SLIDER_STEP)
@@ -142,7 +146,8 @@ class SettingsDialog(QDialog):
         self.okButton.clicked.connect(self.dialogAccept)
         self.cancelButton.clicked.connect(self.dialogReject)
 
-    def limits(self) -> tuple:
+    @staticmethod
+    def limits() -> tuple:
         return config.get("max_image_width", 800), config.get("max_image_height", 600), 100
 
     def setInitialValues(self):
@@ -163,22 +168,20 @@ class SettingsDialog(QDialog):
 
 class SettingsMenuDialog(SettingsDialog):
     def __init__(self, *args, **kwargs):
-        super(SettingsMenuDialog, self).__init__(*args, **kwargs)
-        self.showDialogComboBox = QComboBox()
+        self.whenShowDialogComboBox = self.createWhenShowDialogComboBox()
         self.convertOnDragAndDropCheckBox = QCheckBox("Convert images on drag and drop")
-        self.createAdditionalSettingsGroupBox()
-        self.populateShowDialogComboBox()
-        self.setAdditionalInitialValues()
+        super(SettingsMenuDialog, self).__init__(*args, **kwargs)
 
-    def createShowSettingsLayout(self):
-        hbox = QHBoxLayout()
-        hbox.addWidget(QLabel("Show this dialog"))
-        hbox.addWidget(self.showDialogComboBox, 1)
-        return hbox
+    @staticmethod
+    def createWhenShowDialogComboBox():
+        combobox = QComboBox()
+        for option in ShowOptions:
+            combobox.addItem(option.value, option.name)
+        return combobox
 
-    def setAdditionalInitialValues(self):
-        self.convertOnDragAndDropCheckBox.setChecked(config.get("drag_and_drop"))
-        self.showDialogComboBox.setCurrentIndex(ShowOptions.indexOf(config.get("show_settings")))
+    def populateSliderRow(self):
+        super(SettingsMenuDialog, self).populateSliderRow()
+        self.sliderRow.addWidget(self.createAdditionalSettingsGroupBox())
 
     def createAdditionalSettingsGroupBox(self):
         def createInnerVbox():
@@ -189,11 +192,18 @@ class SettingsMenuDialog(SettingsDialog):
 
         gbox = QGroupBox("Additional settings")
         gbox.setLayout(createInnerVbox())
-        self.settingsLayout.addWidget(gbox)
+        return gbox
 
-    def populateShowDialogComboBox(self):
-        for option in ShowOptions:
-            self.showDialogComboBox.addItem(option.value, option.name)
+    def setInitialValues(self):
+        super(SettingsMenuDialog, self).setInitialValues()
+        self.convertOnDragAndDropCheckBox.setChecked(config.get("drag_and_drop"))
+        self.whenShowDialogComboBox.setCurrentIndex(ShowOptions.indexOf(config.get("show_settings")))
+
+    def createShowSettingsLayout(self):
+        hbox = QHBoxLayout()
+        hbox.addWidget(QLabel("Show this dialog"))
+        hbox.addWidget(self.whenShowDialogComboBox, 1)
+        return hbox
 
     def showAboutDialog(self):
         msg = QMessageBox(self)
@@ -212,11 +222,11 @@ class SettingsMenuDialog(SettingsDialog):
         heart_button.clicked.connect(self.showAboutDialog)
         return heart_button
 
-    def createButtonRow(self):
-        super(SettingsMenuDialog, self).createButtonRow()
+    def populateButtonRow(self):
+        super(SettingsMenuDialog, self).populateButtonRow()
         self.buttonRow.addWidget(self.createHeartButton())
 
     def dialogAccept(self):
-        config["show_settings"] = self.showDialogComboBox.currentData()
+        config["show_settings"] = self.whenShowDialogComboBox.currentData()
         config["drag_and_drop"] = self.convertOnDragAndDropCheckBox.isChecked()
         super(SettingsMenuDialog, self).dialogAccept()

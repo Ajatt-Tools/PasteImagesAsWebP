@@ -18,8 +18,6 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
-import json
-
 from anki.hooks import wrap
 from aqt import mw, gui_hooks
 from aqt.editor import Editor, EditorWebView
