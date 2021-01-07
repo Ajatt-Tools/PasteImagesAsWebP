@@ -23,7 +23,7 @@ from typing import Optional, Iterable, List
 
 import requests
 from aqt.qt import *
-from requests.exceptions import Timeout
+from requests.exceptions import Timeout, InvalidSchema
 
 from ..consts import REQUEST_TIMEOUTS, REQUEST_HEADERS
 
@@ -37,23 +37,34 @@ def data_from_html(html: str) -> List[QByteArray]:
 
 
 def urls(mime: QMimeData):
-    return (url.toString() for url in mime.urls())
+    return (url.toString() for url in mime.urls() if not url.isLocalFile())
 
 
-def image_from_url(src_url) -> Optional[QImage]:
+def files(mime: QMimeData):
+    return (url.toLocalFile() for url in mime.urls() if url.isLocalFile())
+
+
+def image_from_url(src_url: str) -> Optional[QImage]:
     image = QImage()
     try:
         file_contents = requests.get(src_url, timeout=REQUEST_TIMEOUTS, headers=REQUEST_HEADERS).content
         image.loadFromData(file_contents)
-    except Timeout:
+    except (Timeout, InvalidSchema):
         return None
     return image
+
+
+def image_from_file(filepath: str):
+    with open(filepath, 'rb') as f:
+        return QImage.fromData(f.read())
 
 
 def image_candidates(mime: QMimeData) -> Iterable[Optional[QImage]]:
     yield mime.imageData()
     for data in data_from_html(mime.html()):
         yield QImage.fromData(data)
+    for file in files(mime):
+        yield image_from_file(file)
     for url in urls(mime):
         yield image_from_url(url)
     for url in urls_from_html(mime.html()):
