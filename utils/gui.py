@@ -82,6 +82,9 @@ class RichSlider:
         self.step = step
         self.spinbox.setSingleStep(step)
 
+    def setToolTip(self, tooltip: str):
+        self.slider.setToolTip(tooltip)
+
     def asTuple(self):
         return self.slider, self.spinbox, self.unitLabel
 
@@ -105,6 +108,7 @@ class SettingsDialog(QDialog):
         self.setLayout(self.createMainLayout())
         self.populateSliderRow()
         self.populateButtonRow()
+        self.setupToolTips()
         self.setupLogic()
         self.setInitialValues()
 
@@ -137,6 +141,22 @@ class SettingsDialog(QDialog):
             button.setMinimumHeight(BUTTON_MIN_HEIGHT)
             self.buttonRow.addWidget(button)
         self.buttonRow.addStretch()
+
+    def setupToolTips(self):
+        side_tooltip = str(
+            "Desired %s.\n"
+            "If either of the width or height parameters is 0,\n"
+            "the value will be calculated preserving the aspect-ratio.\n"
+            "If both values are 0, no resizing is performed (not recommended)."
+        )
+        quality_tooltip = str(
+            "Specify the compression factor between 0 and 100.\n"
+            "A small factor produces a smaller file with lower quality.\n"
+            "Best quality is achieved by using a value of 100."
+        )
+        self.widthSlider.setToolTip(side_tooltip % 'width')
+        self.heightSlider.setToolTip(side_tooltip % 'height')
+        self.qualitySlider.setToolTip(quality_tooltip)
 
     def setupLogic(self):
         for slider, limit in zip((self.widthSlider, self.heightSlider, self.qualitySlider), self.limits()):
