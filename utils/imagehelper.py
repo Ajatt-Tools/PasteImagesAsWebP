@@ -20,7 +20,7 @@
 
 import re
 from typing import Optional, Iterable, List
-
+import socket
 import requests
 from aqt.qt import *
 from requests.exceptions import Timeout, InvalidSchema
@@ -47,9 +47,9 @@ def files(mime: QMimeData):
 def image_from_url(src_url: str) -> Optional[QImage]:
     image = QImage()
     try:
-        file_contents = requests.get(src_url, timeout=REQUEST_TIMEOUTS, headers=REQUEST_HEADERS).content
-        image.loadFromData(file_contents)
-    except (Timeout, InvalidSchema):
+        with requests.get(src_url, timeout=REQUEST_TIMEOUTS, headers=REQUEST_HEADERS) as r:
+            image.loadFromData(r.content)
+    except (Timeout, InvalidSchema, socket.error):
         return None
     return image
 
