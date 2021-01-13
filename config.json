@@ -9,6 +9,7 @@
     "image_quality": 20,
     "show_settings": "toolbar",
     "drag_and_drop": true,
+    "copy_paste": false,
     "cwebp_args": [
         "-short",
         "-mt",

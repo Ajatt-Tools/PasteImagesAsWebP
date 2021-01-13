@@ -17,6 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Any modifications to this file must keep this entire header intact.
+from typing import Optional
 
 from anki.hooks import wrap
 from aqt import mw, gui_hooks
@@ -28,7 +29,7 @@ from .config import config
 from .consts import ADDON_PATH
 from .utils import webp
 from .utils.gui import SettingsDialog, ShowOptions, SettingsMenuDialog
-from .utils.imagehelper import save_image
+from .utils.imagehelper import save_image, image_candidates
 from .utils.tempfile import TempFile
 
 
@@ -41,45 +42,70 @@ def key_to_str(shortcut: str) -> str:
     return QKeySequence(shortcut).toString(QKeySequence.NativeText)
 
 
-def tooltip_filesize(filepath):
+def tooltip_filesize(filepath) -> None:
     filesize_kib = str(os.stat(filepath).st_size / 1024)
     tooltip(f"Image added. File size: {filesize_kib[:filesize_kib.find('.') + 3]} KiB.", period=5000)
 
 
-def decide_show_settings(dialog_parent, parent_action: ShowOptions):
-    if config.get("show_settings") == ShowOptions.always or config.get("show_settings") == parent_action:
-        dlg = SettingsDialog(dialog_parent)
-        return dlg.exec_()
-    return True
-
-
 def insert_image_html(editor: Editor, image_filename: str):
-    html = f'<img src="{image_filename}">'
-    editor.doPaste(html=html, internal=True)
+    editor.doPaste(html=f'<img src="{image_filename}">', internal=True)
+
+
+class ImageProcessor:
+    def __init__(self, parent: QWidget, caller_action: ShowOptions):
+        self.dialog_parent: QWidget = parent
+        self.parent_action: ShowOptions = caller_action
+        self.image: Optional[QImage] = None
+
+    def shouldShowSettings(self) -> bool:
+        return config.get("show_settings") == ShowOptions.always or config.get("show_settings") == self.parent_action
+
+    def decideShowSettings(self) -> int:
+        if self.shouldShowSettings() is True:
+            dlg = SettingsDialog(self.dialog_parent)
+            return dlg.exec_()
+        return QDialog.Accepted
+
+    def saveImage(self, tmp_path: str, mime: QMimeData) -> bool:
+        for image in image_candidates(mime):
+            if image and image.save(tmp_path, 'png') is True:
+                # self.image = image  TODO
+                break
+        else:
+            return False
+
+        return True
+
+    def saveAsWebP(self, mime: QMimeData) -> (str, str):
+        with TempFile() as tmp_file:
+            if save_image(tmp_file.path(), mime) is False:
+                raise RuntimeError("Couldn't save the image.")
+
+            if self.decideShowSettings() == QDialog.Rejected:
+                raise Warning("Canceled.")
+
+            out_filename, out_filepath = webp.construct_filename(mw.col.media.dir())
+
+            if webp.convert_file(tmp_file.path(), out_filepath) is False:
+                raise RuntimeError("cwebp failed")
+
+        return out_filename, out_filepath
 
 
 def insert_webp(editor: Editor):
     mime: QMimeData = editor.mw.app.clipboard().mimeData()
-
-    with TempFile() as tmp_file:
-        if not save_image(tmp_file.path(), mime):
-            tooltip("Couldn't save the image.")
-            return
-
-        if not decide_show_settings(editor.parentWindow, ShowOptions.toolbar):
-            tooltip("Canceled.")
-            return
-
-        out_filename, out_filepath = webp.construct_filename(mw.col.media.dir())
-        if webp.convert_file(tmp_file.path(), out_filepath) is True:
-            insert_image_html(editor, out_filename)
-            tooltip_filesize(out_filepath)
-        else:
-            tooltip("cwebp failed.")
+    w = ImageProcessor(editor.parentWindow, ShowOptions.toolbar)
+    try:
+        out_filename, out_filepath = w.saveAsWebP(mime)
+        insert_image_html(editor, out_filename)
+        tooltip_filesize(out_filepath)
+    except Exception as ex:
+        tooltip(ex)
 
 
 def drop_event(editor: EditorWebView, event, _old):
     if config.get("drag_and_drop") is False:
+        # the feature is disabled by the user
         return _old(editor, event)
 
     if event.source():
@@ -89,36 +115,50 @@ def drop_event(editor: EditorWebView, event, _old):
     # grab cursor position before it's moved by the user
     p = editor.editor.web.mapFromGlobal(QCursor.pos())
 
-    mime = event.mimeData()
+    w = ImageProcessor(editor.window(), ShowOptions.drag_and_drop)
+    try:
+        out_filename, out_filepath = w.saveAsWebP(event.mimeData())
 
-    with TempFile() as tmp_file:
-        if not save_image(tmp_file.path(), mime):
-            return _old(editor, event)
+        def pasteField(_):
+            insert_image_html(editor.editor, out_filename)
+            editor.activateWindow()  # Fix for windows users
 
-        if not decide_show_settings(editor.window(), ShowOptions.drag_and_drop):
-            tooltip("Canceled.")
-            return
+        editor.editor.web.evalWithCallback(f"focusIfField({p.x()}, {p.y()});", pasteField)
+        tooltip_filesize(out_filepath)
+    except Warning as ex:
+        tooltip(ex)
+    except RuntimeError as ex:
+        tooltip(ex)
+        return _old(editor, event)
 
-        out_filename, out_filepath = webp.construct_filename(mw.col.media.dir())
 
-        if webp.convert_file(tmp_file.path(), out_filepath) is True:
-            tooltip_filesize(out_filepath)
+def paste_event(editor: EditorWebView, _old):
+    if config.get("copy_paste") is False:
+        # the feature is disabled by the user
+        return _old(editor)
 
-            def pasteField(_):
-                insert_image_html(editor.editor, out_filename)
-                editor.activateWindow()  # Fix for windows users
+    mime: QMimeData = mw.app.clipboard().mimeData()
 
-            editor.editor.web.evalWithCallback(f"focusIfField({p.x()}, {p.y()});", pasteField)
-            return
-        else:
-            tooltip("cwebp failed.")
+    if mime.html().startswith("<!--anki-->"):
+        # no filtering required for internal pastes
+        return _old(editor)
 
-    return _old(editor, event)
+    w = ImageProcessor(editor.window(), ShowOptions.toolbar)
+    try:
+        out_filename, out_filepath = w.saveAsWebP(mime)
+        insert_image_html(editor.editor, out_filename)
+        tooltip_filesize(out_filepath)
+    except Warning as ex:
+        tooltip(ex)
+    except RuntimeError as ex:
+        tooltip(ex)
+        return _old(editor)
 
 
 ######################################################################
 # Main
 ######################################################################
+
 
 def setup_mainwindow_menu():
     """
@@ -135,13 +175,14 @@ def setup_mainwindow_menu():
     tools_menu.addAction(action)
 
 
-def wrap_drop_event():
+def wrap_events():
     EditorWebView.dropEvent = wrap(EditorWebView.dropEvent, drop_event, 'around')
+    EditorWebView.onPaste = wrap(EditorWebView.onPaste, paste_event, 'around')
 
 
 def setup_menus():
     setup_mainwindow_menu()
-    wrap_drop_event()
+    wrap_events()
     shortcut: str = config.get("shortcut")
     action_tooltip: str = "Paste as WebP" if not shortcut else f"Paste as WebP ({key_to_str(shortcut)})"
 

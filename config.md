@@ -5,20 +5,21 @@
 ****
 
 * `cwebp_args` - Extra cwebp arguments you want to add.
-* `drag_and_drop` - Convert images to webp on drag and drop
-* `image_height` - Desired height
-* `image_width` - Desired width
+* `copy_paste` - Convert images to webp when you copy-paste them.
+* `drag_and_drop` - Convert images to webp on drag and drop.
+* `image_height` - Desired height.
+* `image_width` - Desired width.
 * `image_quality` - Compression factor between `0` and `100`. `0` produces the worst quality.
-* `max_image_height` - Limit for the height slider
-* `max_image_width` - Limit for the width slider
-* `shortcut` - Define a keyboard shortcut for pasting images as webp
-* `show_context_menu_entry` - Add an entry to the editor context menu
-* `show_editor_button` - Add a button to the editor toolbar
+* `max_image_height` - Limit for the height slider.
+* `max_image_width` - Limit for the width slider.
+* `shortcut` - Define a keyboard shortcut for pasting images as webp.
+* `show_context_menu_entry` - Add an entry to the editor context menu.
+* `show_editor_button` - Add a button to the editor toolbar.
 * `show_settings` - When to show the settings dialog:
-    * `always` - Every time you paste a new image
-    * `toolbar` - When the toolbar button is pressed
-    * `drag_and_drop` - On drag-and-drop (if enabled)
-    * `never` - Only when you press `Tools > WebP settings`
+    * `always` - Every time you paste a new image.
+    * `toolbar` - When the toolbar button is pressed.
+    * `drag_and_drop` - On drag-and-drop (if enabled).
+    * `never` - Only when you press `Tools > WebP settings`.
 
 If one of the dimensions is set to `0`, images will be resized
 preserving the aspect ratio.
