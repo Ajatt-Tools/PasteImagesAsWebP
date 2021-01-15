@@ -190,6 +190,7 @@ class SettingsMenuDialog(SettingsDialog):
     def __init__(self, *args, **kwargs):
         self.whenShowDialogComboBox = self.createWhenShowDialogComboBox()
         self.convertOnDragAndDropCheckBox = QCheckBox("Convert images on drag and drop")
+        self.convertOnCopyPasteCheckBox = QCheckBox("Convert images on copy-paste")
         super(SettingsMenuDialog, self).__init__(*args, **kwargs)
 
     @staticmethod
@@ -208,6 +209,7 @@ class SettingsMenuDialog(SettingsDialog):
             vbox = QVBoxLayout()
             vbox.addLayout(self.createShowSettingsLayout())
             vbox.addWidget(self.convertOnDragAndDropCheckBox)
+            vbox.addWidget(self.convertOnCopyPasteCheckBox)
             return vbox
 
         gbox = QGroupBox("Additional settings")
@@ -217,6 +219,7 @@ class SettingsMenuDialog(SettingsDialog):
     def setInitialValues(self):
         super(SettingsMenuDialog, self).setInitialValues()
         self.convertOnDragAndDropCheckBox.setChecked(config.get("drag_and_drop"))
+        self.convertOnCopyPasteCheckBox.setChecked(config.get("copy_paste"))
         self.whenShowDialogComboBox.setCurrentIndex(ShowOptions.indexOf(config.get("show_settings")))
 
     def createShowSettingsLayout(self):
@@ -249,4 +252,5 @@ class SettingsMenuDialog(SettingsDialog):
     def dialogAccept(self):
         config["show_settings"] = self.whenShowDialogComboBox.currentData()
         config["drag_and_drop"] = self.convertOnDragAndDropCheckBox.isChecked()
+        config["copy_paste"] = self.convertOnCopyPasteCheckBox.isChecked()
         super(SettingsMenuDialog, self).dialogAccept()
