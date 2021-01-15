@@ -29,7 +29,7 @@ from ..consts import *
 
 class ShowOptions(Enum):
     always = "Always"
-    toolbar = "Toolbar and menus"
+    menus = "Toolbar and menus"
     drag_and_drop = "On drag and drop"
     never = "Never"
 

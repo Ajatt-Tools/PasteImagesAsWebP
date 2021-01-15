@@ -18,14 +18,19 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
-import os
 import random
 import subprocess
 import time
 from distutils.spawn import find_executable
+from pathlib import Path
+from typing import Optional
 
-from anki.utils import isWin
+from aqt import mw
+from aqt.qt import *
 
+from .gui import ShowOptions, SettingsDialog
+from .mime_helper import save_image
+from .tempfile import TempFile
 from ..config import config
 from ..consts import ADDON_PATH
 
@@ -56,7 +61,7 @@ def construct_filename(target_dir_path: str):
     while os.path.isfile(make_full_path(out_filename)):
         out_filename = new_filename()
 
-    return out_filename, make_full_path(out_filename)
+    return Path(make_full_path(out_filename))
 
 
 def get_resize_args():
@@ -70,7 +75,7 @@ def stringify_args(args: list) -> list:
     return [str(arg) for arg in args]
 
 
-def convert_file(source_path: str, destination_path: str) -> bool:
+def convert_file(source_path: os.PathLike, destination_path: os.PathLike) -> bool:
     args = [cwebp, source_path, '-o', destination_path, '-q', config.get('image_quality')]
     args.extend(config.get('cwebp_args', []))
     args.extend(get_resize_args())
@@ -90,6 +95,43 @@ def convert_file(source_path: str, destination_path: str) -> bool:
         return False
 
     return True
+
+
+class Caller:
+    def __init__(self, caller_widget: QWidget, caller_action: ShowOptions):
+        self.widget = caller_widget
+        self.action = caller_action
+
+
+class ImageConverter:
+    def __init__(self, caller: Caller):
+        self.dest_dir = mw.col.media.dir()
+        self.caller = caller
+        self.filepath: Optional[Path] = None
+
+    def shouldShowSettings(self) -> bool:
+        return config.get("show_settings") == ShowOptions.always or config.get("show_settings") == self.caller.action
+
+    def decideShowSettings(self) -> int:
+        if self.shouldShowSettings() is True:
+            dlg = SettingsDialog(self.caller.widget)
+            return dlg.exec_()
+        return QDialog.Accepted
+
+    def convert(self, mime: QMimeData) -> None:
+        with TempFile() as tmp_file:
+            if save_image(tmp_file.path(), mime) is False:
+                raise RuntimeError("Couldn't save the image.")
+
+            if self.decideShowSettings() == QDialog.Rejected:
+                raise Warning("Canceled.")
+
+            webp_filepath: Path = construct_filename(self.dest_dir)
+
+            if convert_file(tmp_file, webp_filepath) is False:
+                raise RuntimeError("cwebp failed")
+
+        self.filepath = webp_filepath
 
 
 cwebp = find_cwebp()
