@@ -17,7 +17,7 @@
 * `show_editor_button` - Add a button to the editor toolbar.
 * `show_settings` - When to show the settings dialog:
     * `always` - Every time you paste a new image.
-    * `toolbar` - When the toolbar button is pressed.
+    * `menus` - When the toolbar button or the context menu is activated.
     * `drag_and_drop` - On drag-and-drop (if enabled).
     * `never` - Only when you press `Tools > WebP settings`.
 
