@@ -23,7 +23,7 @@ import subprocess
 import time
 from distutils.spawn import find_executable
 from pathlib import Path
-from typing import Optional
+from typing import Optional, NamedTuple
 
 from aqt import mw
 from aqt.qt import *
@@ -97,10 +97,9 @@ def convert_file(source_path: os.PathLike, destination_path: os.PathLike) -> boo
     return True
 
 
-class Caller:
-    def __init__(self, caller_widget: QWidget, caller_action: ShowOptions):
-        self.widget = caller_widget
-        self.action = caller_action
+class Caller(NamedTuple):
+    widget: QWidget
+    action: ShowOptions
 
 
 class ImageConverter:
