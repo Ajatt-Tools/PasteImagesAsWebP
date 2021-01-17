@@ -45,6 +45,10 @@ class ShowOptions(Enum):
 
 
 class RichSlider:
+    """
+    This class acts like a struct holding a slider and a spinbox together.
+    The two widgets are connected so that any change to one are reflected on the other.
+    """
     def __init__(self, title: str, unit: str = "px"):
         self.title = title
         self.step = 1
