@@ -29,7 +29,7 @@ from aqt import mw
 from aqt.qt import *
 
 from .gui import ShowOptions, SettingsDialog
-from .mime_helper import save_image
+from .mime_helper import image_candidates
 from .tempfile import TempFile
 from ..config import config
 from ..consts import ADDON_PATH
@@ -64,37 +64,8 @@ def construct_filename(target_dir_path: str):
     return Path(make_full_path(out_filename))
 
 
-def get_resize_args():
-    if not (config['image_width'] == 0 and config['image_height'] == 0):
-        return ['-resize', config['image_width'], config['image_height']]
-    else:
-        return []
-
-
 def stringify_args(args: list) -> list:
     return [str(arg) for arg in args]
-
-
-def convert_file(source_path: os.PathLike, destination_path: os.PathLike) -> bool:
-    args = [cwebp, source_path, '-o', destination_path, '-q', config.get('image_quality')]
-    args.extend(config.get('cwebp_args', []))
-    args.extend(get_resize_args())
-
-    p = subprocess.Popen(stringify_args(args),
-                         shell=False,
-                         bufsize=-1,
-                         universal_newlines=True,
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.STDOUT,
-                         startupinfo=si)
-    stdout = p.communicate()[0]
-    if p.wait() != 0:
-        print(f"cwebp failed.")
-        print(f"exit code = {p.returncode}")
-        print(stdout)
-        return False
-
-    return True
 
 
 class Caller(NamedTuple):
@@ -107,6 +78,7 @@ class ImageConverter:
         self.dest_dir = mw.col.media.dir()
         self.caller = caller
         self.filepath: Optional[Path] = None
+        self.image: Optional[QImage] = None
 
     def shouldShowSettings(self) -> bool:
         return config.get("show_settings") == ShowOptions.always or config.get("show_settings") == self.caller.action
@@ -117,9 +89,51 @@ class ImageConverter:
             return dlg.exec_()
         return QDialog.Accepted
 
+    def saveImage(self, tmp_path: str, mime: QMimeData) -> bool:
+        for image in image_candidates(mime):
+            if image and image.save(tmp_path, 'png') is True:
+                self.image = image
+                break
+        else:
+            return False
+
+        return True
+
+    def getResizeArgs(self):
+        if self.image.width() < config['image_width'] or self.image.height() < config['image_height']:
+            # skip resizing if the image is already smaller than the requested size
+            return []
+
+        if config['image_width'] == 0 and config['image_height'] == 0:
+            # skip resizing if both width and height are set to 0
+            return []
+
+        return ['-resize', config['image_width'], config['image_height']]
+
+    def toWebP(self, source_path: os.PathLike, destination_path: os.PathLike) -> bool:
+        args = [cwebp, source_path, '-o', destination_path, '-q', config.get('image_quality')]
+        args.extend(config.get('cwebp_args', []))
+        args.extend(self.getResizeArgs())
+
+        p = subprocess.Popen(stringify_args(args),
+                             shell=False,
+                             bufsize=-1,
+                             universal_newlines=True,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT,
+                             startupinfo=si)
+        stdout = p.communicate()[0]
+        if p.wait() != 0:
+            print(f"cwebp failed.")
+            print(f"exit code = {p.returncode}")
+            print(stdout)
+            return False
+
+        return True
+
     def convert(self, mime: QMimeData) -> None:
         with TempFile() as tmp_file:
-            if save_image(tmp_file.path(), mime) is False:
+            if self.saveImage(tmp_file.path(), mime) is False:
                 raise RuntimeError("Couldn't save the image.")
 
             if self.decideShowSettings() == QDialog.Rejected:
@@ -127,7 +141,7 @@ class ImageConverter:
 
             webp_filepath: Path = construct_filename(self.dest_dir)
 
-            if convert_file(tmp_file, webp_filepath) is False:
+            if self.toWebP(tmp_file, webp_filepath) is False:
                 raise RuntimeError("cwebp failed")
 
         self.filepath = webp_filepath

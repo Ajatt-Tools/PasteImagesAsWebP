@@ -71,11 +71,3 @@ def image_candidates(mime: QMimeData) -> Iterable[Optional[QImage]]:
         yield image_from_url(url)
 
 
-def save_image(tmp_path: str, mime: QMimeData) -> bool:
-    for image in image_candidates(mime):
-        if image and image.save(tmp_path, 'png') is True:
-            break
-    else:
-        return False
-
-    return True
