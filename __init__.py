@@ -99,6 +99,10 @@ def paste_event(editor: EditorWebView, _old):
         # no filtering required for internal pastes
         return _old(editor)
 
+    if not mime.hasImage():
+        # no image was copied
+        return _old(editor)
+
     w = ImageConverter(Caller(editor.window(), ShowOptions.menus))
     try:
         w.convert(mime)
