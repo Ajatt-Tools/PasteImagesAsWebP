@@ -1,4 +1,5 @@
 {
+    "avoid_upscaling": true,
     "show_context_menu_entry": false,
     "show_editor_button": true,
     "shortcut": "Ctrl+Meta+v",

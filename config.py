@@ -23,6 +23,7 @@ from aqt import mw
 
 def get_config() -> dict:
     cfg: dict = mw.addonManager.getConfig(__name__) or dict()
+    cfg['avoid_upscaling']: bool = cfg.get('avoid_upscaling', True)
     cfg['show_context_menu_entry']: bool = cfg.get('show_context_menu_entry', True)
     cfg['show_editor_button']: bool = cfg.get('show_editor_button', True)
     cfg['shortcut']: str = cfg.get('shortcut', 'Ctrl+Meta+v')

@@ -68,6 +68,10 @@ def stringify_args(args: list) -> list:
     return [str(arg) for arg in args]
 
 
+def smaller_than_requested(image: QImage) -> bool:
+    return image.width() < config['image_width'] or image.height() < config['image_height']
+
+
 class Caller(NamedTuple):
     widget: QWidget
     action: ShowOptions
@@ -100,7 +104,7 @@ class ImageConverter:
         return True
 
     def getResizeArgs(self):
-        if self.image.width() < config['image_width'] or self.image.height() < config['image_height']:
+        if config['avoid_upscaling'] and smaller_than_requested(self.image):
             # skip resizing if the image is already smaller than the requested size
             return []
 
