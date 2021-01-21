@@ -26,7 +26,7 @@ ADDON_NAME = "Paste Images As WebP"
 GITHUB_LINK = "https://github.com/Ajatt-Tools/PasteImagesAsWebP"
 PATREON_LINK = "https://www.patreon.com/tatsumoto_ren"
 OTHER_ADDONS = "https://ankiweb.net/shared/byauthor/1425504015"
-CHAT_LINK = "https://app.element.io/#/room/#djt:g33k.se"
+CHAT_LINK = "https://chat.tchncs.de/#/room/#djt:g33k.se"
 
 WINDOW_MIN_WIDTH = 400
 BUTTON_MIN_HEIGHT = 29
