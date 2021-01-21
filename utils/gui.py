@@ -19,6 +19,7 @@
 # Any modifications to this file must keep this entire header intact.
 
 from enum import Enum
+from typing import NamedTuple
 
 from aqt import mw
 from aqt.qt import *
@@ -49,6 +50,7 @@ class RichSlider:
     This class acts like a struct holding a slider and a spinbox together.
     The two widgets are connected so that any change to one are reflected on the other.
     """
+
     def __init__(self, title: str, unit: str = "px"):
         self.title = title
         self.step = 1
@@ -190,6 +192,44 @@ class SettingsDialog(QDialog):
         self.reject()
 
 
+class ImageDimensions(NamedTuple):
+    width: int
+    height: int
+
+
+class PasteDialog(SettingsDialog):
+    def __init__(self, parent, image: ImageDimensions, *args, **kwargs):
+        self.image = image
+        super(PasteDialog, self).__init__(parent, *args, **kwargs)
+
+    def populateSliderRow(self):
+        super(PasteDialog, self).populateSliderRow()
+        self.sliderRow.addWidget(self.createScaleSettingsGroupBox())
+
+    def createScaleSettingsGroupBox(self):
+        gbox = QGroupBox(f"Original size: {self.image.width} x {self.image.height} px")
+        gbox.setLayout(self.createScaleOptionsGrid())
+        return gbox
+
+    def adjustSliders(self, factor):
+        if self.widthSlider.value() > 0:
+            self.widthSlider.setValue(int(self.image.width * factor))
+        if self.heightSlider.value() > 0:
+            self.heightSlider.setValue(int(self.image.height * factor))
+
+    def createScaleOptionsGrid(self):
+        grid = QGridLayout()
+        factors = (1 / 8, 1 / 4, 1 / 2, 1, 1.5, 2)
+        columns = 3
+        for index, factor in enumerate(factors):
+            i = int(index / columns)
+            j = index - (i * columns)
+            button = QPushButton(f"{factor}x")
+            button.clicked.connect(lambda _, f=factor: self.adjustSliders(f))
+            grid.addWidget(button, i, j)
+        return grid
+
+
 class SettingsMenuDialog(SettingsDialog):
     def __init__(self, *args, **kwargs):
         self.whenShowDialogComboBox = self.createWhenShowDialogComboBox()
@@ -216,7 +256,7 @@ class SettingsMenuDialog(SettingsDialog):
             vbox.addWidget(self.convertOnCopyPasteCheckBox)
             return vbox
 
-        gbox = QGroupBox("Additional settings")
+        gbox = QGroupBox("Behavior")
         gbox.setLayout(createInnerVbox())
         return gbox
 

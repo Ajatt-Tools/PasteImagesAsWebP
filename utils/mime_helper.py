@@ -69,5 +69,3 @@ def image_candidates(mime: QMimeData) -> Iterable[Optional[QImage]]:
         yield image_from_url(url)
     for url in urls_from_html(mime.html()):
         yield image_from_url(url)
-
-

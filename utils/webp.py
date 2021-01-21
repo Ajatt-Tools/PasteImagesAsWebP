@@ -28,7 +28,7 @@ from typing import Optional, NamedTuple
 from aqt import mw
 from aqt.qt import *
 
-from .gui import ShowOptions, SettingsDialog
+from .gui import ShowOptions, PasteDialog, ImageDimensions
 from .mime_helper import image_candidates
 from .tempfile import TempFile
 from ..config import config
@@ -89,7 +89,7 @@ class ImageConverter:
 
     def decideShowSettings(self) -> int:
         if self.shouldShowSettings() is True:
-            dlg = SettingsDialog(self.caller.widget)
+            dlg = PasteDialog(self.caller.widget, ImageDimensions(self.image.width(), self.image.height()))
             return dlg.exec_()
         return QDialog.Accepted
 
