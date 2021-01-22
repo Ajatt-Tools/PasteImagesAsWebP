@@ -68,8 +68,8 @@ def stringify_args(args: list) -> list:
     return [str(arg) for arg in args]
 
 
-def smaller_than_requested(image: QImage) -> bool:
-    return image.width() < config['image_width'] or image.height() < config['image_height']
+def smaller_than_requested(image: ImageDimensions) -> bool:
+    return image.width < config['image_width'] or image.height < config['image_height']
 
 
 class Caller(NamedTuple):
@@ -82,21 +82,21 @@ class ImageConverter:
         self.dest_dir = mw.col.media.dir()
         self.caller = caller
         self.filepath: Optional[Path] = None
-        self.image: Optional[QImage] = None
+        self.image: Optional[ImageDimensions] = None
 
     def shouldShowSettings(self) -> bool:
         return config.get("show_settings") == ShowOptions.always or config.get("show_settings") == self.caller.action
 
     def decideShowSettings(self) -> int:
         if self.shouldShowSettings() is True:
-            dlg = PasteDialog(self.caller.widget, ImageDimensions(self.image.width(), self.image.height()))
+            dlg = PasteDialog(self.caller.widget, self.image)
             return dlg.exec_()
         return QDialog.Accepted
 
     def saveImage(self, tmp_path: str, mime: QMimeData) -> bool:
         for image in image_candidates(mime):
             if image and image.save(tmp_path, 'png') is True:
-                self.image = image
+                self.image = ImageDimensions(image.width(), image.height())
                 break
         else:
             return False
