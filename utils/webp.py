@@ -39,11 +39,12 @@ def find_cwebp():
     exe = find_executable('cwebp')
     if exe is None:
         # https://developers.google.com/speed/webp/download
-        support_dir = "support"
+        exe = os.path.join(ADDON_PATH, "support", "cwebp")
         if isWin:
-            exe = os.path.join(ADDON_PATH, support_dir, "cwebp.exe")
+            exe += ".exe"
         else:
-            exe = os.path.join(ADDON_PATH, support_dir, "cwebp")
+            if isMac:
+                exe += '_macos'
             os.chmod(exe, 0o755)
     return exe
 

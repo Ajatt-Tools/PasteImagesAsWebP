@@ -38,6 +38,11 @@ You also need `cwebp` installed:
 $ sudo pacman -S libwebp
 ```
 
+If you're running MacOS:
+```
+$ brew install webp
+```
+
 Or download it from [google.com](https://developers.google.com/speed/webp/download)
 and save the `cwebp` executable in `~/.local/share/Anki2/addons21/PasteImagesAsWebP/support/`.
 cwebp comes included in the AnkiWeb package.
