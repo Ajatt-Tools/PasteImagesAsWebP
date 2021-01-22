@@ -73,9 +73,8 @@ class RichSlider:
 
     def _setDiscreteValue(self, value: int):
         """Spinbox changes its value in steps"""
-        discrete_value = int(value / self.step) * self.step
-        self.slider.setValue(discrete_value)
-        self.spinbox.setValue(discrete_value)
+        self.slider.setValue(value)
+        self.spinbox.setValue(value)
 
     def value(self) -> int:
         return self.slider.value()
