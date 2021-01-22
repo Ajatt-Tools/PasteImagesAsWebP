@@ -57,22 +57,10 @@ class RichSlider:
         self.slider = QSlider(Qt.Horizontal)
         self.spinbox = QSpinBox()
         self.unitLabel = QLabel(unit)
-        self.slider.valueChanged.connect(self._setSpinBoxValue)
-        self.spinbox.valueChanged.connect(self._setDiscreteValue)
+        self.slider.valueChanged.connect(lambda val: self.spinbox.setValue(val))
+        self.spinbox.valueChanged.connect(lambda val: self.slider.setValue(val))
 
     def setValue(self, value: int):
-        self.slider.setValue(value)
-        self.spinbox.setValue(value)
-
-    def _setSpinBoxValue(self, value: int):
-        """Set the slider value to the spinbox"""
-        # Prevent the spinbox from backfiring, then update.
-        self.spinbox.blockSignals(True)
-        self.spinbox.setValue(value)
-        self.spinbox.blockSignals(False)
-
-    def _setDiscreteValue(self, value: int):
-        """Spinbox changes its value in steps"""
         self.slider.setValue(value)
         self.spinbox.setValue(value)
 
