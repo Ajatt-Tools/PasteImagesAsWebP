@@ -56,5 +56,9 @@ Then click the Config button on the right-side of the screen.
 
 ## Usage
 
+Watch video demonstration:
+
+<p align="center"><a href="https://www.youtube.com/watch?v=kEsIykks1WY" target="_blank"><img src="https://user-images.githubusercontent.com/69171671/106127599-97fdb380-6156-11eb-93b0-8f73260cf582.png"></a></p>
+
 After installation images will be automatically converted to `WebP` and resized on pasting or drag-and-dropping.
 There's also a button in the Editor toolbar that lets you do the same.
