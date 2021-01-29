@@ -3,11 +3,10 @@
 </p>
 
 # Paste Images As WebP
-
+[![Rate on AnkiWeb](https://glutanimate.com/logos/ankiweb-rate.svg)](https://ankiweb.net/shared/info/1151815987)
 ![GitHub](https://img.shields.io/github/license/Ajatt-Tools/PasteImagesAsWebP)
 [![Patreon](https://img.shields.io/badge/support-patreon-orange)](https://www.patreon.com/tatsumoto_ren)
-![Lines of code](https://img.shields.io/tokei/lines/github/Ajatt-Tools/PasteImagesAsWebP)
-[![Matrix](https://img.shields.io/badge/Japanese_study_room-join-green.svg)](https://app.element.io/#/room/#djt:g33k.se)
+[![Matrix](https://img.shields.io/badge/Japanese_study_room-join-green.svg)](https://element.asra.gr/#/room/#djt:g33k.se)
 
 > An Anki add-on that makes your images small.
 
