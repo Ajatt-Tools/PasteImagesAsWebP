@@ -63,3 +63,13 @@ After installation images will be automatically converted to `WebP` and resized 
 There's also a button in the Editor toolbar that lets you do the same.
 
 To bulk-convert existing images in your collection, select `Edit` > `Bulk-convert to WebP` in the card browser.
+
+## Contributions
+
+If you've found a bug or want to extend the add-on, please let us know in the
+[Matrix chat](https://webchat.kde.org/#/room/#djt:g33k.se).
+I'm open to suggestions and pull requests.
+
+My special thanks to all my
+[Patreon](https://www.patreon.com/tatsumoto_ren)
+supporters for making this project possible.
