@@ -127,7 +127,7 @@ def setup_mainwindow_menu():
     tools_menu = mw.form.menuTools
 
     def open_settings():
-        dialog = SettingsMenuDialog(tools_menu)
+        dialog = SettingsMenuDialog(mw)
         dialog.exec_()
 
     action = QAction("WebP settings", tools_menu)
