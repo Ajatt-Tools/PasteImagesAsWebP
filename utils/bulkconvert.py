@@ -89,6 +89,10 @@ def setup_menu(browser: Browser):
 
 
 def on_bulk_convert(browser: Browser):
-    dialog = SettingsDialog(browser)
-    dialog.exec_()
-    bulk_convert(browser.selectedNotes())
+    selected_notes = browser.selectedNotes()
+    if selected_notes:
+        dialog = SettingsDialog(browser)
+        dialog.exec_()
+        bulk_convert(selected_notes)
+    else:
+        tooltip("No cards selected.")
