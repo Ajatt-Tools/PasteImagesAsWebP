@@ -55,6 +55,11 @@ def convert_image(filename: str) -> Optional[Path]:
         return w.filepath
 
 
+def find_eligible_images(html: str):
+    images = re.findall(r'<img[^>]*src="([^"]+)"[^>]*>', html)
+    return (image for image in images if image[-5:] != '.webp')
+
+
 @checkpoint(msg="Bulk-convert to WebP")
 def bulk_convert(nids: list):
     notes = {mw.col.getNote(nid) for nid in nids}
@@ -65,13 +70,10 @@ def bulk_convert(nids: list):
             if '<img' not in field:
                 continue
 
-            images = re.findall(r'<img[^>]*src="([^"]+)"[^>]*>', field)
-            non_webp = (image for image in images if image[-5:] != '.webp')
-
-            for image in non_webp:
-                new_filename = convert_image(image)
-                if new_filename:
-                    note[key] = field.replace(image, new_filename.name, 1)
+            for image in find_eligible_images(field):
+                filepath = convert_image(image)
+                if filepath:
+                    note[key] = field.replace(image, filepath.name, 1)
 
         note.flush()
 
