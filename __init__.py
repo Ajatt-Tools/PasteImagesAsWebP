@@ -175,5 +175,7 @@ def setup_menus():
 
         gui_hooks.editor_did_init_shortcuts.append(add_editor_shortcut)
 
+    gui_hooks.browser_menus_did_init.append(setup_menu)
+
 
 setup_menus()

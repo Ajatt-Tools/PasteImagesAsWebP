@@ -49,11 +49,15 @@ def find_cwebp():
     return exe
 
 
-def construct_filename(target_dir_path: str):
+def make_filepath(directory: str, filename: str) -> Path:
+    return Path(os.path.join(directory, filename))
+
+
+def make_unique_filepath(target_dir_path: str, prefix: str = 'paste'):
     """Returns a unique (filename, filepath) for the new webp image"""
 
     def new_filename() -> str:
-        return f"paste_{int(time.time())}{random.randint(100, 999)}.webp"
+        return f"{prefix}_{int(time.time())}{random.randint(100, 999)}.webp"
 
     def make_full_path(name) -> str:
         return os.path.join(target_dir_path, name)
@@ -78,14 +82,28 @@ class Caller(NamedTuple):
     action: ShowOptions
 
 
-class ImageConverter:
-    def __init__(self, caller: Caller):
+class ImageConverter(object):
+    def __init__(self, caller: Caller = None):
         self.dest_dir = mw.col.media.dir()
         self.caller = caller
         self.filepath: Optional[Path] = None
         self.image: Optional[ImageDimensions] = None
 
-    def shouldShowSettings(self) -> bool:
+    def load_internal(self, filename: str):
+        with open(make_filepath(self.dest_dir, filename), 'rb') as f:
+            image = QImage.fromData(f.read())
+            self.image = ImageDimensions(image.width(), image.height())
+
+    def convert_internal(self, filename: str):
+        source_filepath: Path = make_filepath(self.dest_dir, filename)
+        webp_filepath: Path = make_unique_filepath(self.dest_dir, 'image')
+
+        if self.to_webp(source_filepath, webp_filepath) is False:
+            raise RuntimeError("cwebp failed")
+
+        self.filepath = webp_filepath
+
+    def should_show_settings(self) -> bool:
         return config.get("show_settings") == ShowOptions.always or config.get("show_settings") == self.caller.action
 
     def decide_show_settings(self) -> int:
