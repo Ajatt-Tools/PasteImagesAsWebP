@@ -24,10 +24,11 @@ from aqt.editor import Editor, EditorWebView
 from aqt.qt import *
 from aqt.utils import tooltip
 
-from .utils.webp import ImageConverter, Caller
 from .config import config
 from .consts import ADDON_PATH
+from .utils.bulkconvert import setup_menu
 from .utils.gui import ShowOptions, SettingsMenuDialog
+from .utils.webp import ImageConverter, Caller
 
 
 ######################################################################
@@ -75,11 +76,11 @@ def drop_event(editor: EditorWebView, event, _old):
     try:
         w.convert(event.mimeData())
 
-        def pasteField(_):
+        def paste_field(_):
             insert_image_html(editor.editor, w.filepath.name)
             editor.activateWindow()  # Fix for windows users
 
-        editor.editor.web.evalWithCallback(f"focusIfField({p.x()}, {p.y()});", pasteField)
+        editor.editor.web.evalWithCallback(f"focusIfField({p.x()}, {p.y()});", paste_field)
         tooltip_filesize(w.filepath)
     except Warning as ex:
         tooltip(ex)

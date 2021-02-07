@@ -30,7 +30,7 @@ from aqt.qt import *
 
 from .gui import ShowOptions, PasteDialog, ImageDimensions
 from .mime_helper import image_candidates
-from .tempfile import TempFile
+from .temp_file import TempFile
 from ..config import config
 from ..consts import ADDON_PATH
 
@@ -88,13 +88,13 @@ class ImageConverter:
     def shouldShowSettings(self) -> bool:
         return config.get("show_settings") == ShowOptions.always or config.get("show_settings") == self.caller.action
 
-    def decideShowSettings(self) -> int:
-        if self.shouldShowSettings() is True:
+    def decide_show_settings(self) -> int:
+        if self.should_show_settings() is True:
             dlg = PasteDialog(self.caller.widget, self.image)
             return dlg.exec_()
         return QDialog.Accepted
 
-    def saveImage(self, tmp_path: str, mime: QMimeData) -> bool:
+    def save_image(self, tmp_path: str, mime: QMimeData) -> bool:
         for image in image_candidates(mime):
             if image and image.save(tmp_path, 'png') is True:
                 self.image = ImageDimensions(image.width(), image.height())
@@ -104,7 +104,7 @@ class ImageConverter:
 
         return True
 
-    def getResizeArgs(self):
+    def get_resize_args(self):
         if config['avoid_upscaling'] and smaller_than_requested(self.image):
             # skip resizing if the image is already smaller than the requested size
             return []
@@ -115,10 +115,10 @@ class ImageConverter:
 
         return ['-resize', config['image_width'], config['image_height']]
 
-    def toWebP(self, source_path: os.PathLike, destination_path: os.PathLike) -> bool:
+    def to_webp(self, source_path: os.PathLike, destination_path: os.PathLike) -> bool:
         args = [cwebp, source_path, '-o', destination_path, '-q', config.get('image_quality')]
         args.extend(config.get('cwebp_args', []))
-        args.extend(self.getResizeArgs())
+        args.extend(self.get_resize_args())
 
         p = subprocess.Popen(stringify_args(args),
                              shell=False,
@@ -138,15 +138,15 @@ class ImageConverter:
 
     def convert(self, mime: QMimeData) -> None:
         with TempFile() as tmp_file:
-            if self.saveImage(tmp_file.path(), mime) is False:
+            if self.save_image(tmp_file.path(), mime) is False:
                 raise RuntimeError("Couldn't save the image.")
 
-            if self.decideShowSettings() == QDialog.Rejected:
+            if self.decide_show_settings() == QDialog.Rejected:
                 raise Warning("Canceled.")
 
-            webp_filepath: Path = construct_filename(self.dest_dir)
+            webp_filepath: Path = make_unique_filepath(self.dest_dir)
 
-            if self.toWebP(tmp_file, webp_filepath) is False:
+            if self.to_webp(tmp_file, webp_filepath) is False:
                 raise RuntimeError("cwebp failed")
 
         self.filepath = webp_filepath
