@@ -49,8 +49,8 @@ def convert_image(filename: str) -> Optional[Path]:
         w = ImageConverter()
         w.load_internal(filename)
         w.convert_internal(filename)
-    except RuntimeError as ex:
-        tooltip(ex)
+    except RuntimeError:
+        tooltip(f"Couldn't convert {filename}.")
     else:
         return w.filepath
 
