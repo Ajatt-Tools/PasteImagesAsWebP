@@ -63,7 +63,7 @@ def find_eligible_images(html: str):
 @checkpoint(msg="Bulk-convert to WebP")
 def bulk_convert(nids: list):
     notes = {mw.col.getNote(nid) for nid in nids}
-
+    counter = 0
     for note in notes:
         for key in note.keys():
             field: str = note[key]
@@ -74,10 +74,11 @@ def bulk_convert(nids: list):
                 filepath = convert_image(image)
                 if filepath:
                     note[key] = field.replace(image, filepath.name, 1)
+                    counter += 1
 
         note.flush()
 
-    tooltip("Bulk-convert finished.")
+    tooltip(f"Done. Converted {counter} files.")
 
 
 def setup_menu(browser: Browser):
