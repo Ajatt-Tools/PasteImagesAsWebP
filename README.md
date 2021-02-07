@@ -61,3 +61,5 @@ Watch video demonstration:
 
 After installation images will be automatically converted to `WebP` and resized on pasting or drag-and-dropping.
 There's also a button in the Editor toolbar that lets you do the same.
+
+To bulk-convert existing images in your collection, select `Edit` > `Bulk-convert to WebP` in the card browser.
