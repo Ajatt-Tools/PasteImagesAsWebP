@@ -6,7 +6,7 @@
 [![Rate on AnkiWeb](https://glutanimate.com/logos/ankiweb-rate.svg)](https://ankiweb.net/shared/info/1151815987)
 ![GitHub](https://img.shields.io/github/license/Ajatt-Tools/PasteImagesAsWebP)
 [![Patreon](https://img.shields.io/badge/support-patreon-orange)](https://www.patreon.com/tatsumoto_ren)
-[![Matrix](https://img.shields.io/badge/Japanese_study_room-join-green.svg)](https://element.asra.gr/#/room/#djt:g33k.se)
+[![Matrix](https://img.shields.io/badge/chat-join-green.svg)](https://tatsumoto-ren.github.io/blog/join-our-community.html)
 
 > An Anki add-on that makes your images small.
 
@@ -67,7 +67,7 @@ To bulk-convert existing images in your collection, select `Edit` > `Bulk-conver
 ## Contributions
 
 If you've found a bug or want to extend the add-on, please let us know in the
-[Matrix chat](https://webchat.kde.org/#/room/#djt:g33k.se).
+[Matrix chat](https://tatsumoto-ren.github.io/blog/join-our-community.html).
 I'm open to suggestions and pull requests.
 
 My special thanks to all my
