@@ -89,6 +89,13 @@ def drop_event(editor: EditorWebView, event, _old):
         return _old(editor, event)
 
 
+def has_local_file(mime: QMimeData) -> bool:
+    for url in mime.urls():
+        if url.isLocalFile():
+            return True
+    return False
+
+
 def paste_event(editor: EditorWebView, _old):
     if config.get("copy_paste") is False:
         # the feature is disabled by the user
@@ -100,7 +107,7 @@ def paste_event(editor: EditorWebView, _old):
         # no filtering required for internal pastes
         return _old(editor)
 
-    if not mime.hasImage():
+    if not (mime.hasImage() or has_local_file(mime)):
         # no image was copied
         return _old(editor)
 
