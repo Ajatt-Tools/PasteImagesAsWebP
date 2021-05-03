@@ -4,8 +4,7 @@
 
 ****
 
-* `avoid_upscaling` - Don't resize an image when its size is larger
-than the values specified in this config.
+* `avoid_upscaling` - Don't resize an image when its original size is less than requested.
 * `cwebp_args` - Extra cwebp arguments you want to add.
 * `copy_paste` - Convert images to webp when you copy-paste them.
 * `drag_and_drop` - Convert images to webp on drag and drop.
