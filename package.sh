@@ -6,9 +6,10 @@ readonly package_filename="${addon_name// /}.ankiaddon"
 readonly support_dir="support"
 readonly manifest=manifest.json
 
-readonly webp_windows="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0-windows-x64.zip"
-readonly webp_linux="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0-linux-x86-64.tar.gz"
-readonly webp_mac="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0-mac-10.15.tar.gz"
+# https://developers.google.com/speed/webp/download
+readonly webp_windows="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.2.0-windows-x64.zip"
+readonly webp_linux="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.2.0-linux-x86-64.tar.gz"
+readonly webp_mac="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.2.0-mac-10.15.tar.gz"
 
 rm -- "$package_filename" 2>/dev/null
 
