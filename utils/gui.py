@@ -118,7 +118,7 @@ class SettingsDialog(QDialog):
         )
 
     @staticmethod
-    def createSlidersGroupBox(*sliders):
+    def createSlidersGroupBox(*sliders) -> QGroupBox:
         gbox = QGroupBox("Settings")
         grid = QGridLayout()
         for y_index, slider in enumerate(sliders):

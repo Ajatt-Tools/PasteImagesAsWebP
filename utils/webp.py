@@ -32,7 +32,19 @@ from .gui import ShowOptions, PasteDialog, ImageDimensions
 from .mime_helper import image_candidates
 from .temp_file import TempFile
 from ..config import config
-from ..consts import ADDON_PATH
+from ..consts import ADDON_PATH, IMAGE_EXTENSIONS
+
+
+class CanceledPaste(Warning):
+    pass
+
+
+class InvalidInput(Warning):
+    pass
+
+
+def image_like_filename(filename: str):
+    return any(filename.lower().endswith(ext) for ext in IMAGE_EXTENSIONS)
 
 
 def find_cwebp():
@@ -118,6 +130,9 @@ class ImageConverter(object):
                 self.image = ImageDimensions(image.width(), image.height())
                 break
         else:
+            if any(not image_like_filename(url.fileName()) for url in mime.urls()):
+                raise InvalidInput("Not an image file.")
+
             return False
 
         return True
@@ -160,7 +175,7 @@ class ImageConverter(object):
                 raise RuntimeError("Couldn't save the image.")
 
             if self.decide_show_settings() == QDialog.Rejected:
-                raise Warning("Canceled.")
+                raise CanceledPaste("Cancelled.")
 
             webp_filepath: Path = make_unique_filepath(self.dest_dir)
 

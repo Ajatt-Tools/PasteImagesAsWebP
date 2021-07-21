@@ -28,7 +28,7 @@ from .config import config
 from .consts import ADDON_PATH
 from .utils.bulkconvert import setup_menu
 from .utils.gui import ShowOptions, SettingsMenuDialog
-from .utils.webp import ImageConverter, Caller
+from .utils.webp import ImageConverter, Caller, CanceledPaste, InvalidInput
 
 
 ######################################################################
@@ -57,7 +57,7 @@ def insert_webp(editor: Editor):
         insert_image_html(editor, w.filepath.name)
         tooltip_filesize(w.filepath)
     except Exception as ex:
-        tooltip(ex)
+        tooltip(str(ex))
 
 
 def drop_event(editor: EditorWebView, event, _old):
@@ -82,10 +82,15 @@ def drop_event(editor: EditorWebView, event, _old):
 
         editor.editor.web.evalWithCallback(f"focusIfField({p.x()}, {p.y()});", paste_field)
         tooltip_filesize(w.filepath)
-    except Warning as ex:
-        tooltip(ex)
+    except InvalidInput:
+        return _old(editor, event)
+    except CanceledPaste as ex:
+        tooltip(str(ex))
     except RuntimeError as ex:
-        tooltip(ex)
+        tooltip(str(ex))
+        return _old(editor, event)
+    except FileNotFoundError:
+        tooltip("File not found.")
         return _old(editor, event)
 
 
@@ -116,10 +121,15 @@ def paste_event(editor: EditorWebView, _old):
         w.convert(mime)
         insert_image_html(editor.editor, w.filepath.name)
         tooltip_filesize(w.filepath)
-    except Warning as ex:
-        tooltip(ex)
+    except CanceledPaste as ex:
+        tooltip(str(ex))
+    except InvalidInput:
+        return _old(editor)
     except RuntimeError as ex:
-        tooltip(ex)
+        tooltip(str(ex))
+        return _old(editor)
+    except FileNotFoundError:
+        tooltip("File not found.")
         return _old(editor)
 
 

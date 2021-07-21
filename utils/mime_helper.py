@@ -25,7 +25,7 @@ import requests
 from aqt.qt import *
 from requests.exceptions import Timeout, InvalidSchema
 
-from ..consts import REQUEST_TIMEOUTS, REQUEST_HEADERS
+from ..consts import REQUEST_TIMEOUTS, REQUEST_HEADERS, IMAGE_EXTENSIONS
 
 
 def urls_from_html(html: str) -> list:
@@ -36,11 +36,11 @@ def data_from_html(html: str) -> List[QByteArray]:
     return [QByteArray.fromBase64(data.encode('ascii')) for data in re.findall('(?<=;base64,)[^"]+(?=")', html)]
 
 
-def urls(mime: QMimeData):
+def urls(mime: QMimeData) -> Iterable[str]:
     return (url.toString() for url in mime.urls() if not url.isLocalFile())
 
 
-def files(mime: QMimeData):
+def files(mime: QMimeData) -> Iterable[str]:
     return (url.toLocalFile() for url in mime.urls() if url.isLocalFile())
 
 
