@@ -24,6 +24,7 @@ from aqt.editor import Editor, EditorWebView
 from aqt.qt import *
 from aqt.utils import tooltip
 
+from .ajt_common import menu_root_entry
 from .config import config
 from .consts import ADDON_PATH
 from .utils.bulkconvert import setup_menu
@@ -142,15 +143,15 @@ def setup_mainwindow_menu():
     """
     setup menu in anki
     """
-    tools_menu = mw.form.menuTools
+    root_menu = menu_root_entry()
 
     def open_settings():
         dialog = SettingsMenuDialog(mw)
         dialog.exec_()
 
-    action = QAction("WebP settings", tools_menu)
+    action = QAction("WebP settings", root_menu)
     action.triggered.connect(open_settings)
-    tools_menu.addAction(action)
+    root_menu.addAction(action)
 
 
 def wrap_events():
