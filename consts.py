@@ -23,35 +23,10 @@ import os
 ADDON_PATH = os.path.dirname(__file__)
 ADDON_NAME = "Paste Images As WebP"
 
-GITHUB_LINK = "https://github.com/Ajatt-Tools/PasteImagesAsWebP"
-PATREON_LINK = "https://www.patreon.com/tatsumoto_ren"
-OTHER_ADDONS = "https://ankiweb.net/shared/byauthor/1425504015"
-CHAT_LINK = "https://tatsumoto-ren.github.io/blog/join-our-community.html"
-
 WINDOW_MIN_WIDTH = 400
 BUTTON_MIN_HEIGHT = 29
-ICON_SIDE_LEN = 17
 SLIDER_STEP = 5
 IMAGE_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif', '.bmp')
 
 REQUEST_HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; Anki)'}
 REQUEST_TIMEOUTS = (3.05, 12.05)
-
-STYLES = """
-<style>
-a { color: SteelBlue; }
-h2 { text-align: center; }
-</style>
-"""
-ABOUT_MSG = f"""
-{STYLES}
-If <b>{ADDON_NAME}</b> or any of my <a href="{OTHER_ADDONS}">other addons</a>
-have been useful to you, please consider supporting me on <a href="{PATREON_LINK}">Patreon</a>.
-It allows me to put more time and focus into developing them. Thanks so much!
-<br><br>
-If you have any questions/issues, or if you want to learn Japanese with us,
-join <a href="{CHAT_LINK}">our study room</a>.
-<br>
-If you want to study the source code of this add-on and change it to make the add-on do what you wish,
-explore the <a href="{GITHUB_LINK}">repository on github</a>.\
-"""

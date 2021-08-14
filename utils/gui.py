@@ -259,27 +259,6 @@ class SettingsMenuDialog(SettingsDialog):
         hbox.addWidget(self.whenShowDialogComboBox, 1)
         return hbox
 
-    def showAboutDialog(self):
-        msg = QMessageBox(self)
-        msg.setIcon(QMessageBox.Information)
-        msg.setWindowTitle("Love this add-on?")
-        msg.setText(ABOUT_MSG)
-        msg.setStandardButtons(QMessageBox.Ok)
-        msg.exec_()
-
-    def createHeartButton(self):
-        heart_button = QPushButton()
-        heart_button.setMinimumHeight(BUTTON_MIN_HEIGHT)
-        heart_button.setToolTip("Support me")
-        heart_button.setIcon(QIcon(os.path.join(ADDON_PATH, "icons", "heart.svg")))
-        heart_button.setIconSize(QSize(ICON_SIDE_LEN, ICON_SIDE_LEN))
-        heart_button.clicked.connect(self.showAboutDialog)
-        return heart_button
-
-    def populateButtonRow(self):
-        super(SettingsMenuDialog, self).populateButtonRow()
-        self.buttonRow.addWidget(self.createHeartButton())
-
     def dialogAccept(self):
         config["show_settings"] = self.whenShowDialogComboBox.currentData()
         config["drag_and_drop"] = self.convertOnDragAndDropCheckBox.isChecked()
