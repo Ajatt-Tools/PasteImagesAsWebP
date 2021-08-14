@@ -21,7 +21,7 @@ import re
 from pathlib import Path
 from typing import Optional
 
-from aqt import mw
+from aqt import mw, gui_hooks
 from aqt.browser import Browser
 from aqt.qt import *
 from aqt.utils import tooltip
@@ -65,27 +65,18 @@ def bulk_convert(nids: list):
     notes = {mw.col.getNote(nid) for nid in nids}
     counter = 0
     for note in notes:
-        for key in note.keys():
-            field: str = note[key]
+        for key, field in note.items():
             if '<img' not in field:
                 continue
 
             for image in find_eligible_images(field):
-                filepath = convert_image(image)
-                if filepath:
+                if filepath := convert_image(image):
                     note[key] = field.replace(image, filepath.name, 1)
                     counter += 1
 
         note.flush()
 
     tooltip(f"Done. Converted {counter} files.")
-
-
-def setup_menu(browser: Browser):
-    a = QAction("Bulk-convert to WebP", browser)
-    a.triggered.connect(lambda: on_bulk_convert(browser))
-    browser.form.menuEdit.addSeparator()
-    browser.form.menuEdit.addAction(a)
 
 
 def on_bulk_convert(browser: Browser):
@@ -96,3 +87,14 @@ def on_bulk_convert(browser: Browser):
         bulk_convert(selected_notes)
     else:
         tooltip("No cards selected.")
+
+
+def setup_menu(browser: Browser):
+    a = QAction("Bulk-convert to WebP", browser)
+    a.triggered.connect(lambda: on_bulk_convert(browser))
+    browser.form.menuEdit.addSeparator()
+    browser.form.menuEdit.addAction(a)
+
+
+def init():
+    gui_hooks.browser_menus_did_init.append(setup_menu)

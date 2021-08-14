@@ -37,7 +37,14 @@ IMAGE_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif', '.bmp')
 REQUEST_HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; Anki)'}
 REQUEST_TIMEOUTS = (3.05, 12.05)
 
-ABOUT_MSG = f"""\
+STYLES = """
+<style>
+a { color: SteelBlue; }
+h2 { text-align: center; }
+</style>
+"""
+ABOUT_MSG = f"""
+{STYLES}
 If <b>{ADDON_NAME}</b> or any of my <a href="{OTHER_ADDONS}">other addons</a>
 have been useful to you, please consider supporting me on <a href="{PATREON_LINK}">Patreon</a>.
 It allows me to put more time and focus into developing them. Thanks so much!

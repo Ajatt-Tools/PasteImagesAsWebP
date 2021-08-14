@@ -17,6 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Any modifications to this file must keep this entire header intact.
+from typing import List, Tuple
 
 from anki.hooks import wrap
 from aqt import mw, gui_hooks
@@ -27,7 +28,7 @@ from aqt.utils import tooltip
 from .ajt_common import menu_root_entry
 from .config import config
 from .consts import ADDON_PATH
-from .utils.bulkconvert import setup_menu
+from .utils import bulkconvert
 from .utils.gui import ShowOptions, SettingsMenuDialog
 from .utils.webp import ImageConverter, Caller, CanceledPaste, InvalidInput
 
@@ -154,46 +155,43 @@ def setup_mainwindow_menu():
     root_menu.addAction(action)
 
 
-def wrap_events():
-    EditorWebView.dropEvent = wrap(EditorWebView.dropEvent, drop_event, 'around')
-    EditorWebView.onPaste = wrap(EditorWebView.onPaste, paste_event, 'around')
+def setup_editor_menus():
+    def wrap_events():
+        EditorWebView.dropEvent = wrap(EditorWebView.dropEvent, drop_event, 'around')
+        EditorWebView.onPaste = wrap(EditorWebView.onPaste, paste_event, 'around')
 
+    def add_context_menu_item(webview: EditorWebView, menu: QMenu):
+        editor = webview.editor
+        a: QAction = menu.addAction(action_tooltip)
+        a.triggered.connect(lambda _, e=editor: insert_webp(e))
 
-def setup_menus():
-    setup_mainwindow_menu()
+    def add_editor_button(buttons, editor):
+        b = editor.addButton(
+            os.path.join(ADDON_PATH, "icons", "webp.png"),
+            "paste_webp_button",
+            lambda e=editor: insert_webp(e),
+            tip=action_tooltip,
+            keys=shortcut
+        )
+        buttons.extend([b])
+        return buttons
+
+    def add_editor_shortcut(cuts: List[Tuple], self: Editor):
+        cuts.append((shortcut, lambda e=self: insert_webp(e)))
+
     wrap_events()
     shortcut: str = config.get("shortcut")
     action_tooltip: str = "Paste as WebP" if not shortcut else f"Paste as WebP ({key_to_str(shortcut)})"
 
     if config.get("show_context_menu_entry") is True:
-        def add_context_menu_item(webview: EditorWebView, menu: QMenu):
-            editor = webview.editor
-            a: QAction = menu.addAction(action_tooltip)
-            a.triggered.connect(lambda _, e=editor: insert_webp(e))
-
         gui_hooks.editor_will_show_context_menu.append(add_context_menu_item)
 
     if config.get("show_editor_button") is True:
-        def add_editor_button(buttons, editor):
-            b = editor.addButton(
-                os.path.join(ADDON_PATH, "icons", "webp.png"),
-                "paste_webp_button",
-                lambda e=editor: insert_webp(e),
-                tip=action_tooltip,
-                keys=shortcut
-            )
-            buttons.extend([b])
-            return buttons
-
         gui_hooks.editor_did_init_buttons.append(add_editor_button)
-
     elif shortcut:
-        def add_editor_shortcut(cuts, self):
-            cuts.append((shortcut, lambda e=self: insert_webp(e)))
-
         gui_hooks.editor_did_init_shortcuts.append(add_editor_shortcut)
 
-    gui_hooks.browser_menus_did_init.append(setup_menu)
 
-
-setup_menus()
+setup_mainwindow_menu()
+setup_editor_menus()
+bulkconvert.init()

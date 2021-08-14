@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
+readonly root_dir=$(git rev-parse --show-toplevel)
+readonly branch=${1:-$(git branch --show-current)}
 readonly target=${1:?Please provide build target: \"ankiweb\" or \"github\"}
 readonly addon_name="Paste Images As WebP"
-readonly package_filename="${addon_name// /}.ankiaddon"
+readonly package_filename="${addon_name// /}_${branch}.ankiaddon"
 readonly support_dir="support"
 readonly manifest=manifest.json
 
@@ -11,7 +13,10 @@ readonly webp_windows="https://storage.googleapis.com/downloads.webmproject.org/
 readonly webp_linux="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.2.0-linux-x86-64.tar.gz"
 readonly webp_mac="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.2.0-mac-10.15.tar.gz"
 
+cd -- "$root_dir" || exit 1
 rm -- "$package_filename" 2>/dev/null
+export root_dir branch
+
 
 if [[ "$target" != 'ankiweb' ]]; then
     # https://addon-docs.ankiweb.net/#/sharing?id=sharing-outside-ankiweb
@@ -51,4 +56,10 @@ zip -r "$package_filename" \
 	./icons/* \
 	./$support_dir/cwebp* \
 
+# shellcheck disable=SC2016
+git submodule foreach 'git archive main --prefix=$path/ --format=zip --output "$root_dir/${path}_${branch}.zip"'
+
+zipmerge "$package_filename" ./*.zip
+
 rm -- $manifest 2>/dev/null
+rm -- ./*.zip
