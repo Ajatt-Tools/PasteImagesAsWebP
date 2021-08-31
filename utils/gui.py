@@ -218,10 +218,15 @@ class PasteDialog(SettingsDialog):
 
 
 class SettingsMenuDialog(SettingsDialog):
+    __checkboxes = {
+        'drag_and_drop': 'Convert images on drag and drop',
+        'copy_paste': 'Convert images on copy-paste',
+        'avoid_upscaling': 'Avoid upscaling',
+    }
+
     def __init__(self, *args, **kwargs):
         self.whenShowDialogComboBox = self.createWhenShowDialogComboBox()
-        self.convertOnDragAndDropCheckBox = QCheckBox("Convert images on drag and drop")
-        self.convertOnCopyPasteCheckBox = QCheckBox("Convert images on copy-paste")
+        self.checkboxes = {key: QCheckBox(text) for key, text in self.__checkboxes.items()}
         super(SettingsMenuDialog, self).__init__(*args, **kwargs)
 
     @staticmethod
@@ -239,8 +244,8 @@ class SettingsMenuDialog(SettingsDialog):
         def createInnerVbox():
             vbox = QVBoxLayout()
             vbox.addLayout(self.createShowSettingsLayout())
-            vbox.addWidget(self.convertOnDragAndDropCheckBox)
-            vbox.addWidget(self.convertOnCopyPasteCheckBox)
+            for widget in self.checkboxes.values():
+                vbox.addWidget(widget)
             return vbox
 
         gbox = QGroupBox("Behavior")
@@ -249,9 +254,9 @@ class SettingsMenuDialog(SettingsDialog):
 
     def setInitialValues(self):
         super(SettingsMenuDialog, self).setInitialValues()
-        self.convertOnDragAndDropCheckBox.setChecked(config.get("drag_and_drop"))
-        self.convertOnCopyPasteCheckBox.setChecked(config.get("copy_paste"))
         self.whenShowDialogComboBox.setCurrentIndex(ShowOptions.indexOf(config.get("show_settings")))
+        for key, widget in self.checkboxes.items():
+            widget.setChecked(config[key])
 
     def createShowSettingsLayout(self):
         hbox = QHBoxLayout()
@@ -261,6 +266,6 @@ class SettingsMenuDialog(SettingsDialog):
 
     def dialogAccept(self):
         config["show_settings"] = self.whenShowDialogComboBox.currentData()
-        config["drag_and_drop"] = self.convertOnDragAndDropCheckBox.isChecked()
-        config["copy_paste"] = self.convertOnCopyPasteCheckBox.isChecked()
+        for key, widget in self.checkboxes.items():
+            config[key] = widget.isChecked()
         super(SettingsMenuDialog, self).dialogAccept()
