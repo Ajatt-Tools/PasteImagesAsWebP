@@ -40,3 +40,7 @@ def get_config() -> dict:
 
 
 config = get_config()
+
+
+def write_config():
+    mw.addonManager.writeConfig(__name__, config)

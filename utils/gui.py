@@ -21,10 +21,9 @@
 from enum import Enum
 from typing import NamedTuple
 
-from aqt import mw
 from aqt.qt import *
 
-from ..config import config
+from ..config import config, write_config
 from ..consts import *
 
 
@@ -172,7 +171,7 @@ class SettingsDialog(QDialog):
         config["image_width"] = self.widthSlider.value()
         config["image_height"] = self.heightSlider.value()
         config["image_quality"] = self.qualitySlider.value()
-        mw.addonManager.writeConfig(__name__, config)
+        write_config()
         self.accept()
 
     def dialogReject(self):
