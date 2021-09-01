@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 readonly root_dir=$(git rev-parse --show-toplevel)
-readonly branch=${1:-$(git branch --show-current)}
 readonly target=${1:?Please provide build target: \"ankiweb\" or \"github\"}
+readonly branch=${2:-$(git branch --show-current)}
 readonly addon_name="Paste Images As WebP"
 readonly package_filename="${addon_name// /}_${branch}.ankiaddon"
 readonly support_dir="support"
@@ -48,13 +48,8 @@ if ! [[ -f ./$support_dir/cwebp && -f ./$support_dir/cwebp.exe && -f ./$support_
 	rm -rf $tmp_dir
 fi
 
-zip -r "$package_filename" \
-	./*.py \
-	./utils/*.py \
-	./$manifest \
-	./config.* \
-	./icons/* \
-	./$support_dir/cwebp* \
+git archive "$branch" --format=zip --output "$package_filename"
+zip -ur "$package_filename" ./"$manifest" ./$support_dir/cwebp*
 
 # shellcheck disable=SC2016
 git submodule foreach 'git archive main --prefix=$path/ --format=zip --output "$root_dir/${path}_${branch}.zip"'
