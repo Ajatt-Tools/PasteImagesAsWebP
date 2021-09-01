@@ -62,7 +62,7 @@ def insert_webp(editor: Editor):
         tooltip(str(ex))
 
 
-def drop_event(editor: EditorWebView, event, _old):
+def drop_event(editor: EditorWebView, event: QDropEvent, _old: Callable):
     if config.get("drag_and_drop") is False:
         # the feature is disabled by the user
         return _old(editor, event)
@@ -103,7 +103,7 @@ def has_local_file(mime: QMimeData) -> bool:
     return False
 
 
-def paste_event(editor: EditorWebView, _old):
+def paste_event(editor: EditorWebView, _old: Callable):
     if config.get("copy_paste") is False:
         # the feature is disabled by the user
         return _old(editor)
