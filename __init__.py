@@ -155,10 +155,20 @@ def setup_mainwindow_menu():
     root_menu.addAction(action)
 
 
+def custom_decorate(old: Callable, new: Callable):
+    """Avoids crash by discarding args[1](=False) when called from context menu."""
+
+    # https://forums.ankiweb.net/t/investigating-an-ambigous-add-on-error/12846
+    def wrapper(*args):
+        return new(args[0], _old=old)
+
+    return wrapper
+
+
 def setup_editor_menus():
     def wrap_events():
         EditorWebView.dropEvent = wrap(EditorWebView.dropEvent, drop_event, 'around')
-        EditorWebView.onPaste = wrap(EditorWebView.onPaste, paste_event, 'around')
+        EditorWebView.onPaste = custom_decorate(EditorWebView.onPaste, paste_event)
 
     def add_context_menu_item(webview: EditorWebView, menu: QMenu):
         editor = webview.editor
