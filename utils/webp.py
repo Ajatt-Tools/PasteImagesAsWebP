@@ -23,9 +23,10 @@ import subprocess
 import time
 from distutils.spawn import find_executable
 from pathlib import Path
-from typing import Optional, NamedTuple
+from typing import Optional
 
 from aqt import mw
+from aqt.editor import Editor
 from aqt.qt import *
 
 from .gui import ShowOptions, PasteDialog, ImageDimensions
@@ -89,15 +90,11 @@ def smaller_than_requested(image: ImageDimensions) -> bool:
     return image.width < config['image_width'] or image.height < config['image_height']
 
 
-class Caller(NamedTuple):
-    widget: QWidget
-    action: ShowOptions
-
-
 class ImageConverter(object):
-    def __init__(self, caller: Caller = None):
+    def __init__(self, editor: Editor, action: ShowOptions):
+        self.editor = editor
+        self.action = action
         self.dest_dir = mw.col.media.dir()
-        self.caller = caller
         self.filepath: Optional[Path] = None
         self.image: Optional[ImageDimensions] = None
 
@@ -116,11 +113,11 @@ class ImageConverter(object):
         self.filepath = webp_filepath
 
     def should_show_settings(self) -> bool:
-        return config.get("show_settings") == ShowOptions.always or config.get("show_settings") == self.caller.action
+        return config.get("show_settings") == ShowOptions.always or config.get("show_settings") == self.action
 
     def decide_show_settings(self) -> int:
         if self.should_show_settings() is True:
-            dlg = PasteDialog(self.caller.widget, self.image)
+            dlg = PasteDialog(self.editor.widget, self.image)
             return dlg.exec_()
         return QDialog.Accepted
 

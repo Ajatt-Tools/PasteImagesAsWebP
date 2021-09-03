@@ -30,7 +30,7 @@ from .config import config
 from .consts import ADDON_PATH
 from .utils import bulkconvert
 from .utils.gui import ShowOptions, SettingsMenuDialog
-from .utils.webp import ImageConverter, Caller, CanceledPaste, InvalidInput
+from .utils.webp import ImageConverter, CanceledPaste, InvalidInput
 
 
 ######################################################################
@@ -53,7 +53,7 @@ def insert_image_html(editor: Editor, image_filename: str):
 
 def insert_webp(editor: Editor):
     mime: QMimeData = editor.mw.app.clipboard().mimeData()
-    w = ImageConverter(Caller(editor.parentWindow, ShowOptions.menus))
+    w = ImageConverter(editor, ShowOptions.menus)
     try:
         w.convert(mime)
         insert_image_html(editor, w.filepath.name)
@@ -74,7 +74,7 @@ def drop_event(editor: EditorWebView, event: QDropEvent, _old: Callable):
     # grab cursor position before it's moved by the user
     p = editor.editor.web.mapFromGlobal(QCursor.pos())
 
-    w = ImageConverter(Caller(editor.window(), ShowOptions.drag_and_drop))
+    w = ImageConverter(editor.editor, ShowOptions.drag_and_drop)
     try:
         w.convert(event.mimeData())
 
@@ -118,7 +118,7 @@ def paste_event(editor: EditorWebView, _old: Callable):
         # no image was copied
         return _old(editor)
 
-    w = ImageConverter(Caller(editor.window(), ShowOptions.menus))
+    w = ImageConverter(editor.editor, ShowOptions.menus)
     try:
         w.convert(mime)
         insert_image_html(editor.editor, w.filepath.name)
