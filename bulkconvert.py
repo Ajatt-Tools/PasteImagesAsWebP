@@ -26,8 +26,8 @@ from aqt.browser import Browser
 from aqt.qt import *
 from aqt.utils import tooltip
 
-from .gui import SettingsDialog
-from .webp import ImageConverter
+from .utils.gui import SettingsDialog
+from .utils.webp import ImageConverter
 
 
 def checkpoint(msg="Checkpoint"):
