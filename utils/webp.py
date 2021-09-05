@@ -17,13 +17,17 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Any modifications to this file must keep this entire header intact.
-
+import itertools
 import random
+import re
 import subprocess
 import time
+import unicodedata
 from distutils.spawn import find_executable
+from functools import wraps
 from pathlib import Path
-from typing import Optional
+from time import gmtime, strftime
+from typing import Optional, AnyStr
 
 from aqt import mw
 from aqt.editor import Editor
@@ -62,26 +66,6 @@ def find_cwebp():
     return exe
 
 
-def make_filepath(directory: str, filename: str) -> Path:
-    return Path(os.path.join(directory, filename))
-
-
-def make_unique_filepath(target_dir_path: str, prefix: str = 'paste'):
-    """Returns a unique (filename, filepath) for the new webp image"""
-
-    def new_filename() -> str:
-        return f"{prefix}_{int(time.time())}{random.randint(100, 999)}.webp"
-
-    def make_full_path(name) -> str:
-        return os.path.join(target_dir_path, name)
-
-    out_filename: str = new_filename()
-    while os.path.isfile(make_full_path(out_filename)):
-        out_filename = new_filename()
-
-    return Path(make_full_path(out_filename))
-
-
 def stringify_args(args: list) -> list:
     return [str(arg) for arg in args]
 
@@ -90,22 +74,102 @@ def smaller_than_requested(image: ImageDimensions) -> bool:
     return image.width < config['image_width'] or image.height < config['image_height']
 
 
+def compatible_filename(f):
+    max_len = 50
+
+    def replace_forbidden_chars(s: str) -> str:
+        return re.sub(r'[<>:"/|?*\\]+', '_', s, flags=re.MULTILINE | re.IGNORECASE)
+
+    @wraps(f)
+    def wrapper(*args, **kwargs) -> str:
+        s = unicodedata.normalize('NFC', f(*args, **kwargs))
+        s = replace_forbidden_chars(s)
+        s = s.lower()
+        return s[:max_len] if s else FilePathFactory.default_prefix
+
+    return wrapper
+
+
+class FilePathFactory:
+    ext = '.webp'
+    default_prefix = 'paste'
+
+    def __init__(self, target_dir_path: str = None, editor: Editor = None):
+        self.target_dir_path = target_dir_path
+        self.editor = editor
+
+        self.prefixes = {
+            self.default_prefix: lambda: self.default_prefix,
+            'sort-field': self.sort_field,
+            'current-field': self.current_field,
+        }
+        self.suffixes = {
+            'time-number': lambda: str(int(time.time() * 1000)),
+            'time-human': lambda: strftime("%d-%b-%Y_%H:%M:%S", gmtime()),
+        }
+
+        self.patterns = [f'{prefix}_{suffix}{self.ext}' for prefix in self.prefixes for suffix in self.suffixes]
+
+    def make_filename(self, pattern_id: int) -> str:
+        try:
+            pattern = self.patterns[pattern_id]
+        except IndexError:
+            pattern = self.patterns[0]
+
+        for k, v in itertools.chain(self.prefixes.items(), self.suffixes.items()):
+            pattern = pattern.replace(k, v())
+
+        return pattern
+
+    def make_unique_filepath(self) -> AnyStr:
+        out_filename = self.make_filename(config.get('filename_pattern_num', 0))
+        out_filename = self.ensure_unique(out_filename)
+        return os.path.join(self.target_dir_path, out_filename)
+
+    def ensure_unique(self, file_path: str) -> str:
+        out = file_path
+        cut = file_path[:-len(self.ext)]
+        while os.path.isfile(out):
+            out = cut + '_' + str(random.randint(100, 999)) + self.ext
+        return out
+
+    @compatible_filename
+    def sort_field(self):
+        try:
+            sort_field = self.editor.note.note_type()['sortf']
+            return self.editor.note.values()[sort_field]
+        except AttributeError:
+            return self.default_prefix
+
+    @compatible_filename
+    def current_field(self):
+        try:
+            return self.editor.note.values()[self.editor.currentField]
+        except (AttributeError, TypeError):
+            return self.default_prefix
+
+
 class ImageConverter(object):
-    def __init__(self, editor: Editor, action: ShowOptions):
+    def __init__(self, editor: Editor = None, action: ShowOptions = None):
         self.editor = editor
         self.action = action
         self.dest_dir = mw.col.media.dir()
-        self.filepath: Optional[Path] = None
+        self.filepath: Optional[AnyStr] = None
         self.image: Optional[ImageDimensions] = None
+        self.fp_fac = FilePathFactory(self.dest_dir, self.editor)
+
+    @property
+    def filename(self):
+        return os.path.basename(self.filepath)
 
     def load_internal(self, filename: str):
-        with open(make_filepath(self.dest_dir, filename), 'rb') as f:
+        with open(os.path.join(self.dest_dir, filename), 'rb') as f:
             image = QImage.fromData(f.read())
             self.image = ImageDimensions(image.width(), image.height())
 
     def convert_internal(self, filename: str):
-        source_filepath: Path = make_filepath(self.dest_dir, filename)
-        webp_filepath: Path = make_unique_filepath(self.dest_dir, 'image')
+        source_filepath = os.path.join(self.dest_dir, filename)
+        webp_filepath = self.fp_fac.ensure_unique(os.path.splitext(source_filepath)[0] + self.fp_fac.ext)
 
         if self.to_webp(source_filepath, webp_filepath) is False:
             raise RuntimeError("cwebp failed")
@@ -145,7 +209,7 @@ class ImageConverter(object):
 
         return ['-resize', config['image_width'], config['image_height']]
 
-    def to_webp(self, source_path: os.PathLike, destination_path: os.PathLike) -> bool:
+    def to_webp(self, source_path: AnyStr, destination_path: AnyStr) -> bool:
         args = [cwebp, source_path, '-o', destination_path, '-q', config.get('image_quality')]
         args.extend(config.get('cwebp_args', []))
         args.extend(self.get_resize_args())
@@ -174,7 +238,7 @@ class ImageConverter(object):
             if self.decide_show_settings() == QDialog.Rejected:
                 raise CanceledPaste("Cancelled.")
 
-            webp_filepath: Path = make_unique_filepath(self.dest_dir)
+            webp_filepath = self.fp_fac.make_unique_filepath()
 
             if self.to_webp(tmp_file, webp_filepath) is False:
                 raise RuntimeError("cwebp failed")

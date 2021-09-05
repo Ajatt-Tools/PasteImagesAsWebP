@@ -56,7 +56,7 @@ def insert_webp(editor: Editor):
     w = ImageConverter(editor, ShowOptions.menus)
     try:
         w.convert(mime)
-        insert_image_html(editor, w.filepath.name)
+        insert_image_html(editor, w.filename)
         tooltip_filesize(w.filepath)
     except Exception as ex:
         tooltip(str(ex))
@@ -79,7 +79,7 @@ def drop_event(editor: EditorWebView, event: QDropEvent, _old: Callable):
         w.convert(event.mimeData())
 
         def paste_field(_):
-            insert_image_html(editor.editor, w.filepath.name)
+            insert_image_html(editor.editor, w.filename)
             editor.activateWindow()  # Fix for windows users
 
         editor.editor.web.evalWithCallback(f"focusIfField({p.x()}, {p.y()});", paste_field)
@@ -121,7 +121,7 @@ def paste_event(editor: EditorWebView, _old: Callable):
     w = ImageConverter(editor.editor, ShowOptions.menus)
     try:
         w.convert(mime)
-        insert_image_html(editor.editor, w.filepath.name)
+        insert_image_html(editor.editor, w.filename)
         tooltip_filesize(w.filepath)
     except CanceledPaste as ex:
         tooltip(str(ex))

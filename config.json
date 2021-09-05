@@ -18,5 +18,6 @@
         "-af",
         "-blend_alpha", "0xffffff",
         "-m", "6"
-    ]
+    ],
+    "filename_pattern_num": 0
 }
