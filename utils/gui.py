@@ -37,7 +37,7 @@ class ShowOptions(Enum):
         return self.name == other
 
     @classmethod
-    def indexOf(cls, name):
+    def index_of(cls, name):
         for index, item in enumerate(cls):
             if name == item.name:
                 return index
@@ -59,25 +59,25 @@ class RichSlider:
         self.slider.valueChanged.connect(lambda val: self.spinbox.setValue(val))
         self.spinbox.valueChanged.connect(lambda val: self.slider.setValue(val))
 
-    def setValue(self, value: int):
+    def set_value(self, value: int):
         self.slider.setValue(value)
         self.spinbox.setValue(value)
 
     def value(self) -> int:
         return self.slider.value()
 
-    def setRange(self, start: int, stop: int):
+    def set_range(self, start: int, stop: int):
         self.slider.setRange(start, stop)
         self.spinbox.setRange(start, stop)
 
-    def setStep(self, step: int):
+    def set_step(self, step: int):
         self.step = step
         self.spinbox.setSingleStep(step)
 
-    def setToolTip(self, tooltip: str):
+    def set_tooltip(self, tooltip: str):
         self.slider.setToolTip(tooltip)
 
-    def asTuple(self):
+    def as_tuple(self):
         return self.slider, self.spinbox, self.unitLabel
 
 
@@ -91,50 +91,50 @@ class SettingsDialog(QDialog):
         self.buttonRow = QHBoxLayout()
         self.okButton = QPushButton("Ok")
         self.cancelButton = QPushButton("Cancel")
-        self._setupUI()
+        self._setup_ui()
 
-    def _setupUI(self):
+    def _setup_ui(self):
         self.setWindowTitle(ADDON_NAME)
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
 
-        self.setLayout(self.createMainLayout())
-        self.populateSliderRow()
-        self.populateButtonRow()
-        self.setupToolTips()
-        self.setupLogic()
-        self.setInitialValues()
+        self.setLayout(self.create_main_layout())
+        self.populate_slider_row()
+        self.populate_button_row()
+        self.setup_tool_tips()
+        self.setup_logic()
+        self.set_initial_values()
 
-    def createMainLayout(self):
+    def create_main_layout(self):
         layout = QVBoxLayout()
         layout.addLayout(self.sliderRow)
         layout.addStretch()
         layout.addLayout(self.buttonRow)
         return layout
 
-    def populateSliderRow(self):
+    def populate_slider_row(self):
         self.sliderRow.addWidget(
-            self.createSlidersGroupBox(self.widthSlider, self.heightSlider, self.qualitySlider)
+            self.create_sliders_group_box(self.widthSlider, self.heightSlider, self.qualitySlider)
         )
 
     @staticmethod
-    def createSlidersGroupBox(*sliders) -> QGroupBox:
+    def create_sliders_group_box(*sliders) -> QGroupBox:
         gbox = QGroupBox("Settings")
         grid = QGridLayout()
         for y_index, slider in enumerate(sliders):
             grid.addWidget(QLabel(slider.title), y_index, 0)
-            for x_index, widget in enumerate(slider.asTuple()):
+            for x_index, widget in enumerate(slider.as_tuple()):
                 grid.addWidget(widget, y_index, x_index + 1)
 
         gbox.setLayout(grid)
         return gbox
 
-    def populateButtonRow(self):
+    def populate_button_row(self):
         for button in (self.okButton, self.cancelButton):
             button.setMinimumHeight(BUTTON_MIN_HEIGHT)
             self.buttonRow.addWidget(button)
         self.buttonRow.addStretch()
 
-    def setupToolTips(self):
+    def setup_tool_tips(self):
         side_tooltip = str(
             "Desired %s.\n"
             "If either of the width or height parameters is 0,\n"
@@ -146,35 +146,35 @@ class SettingsDialog(QDialog):
             "A small factor produces a smaller file with lower quality.\n"
             "Best quality is achieved by using a value of 100."
         )
-        self.widthSlider.setToolTip(side_tooltip % 'width')
-        self.heightSlider.setToolTip(side_tooltip % 'height')
-        self.qualitySlider.setToolTip(quality_tooltip)
+        self.widthSlider.set_tooltip(side_tooltip % 'width')
+        self.heightSlider.set_tooltip(side_tooltip % 'height')
+        self.qualitySlider.set_tooltip(quality_tooltip)
 
-    def setupLogic(self):
+    def setup_logic(self):
         for slider, limit in zip((self.widthSlider, self.heightSlider, self.qualitySlider), self.limits()):
-            slider.setRange(0, limit)
-            slider.setStep(SLIDER_STEP)
+            slider.set_range(0, limit)
+            slider.set_step(SLIDER_STEP)
 
-        self.okButton.clicked.connect(self.dialogAccept)
-        self.cancelButton.clicked.connect(self.dialogReject)
+        self.okButton.clicked.connect(self.dialog_accept)
+        self.cancelButton.clicked.connect(self.dialog_reject)
 
     @staticmethod
     def limits() -> tuple:
         return config.get("max_image_width", 800), config.get("max_image_height", 600), 100
 
-    def setInitialValues(self):
-        self.widthSlider.setValue(config.get("image_width"))
-        self.heightSlider.setValue(config.get("image_height"))
-        self.qualitySlider.setValue(config.get("image_quality"))
+    def set_initial_values(self):
+        self.widthSlider.set_value(config.get("image_width"))
+        self.heightSlider.set_value(config.get("image_height"))
+        self.qualitySlider.set_value(config.get("image_quality"))
 
-    def dialogAccept(self):
+    def dialog_accept(self):
         config["image_width"] = self.widthSlider.value()
         config["image_height"] = self.heightSlider.value()
         config["image_quality"] = self.qualitySlider.value()
         write_config()
         self.accept()
 
-    def dialogReject(self):
+    def dialog_reject(self):
         self.reject()
 
 
@@ -188,22 +188,22 @@ class PasteDialog(SettingsDialog):
         self.image = image
         super(PasteDialog, self).__init__(parent, *args, **kwargs)
 
-    def populateSliderRow(self):
-        super(PasteDialog, self).populateSliderRow()
-        self.sliderRow.addWidget(self.createScaleSettingsGroupBox())
+    def populate_slider_row(self):
+        super(PasteDialog, self).populate_slider_row()
+        self.sliderRow.addWidget(self.create_scale_settings_group_box())
 
-    def createScaleSettingsGroupBox(self):
+    def create_scale_settings_group_box(self):
         gbox = QGroupBox(f"Original size: {self.image.width} x {self.image.height} px")
-        gbox.setLayout(self.createScaleOptionsGrid())
+        gbox.setLayout(self.create_scale_options_grid())
         return gbox
 
-    def adjustSliders(self, factor):
+    def adjust_sliders(self, factor):
         if self.widthSlider.value() > 0:
-            self.widthSlider.setValue(int(self.image.width * factor))
+            self.widthSlider.set_value(int(self.image.width * factor))
         if self.heightSlider.value() > 0:
-            self.heightSlider.setValue(int(self.image.height * factor))
+            self.heightSlider.set_value(int(self.image.height * factor))
 
-    def createScaleOptionsGrid(self):
+    def create_scale_options_grid(self):
         grid = QGridLayout()
         factors = (1 / 8, 1 / 4, 1 / 2, 1, 1.5, 2)
         columns = 3
@@ -211,7 +211,7 @@ class PasteDialog(SettingsDialog):
             i = int(index / columns)
             j = index - (i * columns)
             button = QPushButton(f"{factor}x")
-            button.clicked.connect(lambda _, f=factor: self.adjustSliders(f))
+            button.clicked.connect(lambda _, f=factor: self.adjust_sliders(f))
             grid.addWidget(button, i, j)
         return grid
 
@@ -224,47 +224,47 @@ class SettingsMenuDialog(SettingsDialog):
     }
 
     def __init__(self, *args, **kwargs):
-        self.whenShowDialogComboBox = self.createWhenShowDialogComboBox()
+        self.whenShowDialogComboBox = self.create_when_show_dialog_combo_box()
         self.checkboxes = {key: QCheckBox(text) for key, text in self.__checkboxes.items()}
         super(SettingsMenuDialog, self).__init__(*args, **kwargs)
 
     @staticmethod
-    def createWhenShowDialogComboBox():
+    def create_when_show_dialog_combo_box():
         combobox = QComboBox()
         for option in ShowOptions:
             combobox.addItem(option.value, option.name)
         return combobox
 
-    def populateSliderRow(self):
-        super(SettingsMenuDialog, self).populateSliderRow()
-        self.sliderRow.addWidget(self.createAdditionalSettingsGroupBox())
+    def populate_slider_row(self):
+        super(SettingsMenuDialog, self).populate_slider_row()
+        self.sliderRow.addWidget(self.create_additional_settings_group_box())
 
-    def createAdditionalSettingsGroupBox(self):
-        def createInnerVbox():
+    def create_additional_settings_group_box(self):
+        def create_inner_vbox():
             vbox = QVBoxLayout()
-            vbox.addLayout(self.createShowSettingsLayout())
+            vbox.addLayout(self.create_show_settings_layout())
             for widget in self.checkboxes.values():
                 vbox.addWidget(widget)
             return vbox
 
         gbox = QGroupBox("Behavior")
-        gbox.setLayout(createInnerVbox())
+        gbox.setLayout(create_inner_vbox())
         return gbox
 
-    def setInitialValues(self):
-        super(SettingsMenuDialog, self).setInitialValues()
-        self.whenShowDialogComboBox.setCurrentIndex(ShowOptions.indexOf(config.get("show_settings")))
+    def set_initial_values(self):
+        super(SettingsMenuDialog, self).set_initial_values()
+        self.whenShowDialogComboBox.setCurrentIndex(ShowOptions.index_of(config.get("show_settings")))
         for key, widget in self.checkboxes.items():
             widget.setChecked(config[key])
 
-    def createShowSettingsLayout(self):
+    def create_show_settings_layout(self):
         hbox = QHBoxLayout()
         hbox.addWidget(QLabel("Show this dialog"))
         hbox.addWidget(self.whenShowDialogComboBox, 1)
         return hbox
 
-    def dialogAccept(self):
+    def dialog_accept(self):
         config["show_settings"] = self.whenShowDialogComboBox.currentData()
         for key, widget in self.checkboxes.items():
             config[key] = widget.isChecked()
-        super(SettingsMenuDialog, self).dialogAccept()
+        super(SettingsMenuDialog, self).dialog_accept()
