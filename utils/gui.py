@@ -19,7 +19,7 @@
 # Any modifications to this file must keep this entire header intact.
 
 from enum import Enum
-from typing import NamedTuple
+from typing import NamedTuple, Iterable
 
 from aqt.qt import *
 
@@ -50,29 +50,21 @@ class RichSlider:
     The two widgets are connected so that any change to one are reflected on the other.
     """
 
-    def __init__(self, title: str, unit: str = "px"):
+    SLIDER_STEP = 5
+
+    def __init__(self, title: str, unit: str = "px", limit: int = 100, step: int = SLIDER_STEP):
         self.title = title
-        self.step = 1
         self.slider = QSlider(Qt.Horizontal)
         self.spinbox = QSpinBox()
         self.unitLabel = QLabel(unit)
         self.slider.valueChanged.connect(lambda val: self.spinbox.setValue(val))
         self.spinbox.valueChanged.connect(lambda val: self.slider.setValue(val))
+        self._set_step(step)
+        self._set_range(0, limit)
 
     def set_value(self, value: int):
         self.slider.setValue(value)
         self.spinbox.setValue(value)
-
-    def value(self) -> int:
-        return self.slider.value()
-
-    def set_range(self, start: int, stop: int):
-        self.slider.setRange(start, stop)
-        self.spinbox.setRange(start, stop)
-
-    def set_step(self, step: int):
-        self.step = step
-        self.spinbox.setSingleStep(step)
 
     def set_tooltip(self, tooltip: str):
         self.slider.setToolTip(tooltip)
@@ -80,14 +72,29 @@ class RichSlider:
     def as_tuple(self):
         return self.slider, self.spinbox, self.unitLabel
 
+    @property
+    def value(self) -> int:
+        return self.slider.value()
+
+    def _set_range(self, start: int, stop: int):
+        self.slider.setRange(start, stop)
+        self.spinbox.setRange(start, stop)
+
+    def _set_step(self, step: int):
+        self.step = step
+        self.spinbox.setSingleStep(step)
+
 
 class SettingsDialog(QDialog):
     def __init__(self, *args, **kwargs):
         super(SettingsDialog, self).__init__(*args, **kwargs)
         self.sliderRow = QVBoxLayout()
-        self.widthSlider = RichSlider("Width", "px")
-        self.heightSlider = RichSlider("Height", "px")
-        self.qualitySlider = RichSlider("Quality", "%")
+        self.sliders = {
+            'image_width': RichSlider("Width", "px", limit=config['max_image_width']),
+            'image_height': RichSlider("Height", "px", limit=config['max_image_height']),
+            'image_quality': RichSlider("Quality", "%", limit=100),
+        }
+
         self.buttonRow = QHBoxLayout()
         self.okButton = QPushButton("Ok")
         self.cancelButton = QPushButton("Cancel")
@@ -112,12 +119,10 @@ class SettingsDialog(QDialog):
         return layout
 
     def populate_slider_row(self):
-        self.sliderRow.addWidget(
-            self.create_sliders_group_box(self.widthSlider, self.heightSlider, self.qualitySlider)
-        )
+        self.sliderRow.addWidget(self.create_sliders_group_box(self.sliders.values()))
 
     @staticmethod
-    def create_sliders_group_box(*sliders) -> QGroupBox:
+    def create_sliders_group_box(sliders: Iterable[RichSlider]) -> QGroupBox:
         gbox = QGroupBox("Settings")
         grid = QGridLayout()
         for y_index, slider in enumerate(sliders):
@@ -146,31 +151,21 @@ class SettingsDialog(QDialog):
             "A small factor produces a smaller file with lower quality.\n"
             "Best quality is achieved by using a value of 100."
         )
-        self.widthSlider.set_tooltip(side_tooltip % 'width')
-        self.heightSlider.set_tooltip(side_tooltip % 'height')
-        self.qualitySlider.set_tooltip(quality_tooltip)
+        self.sliders['image_width'].set_tooltip(side_tooltip % 'width')
+        self.sliders['image_height'].set_tooltip(side_tooltip % 'height')
+        self.sliders['image_quality'].set_tooltip(quality_tooltip)
 
     def setup_logic(self):
-        for slider, limit in zip((self.widthSlider, self.heightSlider, self.qualitySlider), self.limits()):
-            slider.set_range(0, limit)
-            slider.set_step(SLIDER_STEP)
-
         self.okButton.clicked.connect(self.dialog_accept)
         self.cancelButton.clicked.connect(self.dialog_reject)
 
-    @staticmethod
-    def limits() -> tuple:
-        return config.get("max_image_width", 800), config.get("max_image_height", 600), 100
-
     def set_initial_values(self):
-        self.widthSlider.set_value(config.get("image_width"))
-        self.heightSlider.set_value(config.get("image_height"))
-        self.qualitySlider.set_value(config.get("image_quality"))
+        for key, slider in self.sliders.items():
+            slider.set_value(config.get(key))
 
     def dialog_accept(self):
-        config["image_width"] = self.widthSlider.value()
-        config["image_height"] = self.heightSlider.value()
-        config["image_quality"] = self.qualitySlider.value()
+        for key, slider in self.sliders.items():
+            config[key] = slider.value
         write_config()
         self.accept()
 
@@ -198,10 +193,9 @@ class PasteDialog(SettingsDialog):
         return gbox
 
     def adjust_sliders(self, factor):
-        if self.widthSlider.value() > 0:
-            self.widthSlider.set_value(int(self.image.width * factor))
-        if self.heightSlider.value() > 0:
-            self.heightSlider.set_value(int(self.image.height * factor))
+        for param in ('width', 'height'):
+            if (widget := self.sliders[f'image_{param}']).value() > 0:
+                widget.set_value(int(getattr(self.image, param) * factor))
 
     def create_scale_options_grid(self):
         grid = QGridLayout()

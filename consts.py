@@ -25,7 +25,6 @@ ADDON_NAME = "Paste Images As WebP"
 
 WINDOW_MIN_WIDTH = 400
 BUTTON_MIN_HEIGHT = 29
-SLIDER_STEP = 5
 IMAGE_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif', '.bmp')
 
 REQUEST_HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; Anki)'}
