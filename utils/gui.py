@@ -23,6 +23,7 @@ from typing import NamedTuple, Iterable
 
 from aqt.qt import *
 
+from .file_paths_factory import FilePathFactory
 from ..config import config, write_config
 from ..consts import *
 
@@ -218,15 +219,23 @@ class SettingsMenuDialog(SettingsDialog):
     }
 
     def __init__(self, *args, **kwargs):
-        self.whenShowDialogComboBox = self.create_when_show_dialog_combo_box()
+        self.when_show_dialog_combo_box = self.create_when_show_dialog_combo_box()
+        self.filename_pattern_combo_box = self.create_filename_pattern_combo_box()
         self.checkboxes = {key: QCheckBox(text) for key, text in self.__checkboxes.items()}
         super(SettingsMenuDialog, self).__init__(*args, **kwargs)
 
     @staticmethod
-    def create_when_show_dialog_combo_box():
+    def create_when_show_dialog_combo_box() -> QComboBox:
         combobox = QComboBox()
         for option in ShowOptions:
             combobox.addItem(option.value, option.name)
+        return combobox
+
+    @staticmethod
+    def create_filename_pattern_combo_box() -> QComboBox:
+        combobox = QComboBox()
+        for option in FilePathFactory().patterns_populated:
+            combobox.addItem(option)
         return combobox
 
     def populate_slider_row(self):
@@ -236,7 +245,7 @@ class SettingsMenuDialog(SettingsDialog):
     def create_additional_settings_group_box(self):
         def create_inner_vbox():
             vbox = QVBoxLayout()
-            vbox.addLayout(self.create_show_settings_layout())
+            vbox.addLayout(self.create_combo_boxes_layout())
             for widget in self.checkboxes.values():
                 vbox.addWidget(widget)
             return vbox
@@ -247,18 +256,22 @@ class SettingsMenuDialog(SettingsDialog):
 
     def set_initial_values(self):
         super(SettingsMenuDialog, self).set_initial_values()
-        self.whenShowDialogComboBox.setCurrentIndex(ShowOptions.index_of(config.get("show_settings")))
+        self.when_show_dialog_combo_box.setCurrentIndex(ShowOptions.index_of(config.get("show_settings")))
+        self.filename_pattern_combo_box.setCurrentIndex(config.get("filename_pattern_num", 0))
+
         for key, widget in self.checkboxes.items():
             widget.setChecked(config[key])
 
-    def create_show_settings_layout(self):
-        hbox = QHBoxLayout()
-        hbox.addWidget(QLabel("Show this dialog"))
-        hbox.addWidget(self.whenShowDialogComboBox, 1)
-        return hbox
+    def create_combo_boxes_layout(self):
+        layout = QFormLayout()
+        layout.addRow("Show this dialog", self.when_show_dialog_combo_box)
+        layout.addRow("Filename pattern", self.filename_pattern_combo_box)
+        return layout
 
     def dialog_accept(self):
-        config["show_settings"] = self.whenShowDialogComboBox.currentData()
+        config['show_settings'] = self.when_show_dialog_combo_box.currentData()
+        config['filename_pattern_num'] = self.filename_pattern_combo_box.currentIndex()
+
         for key, widget in self.checkboxes.items():
             config[key] = widget.isChecked()
         super(SettingsMenuDialog, self).dialog_accept()
