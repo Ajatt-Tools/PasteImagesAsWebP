@@ -26,7 +26,7 @@ from aqt import mw
 from aqt.editor import Editor
 from aqt.qt import *
 
-from .file_paths_factory import FilePathFactory
+from .file_paths_factory import FilePathFactory, ensure_unique
 from .gui import ShowOptions, PasteDialog, ImageDimensions
 from .mime_helper import image_candidates
 from .temp_file import TempFile
@@ -75,7 +75,7 @@ class ImageConverter(object):
         self.dest_dir = mw.col.media.dir()
         self.filepath: Optional[AnyStr] = None
         self.image: Optional[ImageDimensions] = None
-        self.fp_fac = FilePathFactory(self.dest_dir, self.editor)
+        self.filepath_factory = FilePathFactory(self.dest_dir, self.editor)
 
     @property
     def filename(self):
@@ -88,12 +88,13 @@ class ImageConverter(object):
 
     def convert_internal(self, filename: str):
         source_filepath = os.path.join(self.dest_dir, filename)
-        webp_filepath = self.fp_fac.ensure_unique(os.path.splitext(source_filepath)[0] + self.fp_fac.ext)
+        dest_filepath = os.path.splitext(source_filepath)[0] + self.filepath_factory.ext
+        dest_filepath = ensure_unique(dest_filepath)
 
-        if self.to_webp(source_filepath, webp_filepath) is False:
+        if self.to_webp(source_filepath, dest_filepath) is False:
             raise RuntimeError("cwebp failed")
 
-        self.filepath = webp_filepath
+        self.filepath = dest_filepath
 
     def should_show_settings(self) -> bool:
         return config.get("show_settings") == ShowOptions.always or config.get("show_settings") == self.action
@@ -157,7 +158,7 @@ class ImageConverter(object):
             if self.decide_show_settings() == QDialog.Rejected:
                 raise CanceledPaste("Cancelled.")
 
-            webp_filepath = self.fp_fac.make_unique_filepath()
+            webp_filepath = self.filepath_factory.make_unique_filepath()
 
             if self.to_webp(tmp_file, webp_filepath) is False:
                 raise RuntimeError("cwebp failed")

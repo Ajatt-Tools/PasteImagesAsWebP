@@ -52,6 +52,13 @@ def compatible_filename(f: Callable[..., str]):
     return wrapper
 
 
+def ensure_unique(file_path: str) -> str:
+    name, ext = os.path.splitext(file_path)
+    while os.path.isfile(file_path):
+        file_path = name + '_' + str(random.randint(100, 999)) + ext
+    return file_path
+
+
 class FilePathFactory:
     ext = '.webp'
     default_prefix = 'paste'
@@ -89,15 +96,8 @@ class FilePathFactory:
             pattern = self.patterns[0]
 
         out_filename = self.make_filename(pattern)
-        out_filename = self.ensure_unique(out_filename)
+        out_filename = ensure_unique(out_filename)
         return os.path.join(self.target_dir_path, out_filename)
-
-    def ensure_unique(self, file_path: str) -> str:
-        out = file_path
-        cut = file_path[:-len(self.ext)]
-        while os.path.isfile(out):
-            out = cut + '_' + str(random.randint(100, 999)) + self.ext
-        return out
 
     @compatible_filename
     def sort_field(self) -> str:

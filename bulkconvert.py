@@ -19,7 +19,7 @@
 # Any modifications to this file must keep this entire header intact.
 import re
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Generator
 
 from aqt import mw, gui_hooks
 from aqt.browser import Browser
@@ -55,7 +55,7 @@ def convert_image(filename: str) -> Optional[Path]:
         return w.filepath
 
 
-def find_eligible_images(html: str):
+def find_eligible_images(html: str) -> Generator[str, None, None]:
     images = re.findall(r'<img[^>]*src="([^"]+)"[^>]*>', html)
     return (image for image in images if image[-5:] != '.webp')
 
