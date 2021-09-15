@@ -34,18 +34,20 @@ from aqt.qt import *
 from ..config import config
 
 
-def compatible_filename(f):
-    max_len = 50
+def compatible_filename(f: Callable[..., str]):
+    max_len_bytes = 90
 
     def replace_forbidden_chars(s: str) -> str:
-        return re.sub(r'[<>:"/|?*\\]+', '_', s, flags=re.MULTILINE | re.IGNORECASE)
+        return re.sub(r'[\[\]<>:"/|?*\\ ]+', '_', s, flags=re.MULTILINE | re.IGNORECASE)
 
     @wraps(f)
     def wrapper(*args, **kwargs) -> str:
-        s = unicodedata.normalize('NFC', f(*args, **kwargs))
+        s = f(*args, **kwargs)
+        s = s.encode('utf-8')[:max_len_bytes].decode('utf-8', errors='ignore')
+        s = unicodedata.normalize('NFC', s)
         s = replace_forbidden_chars(s)
         s = s.lower()
-        return s[:max_len] if s else FilePathFactory.default_prefix
+        return s if s else FilePathFactory.default_prefix
 
     return wrapper
 
@@ -98,7 +100,7 @@ class FilePathFactory:
         return out
 
     @compatible_filename
-    def sort_field(self):
+    def sort_field(self) -> str:
         try:
             sort_field = self.editor.note.note_type()['sortf']
             return self.editor.note.values()[sort_field]
@@ -106,7 +108,7 @@ class FilePathFactory:
             return 'sort-field'
 
     @compatible_filename
-    def current_field(self):
+    def current_field(self) -> str:
         try:
             return self.editor.note.values()[self.editor.currentField]
         except (AttributeError, TypeError):
