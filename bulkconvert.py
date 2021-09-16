@@ -18,9 +18,9 @@
 #
 # Any modifications to this file must keep this entire header intact.
 import re
-from pathlib import Path
-from typing import Optional, Generator
+from typing import Optional, Generator, Sequence, Set, Iterable, Collection
 
+from anki.notes import Note
 from aqt import mw, gui_hooks
 from aqt.browser import Browser
 from aqt.qt import *
@@ -44,7 +44,24 @@ def checkpoint(msg="Checkpoint"):
     return decorator
 
 
-def convert_image(filename: str) -> Optional[Path]:
+def find_eligible_images(html: str) -> Generator[str, None, None]:
+    images = re.findall(r'<img[^>]*src="([^"]+)"[^>]*>', html)
+    return (image for image in images if image[-5:] != '.webp')
+
+
+def find_images_to_convert(notes: Iterable[Note]) -> Collection[str]:
+    to_convert = set()
+
+    for note in notes:
+        note_content = ''.join(note.values())
+        if '<img' not in note_content:
+            continue
+        to_convert.update(find_eligible_images(note_content))
+
+    return to_convert
+
+
+def convert_image(filename: str) -> Optional[str]:
     try:
         w = ImageConverter()
         w.load_internal(filename)
@@ -52,31 +69,26 @@ def convert_image(filename: str) -> Optional[Path]:
     except RuntimeError:
         tooltip(f"Couldn't convert {filename}.")
     else:
-        return w.filepath
-
-
-def find_eligible_images(html: str) -> Generator[str, None, None]:
-    images = re.findall(r'<img[^>]*src="([^"]+)"[^>]*>', html)
-    return (image for image in images if image[-5:] != '.webp')
+        return w.filename
 
 
 @checkpoint(msg="Bulk-convert to WebP")
-def bulk_convert(nids: list):
-    notes = {mw.col.getNote(nid) for nid in nids}
-    counter = 0
-    for note in notes:
-        for key, field in note.items():
-            if '<img' not in field:
-                continue
+def bulk_convert(note_ids: Sequence):
+    notes: Set[Note] = {mw.col.getNote(note_id) for note_id in note_ids}
+    to_convert = find_images_to_convert(notes)
 
-            for image in find_eligible_images(field):
-                if filepath := convert_image(image):
-                    note[key] = field.replace(image, filepath.name, 1)
-                    counter += 1
+    converted = {}
+    for filename in to_convert:
+        if converted_filename := convert_image(filename):
+            converted[filename] = converted_filename
 
-        note.flush()
+    for initial_filename, converted_filename in converted.items():
+        for note in notes:
+            for key in note.keys():
+                note[key] = note[key].replace(initial_filename, converted_filename)
+            note.flush()
 
-    tooltip(f"Done. Converted {counter} files.")
+    tooltip(f"Done. Converted {len(converted)} files.")
 
 
 def on_bulk_convert(browser: Browser):
