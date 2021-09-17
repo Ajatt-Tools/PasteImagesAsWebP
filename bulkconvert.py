@@ -18,9 +18,8 @@
 #
 # Any modifications to this file must keep this entire header intact.
 import re
-from typing import Optional, Generator, Sequence, Set, Iterable, Collection
+from typing import Optional, Generator, Sequence, Set, Iterable, Dict, Any
 
-from anki.notes import Note
 from aqt import mw, gui_hooks
 from aqt.browser import Browser
 from aqt.qt import *
@@ -49,14 +48,15 @@ def find_eligible_images(html: str) -> Generator[str, None, None]:
     return (image for image in images if image[-5:] != '.webp')
 
 
-def find_images_to_convert(notes: Iterable[Note]) -> Collection[str]:
-    to_convert = set()
+def find_images_to_convert_and_notes(note_ids: Iterable) -> Dict[str, Set[Any]]:
+    to_convert = {}
 
-    for note in notes:
+    for note in {mw.col.getNote(note_id) for note_id in note_ids}:
         note_content = ''.join(note.values())
         if '<img' not in note_content:
             continue
-        to_convert.update(find_eligible_images(note_content))
+        for filename in find_eligible_images(note_content):
+            to_convert[filename] = to_convert.get(filename, set()).union({note.id, })
 
     return to_convert
 
@@ -74,8 +74,7 @@ def convert_image(filename: str) -> Optional[str]:
 
 @checkpoint(msg="Bulk-convert to WebP")
 def bulk_convert(note_ids: Sequence):
-    notes: Set[Note] = {mw.col.getNote(note_id) for note_id in note_ids}
-    to_convert = find_images_to_convert(notes)
+    to_convert = find_images_to_convert_and_notes(note_ids)
 
     converted = {}
     for filename in to_convert:
@@ -83,7 +82,8 @@ def bulk_convert(note_ids: Sequence):
             converted[filename] = converted_filename
 
     for initial_filename, converted_filename in converted.items():
-        for note in notes:
+        for note_id in to_convert[initial_filename]:
+            note = mw.col.getNote(note_id)
             for key in note.keys():
                 note[key] = note[key].replace(initial_filename, converted_filename)
             note.flush()
