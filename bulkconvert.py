@@ -18,13 +18,14 @@
 #
 # Any modifications to this file must keep this entire header intact.
 import re
+import threading
 from typing import Optional, Generator, Sequence, Set, Iterable, Dict, Any
 
 from aqt import mw, gui_hooks
 from aqt.browser import Browser
 from aqt.qt import *
-from .common import tooltip
 
+from .common import tooltip
 from .utils.gui import SettingsDialog
 from .utils.webp import ImageConverter
 
@@ -33,14 +34,83 @@ def checkpoint(msg="Checkpoint"):
     def decorator(fn):
         def decorated(*args, **kwargs):
             mw.checkpoint(msg)
-            mw.progress.start()
             fn(*args, **kwargs)
-            mw.progress.finish()
             mw.reset()
 
         return decorated
 
     return decorator
+
+
+class ConvertTask:
+    def __init__(self, note_ids: Sequence[Any]):
+        self.note_ids = note_ids
+        self.to_convert = find_images_to_convert_and_notes(note_ids)
+        self.converted: Optional[Dict[str, str]] = None
+
+    @property
+    def size(self) -> int:
+        return len(self.to_convert)
+
+    def __call__(self):
+        self.converted = {}
+
+        for i, filename in enumerate(self.to_convert):
+            yield i
+            if converted_filename := convert_image(filename):
+                self.converted[filename] = converted_filename
+
+    def update_notes(self):
+        for initial_filename, converted_filename in self.converted.items():
+            for note_id in self.to_convert[initial_filename]:
+                note = mw.col.getNote(note_id)
+                for key in note.keys():
+                    note[key] = note[key].replace(initial_filename, converted_filename)
+                note.flush()
+
+
+class ProgressBar(QDialog):
+    task_done = pyqtSignal()
+    update_progress = pyqtSignal(int)
+
+    def __init__(self, *args, **kwargs):
+        super(ProgressBar, self).__init__(*args, **kwargs)
+        self.bar = QProgressBar()
+        self.cancel_button = QPushButton('Cancel')
+        self.setLayout(self.setup_layout())
+        self.canceled = False
+        self.task: Optional[ConvertTask] = None
+        self.setWindowTitle("Converting...")
+        self.setMinimumSize(320, 24)
+        self.move(100, 100)
+        qconnect(self.cancel_button.clicked, self.set_canceled)
+        qconnect(self.task_done, self.accept)
+        qconnect(self.update_progress, self.bar.setValue)
+
+    def run(self):
+        for progress_value in self.task():
+            if self.canceled is True:
+                break
+            self.update_progress.emit(progress_value)
+        self.task_done.emit()
+
+    def set_canceled(self):
+        self.canceled = True
+
+    def setup_layout(self) -> QLayout:
+        layout = QVBoxLayout()
+        layout.addWidget(self.bar)
+        layout.addLayout(self.setup_cancel_button_layout())
+        return layout
+
+    def setup_cancel_button_layout(self) -> QLayout:
+        layout = QHBoxLayout()
+        layout.addStretch()
+        layout.addWidget(self.cancel_button)
+        return layout
+
+    def set_range(self, min_val: int, max_val: int) -> None:
+        return self.bar.setRange(min_val, max_val)
 
 
 def find_eligible_images(html: str) -> Generator[str, None, None]:
@@ -73,30 +143,27 @@ def convert_image(filename: str) -> Optional[str]:
 
 
 @checkpoint(msg="Bulk-convert to WebP")
-def bulk_convert(note_ids: Sequence):
-    to_convert = find_images_to_convert_and_notes(note_ids)
+def bulk_convert(note_ids: Sequence[Any]):
+    progress_bar = ProgressBar()
+    convert_task = ConvertTask(note_ids)
 
-    converted = {}
-    for filename in to_convert:
-        if converted_filename := convert_image(filename):
-            converted[filename] = converted_filename
+    progress_bar.set_range(0, convert_task.size)
+    progress_bar.task = convert_task
 
-    for initial_filename, converted_filename in converted.items():
-        for note_id in to_convert[initial_filename]:
-            note = mw.col.getNote(note_id)
-            for key in note.keys():
-                note[key] = note[key].replace(initial_filename, converted_filename)
-            note.flush()
+    t = threading.Thread(target=progress_bar.run)
+    t.start()
 
-    tooltip(f"Done. Converted {len(converted)} files.")
+    progress_bar.exec_()
+    convert_task.update_notes()
+    tooltip(f"Done. Converted {len(convert_task.converted)} files.")
 
 
 def on_bulk_convert(browser: Browser):
-    selected_notes = browser.selectedNotes()
-    if selected_notes:
+    selected_nids = browser.selectedNotes()
+    if selected_nids:
         dialog = SettingsDialog(browser)
         dialog.exec_()
-        bulk_convert(selected_notes)
+        bulk_convert(selected_nids)
     else:
         tooltip("No cards selected.")
 
