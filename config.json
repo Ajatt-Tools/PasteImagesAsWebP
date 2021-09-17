@@ -19,5 +19,6 @@
         "-blend_alpha", "0xffffff",
         "-m", "6"
     ],
-    "filename_pattern_num": 0
+    "filename_pattern_num": 0,
+    "tooltip_duration_seconds": 5
 }

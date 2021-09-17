@@ -23,7 +23,7 @@ from typing import Optional, Generator, Sequence, Set, Iterable, Dict, Any
 from aqt import mw, gui_hooks
 from aqt.browser import Browser
 from aqt.qt import *
-from aqt.utils import tooltip
+from .common import tooltip
 
 from .utils.gui import SettingsDialog
 from .utils.webp import ImageConverter

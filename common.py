@@ -20,15 +20,23 @@
 
 from aqt.editor import Editor
 from aqt.qt import *
-from aqt.utils import tooltip
+from aqt.utils import tooltip as __tooltip
 
+from .config import config
 from .utils.gui import ShowOptions
 from .utils.webp import ImageConverter
 
 
+def tooltip(msg: str) -> None:
+    return __tooltip(
+        msg=msg,
+        period=int(config.get('tooltip_duration_seconds', 5)) * 1000
+    )
+
+
 def tooltip_filesize(filepath: os.PathLike) -> None:
     filesize_kib = str(os.stat(filepath).st_size / 1024)
-    tooltip(f"Image added. File size: {filesize_kib[:filesize_kib.find('.') + 3]} KiB.", period=5000)
+    tooltip(f"Image added. File size: {filesize_kib[:filesize_kib.find('.') + 3]} KiB.")
 
 
 def insert_image_html(editor: Editor, image_filename: str):
