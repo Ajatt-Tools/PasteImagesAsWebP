@@ -156,6 +156,8 @@ def bulk_convert(note_ids: Sequence[Any]):
 
     progress_bar.exec_()
     convert_task.update_notes()
+    t.join()
+
     tooltip(f"Done. Converted {len(convert_task.converted)} files.")
 
 
