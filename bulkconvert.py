@@ -21,6 +21,7 @@ import re
 import threading
 from typing import Optional, Generator, Sequence, Set, Iterable, Dict, Any
 
+from anki.utils import joinFields
 from aqt import mw, gui_hooks
 from aqt.browser import Browser
 from aqt.qt import *
@@ -122,7 +123,7 @@ def find_images_to_convert_and_notes(note_ids: Iterable) -> Dict[str, Set[Any]]:
     to_convert = {}
 
     for note in {mw.col.getNote(note_id) for note_id in note_ids}:
-        note_content = ''.join(note.values())
+        note_content = joinFields(note.fields)
         if '<img' not in note_content:
             continue
         for filename in find_eligible_images(note_content):
