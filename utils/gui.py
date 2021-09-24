@@ -195,7 +195,7 @@ class PasteDialog(SettingsDialog):
 
     def adjust_sliders(self, factor):
         for param in ('width', 'height'):
-            if (widget := self.sliders[f'image_{param}']).value() > 0:
+            if (widget := self.sliders[f'image_{param}']).value > 0:
                 widget.set_value(int(getattr(self.image, param) * factor))
 
     def create_scale_options_grid(self):
