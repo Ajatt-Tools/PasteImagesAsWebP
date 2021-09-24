@@ -63,10 +63,6 @@ class RichSlider:
         self._set_step(step)
         self._set_range(0, limit)
 
-    def set_value(self, value: int):
-        self.slider.setValue(value)
-        self.spinbox.setValue(value)
-
     def set_tooltip(self, tooltip: str):
         self.slider.setToolTip(tooltip)
 
@@ -76,6 +72,11 @@ class RichSlider:
     @property
     def value(self) -> int:
         return self.slider.value()
+
+    @value.setter
+    def value(self, value: int):
+        self.slider.setValue(value)
+        self.spinbox.setValue(value)
 
     def _set_range(self, start: int, stop: int):
         self.slider.setRange(start, stop)
@@ -162,7 +163,7 @@ class SettingsDialog(QDialog):
 
     def set_initial_values(self):
         for key, slider in self.sliders.items():
-            slider.set_value(config.get(key))
+            slider.value = config.get(key)
 
     def dialog_accept(self):
         for key, slider in self.sliders.items():
@@ -196,7 +197,7 @@ class PasteDialog(SettingsDialog):
     def adjust_sliders(self, factor):
         for param in ('width', 'height'):
             if (widget := self.sliders[f'image_{param}']).value > 0:
-                widget.set_value(int(getattr(self.image, param) * factor))
+                widget.value = int(getattr(self.image, param) * factor)
 
     def create_scale_options_grid(self):
         grid = QGridLayout()
