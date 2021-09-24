@@ -19,7 +19,7 @@
 # Any modifications to this file must keep this entire header intact.
 
 from enum import Enum
-from typing import NamedTuple, Iterable
+from typing import NamedTuple, Iterable, Tuple
 
 from aqt.qt import *
 
@@ -66,7 +66,8 @@ class RichSlider:
     def set_tooltip(self, tooltip: str):
         self.slider.setToolTip(tooltip)
 
-    def as_tuple(self):
+    @property
+    def widgets(self) -> Tuple[QWidget, ...]:
         return self.slider, self.spinbox, self.unitLabel
 
     @property
@@ -129,7 +130,7 @@ class SettingsDialog(QDialog):
         grid = QGridLayout()
         for y_index, slider in enumerate(sliders):
             grid.addWidget(QLabel(slider.title), y_index, 0)
-            for x_index, widget in enumerate(slider.as_tuple()):
+            for x_index, widget in enumerate(slider.widgets):
                 grid.addWidget(widget, y_index, x_index + 1)
 
         gbox.setLayout(grid)
