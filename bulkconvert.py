@@ -92,8 +92,8 @@ class ProgressBar(QDialog):
         for progress_value in self.task():
             if self.canceled is True:
                 break
-            self.update_progress.emit(progress_value)
-        self.task_done.emit()
+            self.update_progress.emit(progress_value)  # type: ignore
+        self.task_done.emit()  # type: ignore
 
     def set_canceled(self):
         self.canceled = True
