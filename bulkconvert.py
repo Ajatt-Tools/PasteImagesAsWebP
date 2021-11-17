@@ -138,7 +138,7 @@ def convert_image(filename: str) -> Optional[str]:
         w.load_internal(filename)
         w.convert_internal(filename)
     except RuntimeError:
-        tooltip(f"Couldn't convert {filename}.")
+        pass
     except FileNotFoundError:
         pass
     else:
