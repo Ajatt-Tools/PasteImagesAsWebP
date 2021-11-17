@@ -26,7 +26,7 @@ from aqt import mw, gui_hooks
 from aqt.browser import Browser
 from aqt.qt import *
 
-from .common import tooltip
+from .common import tooltip, NoteId
 from .utils.gui import SettingsDialog
 from .utils.webp import ImageConverter
 
@@ -119,7 +119,7 @@ def find_eligible_images(html: str) -> Generator[str, None, None]:
     return (image for image in images if image[-5:] != '.webp')
 
 
-def find_images_to_convert_and_notes(note_ids: Iterable) -> Dict[str, Set[Any]]:
+def find_images_to_convert_and_notes(note_ids: Iterable) -> Dict[str, Set[NoteId]]:
     to_convert = {}
 
     for note in {mw.col.getNote(note_id) for note_id in note_ids}:

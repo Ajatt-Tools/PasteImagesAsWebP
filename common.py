@@ -26,6 +26,13 @@ from .config import config
 from .utils.gui import ShowOptions
 from .utils.webp import ImageConverter
 
+try:
+    from anki.notes import NoteId
+except ImportError:
+    from typing import NewType
+
+    NoteId = NewType("NoteId", int)
+
 
 def tooltip(msg: str) -> None:
     return __tooltip(
