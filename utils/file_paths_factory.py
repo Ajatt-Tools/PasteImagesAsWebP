@@ -27,7 +27,7 @@ import unicodedata
 from functools import wraps
 from time import gmtime, strftime
 from typing import AnyStr, List
-
+from anki.utils import htmlToTextLine
 from aqt.editor import Editor
 from aqt.qt import *
 
@@ -43,10 +43,12 @@ def compatible_filename(f: Callable[..., str]):
     @wraps(f)
     def wrapper(*args, **kwargs) -> str:
         s = f(*args, **kwargs)
+        s = htmlToTextLine(s)
         s = s.encode('utf-8')[:max_len_bytes].decode('utf-8', errors='ignore')
         s = unicodedata.normalize('NFC', s)
         s = replace_forbidden_chars(s)
         s = s.lower()
+        s = s.strip('-_ ')
         return s if s else FilePathFactory.default_prefix
 
     return wrapper
