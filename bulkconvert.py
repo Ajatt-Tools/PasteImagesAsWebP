@@ -19,29 +19,20 @@
 # Any modifications to this file must keep this entire header intact.
 import re
 import threading
-from typing import Optional, Generator, Sequence, Set, Iterable, Dict
+from typing import Optional, Generator, Sequence, Set, Iterable, Dict, List
 
+from anki.collection import Collection
+from anki.notes import Note
 from anki.utils import joinFields
 from aqt import mw, gui_hooks
 from aqt.browser import Browser
+from aqt.operations import CollectionOp, ResultWithChanges
 from aqt.qt import *
 from aqt.utils import showInfo
 
 from .common import tooltip, NoteId
 from .utils.gui import SettingsDialog
 from .utils.webp import ImageConverter
-
-
-def checkpoint(msg="Checkpoint"):
-    def decorator(fn):
-        def decorated(*args, **kwargs):
-            mw.checkpoint(msg)
-            fn(*args, **kwargs)
-            mw.reset()
-
-        return decorated
-
-    return decorator
 
 
 class ConvertTask:
@@ -66,13 +57,32 @@ class ConvertTask:
             else:
                 self.failed[filename] = None
 
-    def update_notes(self):
+    def update_notes_op(self, col: Collection) -> ResultWithChanges:
+        pos = col.add_custom_undo_entry("Convert images to WebP")
+        notes: List[Note] = []
+
         for initial_filename, converted_filename in self.converted.items():
             for note_id in self.to_convert[initial_filename]:
                 note = mw.col.getNote(note_id)
                 for key in note.keys():
                     note[key] = note[key].replace(initial_filename, converted_filename)
-                note.flush()
+                notes.append(note)
+
+        col.update_notes(notes)
+        return col.merge_undo_entries(pos)
+
+    def update_notes(self, parent: QWidget):
+        if self.converted:
+            CollectionOp(
+                parent=parent, op=lambda col: self.update_notes_op(col)
+            ).success(
+                lambda out: showInfo(
+                    parent=parent,
+                    title="Task done",
+                    textFormat="rich",
+                    text=self.form_report_message()
+                )
+            ).run_in_background()
 
     def form_report_message(self) -> str:
         text = f"<p>Converted <b>{len(self.converted)}</b> files.</p>"
@@ -158,7 +168,6 @@ def convert_image(filename: str) -> Optional[str]:
         return w.filename
 
 
-@checkpoint(msg="Bulk-convert to WebP")
 def bulk_convert(browser: Browser, note_ids: Sequence[NoteId]):
     progress_bar = ProgressBar()
     convert_task = ConvertTask(note_ids)
@@ -170,10 +179,8 @@ def bulk_convert(browser: Browser, note_ids: Sequence[NoteId]):
     t.start()
 
     progress_bar.exec_()
-    convert_task.update_notes()
+    convert_task.update_notes(browser)
     t.join()
-
-    showInfo(parent=browser, title="Task done", textFormat="rich", text=convert_task.form_report_message())
 
 
 def on_bulk_convert(browser: Browser):
