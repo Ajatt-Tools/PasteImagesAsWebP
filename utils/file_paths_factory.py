@@ -38,7 +38,7 @@ def compatible_filename(f: Callable[..., str]):
     max_len_bytes = 90
 
     def replace_forbidden_chars(s: str) -> str:
-        return re.sub(r'[\[\]<>:"/|?*\\ ]+', '_', s, flags=re.MULTILINE | re.IGNORECASE)
+        return re.sub(r'[-.\[\]<>:"/|?*\\ ]+', '_', s, flags=re.MULTILINE | re.IGNORECASE)
 
     @wraps(f)
     def wrapper(*args, **kwargs) -> str:
