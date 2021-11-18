@@ -115,8 +115,9 @@ class ProgressBar(QDialog):
 
 
 def find_eligible_images(html: str) -> Generator[str, None, None]:
-    images = re.findall(r'<img[^>]*src="([^"]+)"[^>]*>', html)
-    return (image for image in images if image[-5:] != '.webp')
+    for image in re.findall(r'<img[^>]*src="([^"]+)"[^>]*>', html):
+        if image[-5:] != '.webp':
+            yield image
 
 
 def find_images_to_convert_and_notes(note_ids: Iterable) -> Dict[str, Set[NoteId]]:
