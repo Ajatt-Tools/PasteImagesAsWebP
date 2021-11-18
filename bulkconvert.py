@@ -25,6 +25,7 @@ from anki.utils import joinFields
 from aqt import mw, gui_hooks
 from aqt.browser import Browser
 from aqt.qt import *
+from aqt.utils import showInfo
 
 from .common import tooltip, NoteId
 from .utils.gui import SettingsDialog
@@ -48,6 +49,7 @@ class ConvertTask:
         self.note_ids = note_ids
         self.to_convert = find_images_to_convert_and_notes(note_ids)
         self.converted: Optional[Dict[str, str]] = None
+        self.failed: Optional[Dict[str, Any]] = None
 
     @property
     def size(self) -> int:
@@ -55,11 +57,14 @@ class ConvertTask:
 
     def __call__(self):
         self.converted = {}
+        self.failed = {}
 
         for i, filename in enumerate(self.to_convert):
             yield i
             if converted_filename := convert_image(filename):
                 self.converted[filename] = converted_filename
+            else:
+                self.failed[filename] = None
 
     def update_notes(self):
         for initial_filename, converted_filename in self.converted.items():
@@ -68,6 +73,15 @@ class ConvertTask:
                 for key in note.keys():
                     note[key] = note[key].replace(initial_filename, converted_filename)
                 note.flush()
+
+    def form_report_message(self) -> str:
+        text = f"<p>Converted <b>{len(self.converted)}</b> files.</p>"
+        if self.failed:
+            text += f"<p>Failed <b>{len(self.failed)}</b> files:</p>"
+            text += "<ol>"
+            text += ''.join(f"<li>{filename}</li>" for filename in self.failed)
+            text += "</ol>"
+        return text
 
 
 class ProgressBar(QDialog):
@@ -123,12 +137,12 @@ def find_eligible_images(html: str) -> Generator[str, None, None]:
 def find_images_to_convert_and_notes(note_ids: Iterable) -> Dict[str, Set[NoteId]]:
     to_convert = {}
 
-    for note in {mw.col.getNote(note_id) for note_id in note_ids}:
-        note_content = joinFields(note.fields)
+    for note_id, note_content in zip(note_ids, (joinFields(mw.col.getNote(note_id).fields) for note_id in note_ids)):
         if '<img' not in note_content:
             continue
         for filename in find_eligible_images(note_content):
-            to_convert[filename] = to_convert.get(filename, set()).union({note.id, })
+            to_convert[filename] = to_convert.get(filename, set())
+            to_convert[filename].add(note_id)
 
     return to_convert
 
@@ -147,7 +161,7 @@ def convert_image(filename: str) -> Optional[str]:
 
 
 @checkpoint(msg="Bulk-convert to WebP")
-def bulk_convert(note_ids: Sequence[Any]):
+def bulk_convert(browser: Browser, note_ids: Sequence[Any]):
     progress_bar = ProgressBar()
     convert_task = ConvertTask(note_ids)
 
@@ -161,7 +175,7 @@ def bulk_convert(note_ids: Sequence[Any]):
     convert_task.update_notes()
     t.join()
 
-    tooltip(f"Done. Converted {len(convert_task.converted)} files.")
+    showInfo(parent=browser, title="Task done", textFormat="rich", text=convert_task.form_report_message())
 
 
 def on_bulk_convert(browser: Browser):
@@ -169,7 +183,7 @@ def on_bulk_convert(browser: Browser):
     if selected_nids:
         dialog = SettingsDialog(browser)
         dialog.exec_()
-        bulk_convert(selected_nids)
+        bulk_convert(browser, selected_nids)
     else:
         tooltip("No cards selected.")
 
