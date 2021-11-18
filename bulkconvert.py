@@ -19,7 +19,7 @@
 # Any modifications to this file must keep this entire header intact.
 import re
 import threading
-from typing import Optional, Generator, Sequence, Set, Iterable, Dict, Any
+from typing import Optional, Generator, Sequence, Set, Iterable, Dict
 
 from anki.utils import joinFields
 from aqt import mw, gui_hooks
@@ -45,11 +45,11 @@ def checkpoint(msg="Checkpoint"):
 
 
 class ConvertTask:
-    def __init__(self, note_ids: Sequence[Any]):
+    def __init__(self, note_ids: Sequence[NoteId]):
         self.note_ids = note_ids
         self.to_convert = find_images_to_convert_and_notes(note_ids)
         self.converted: Optional[Dict[str, str]] = None
-        self.failed: Optional[Dict[str, Any]] = None
+        self.failed: Optional[Dict[str, None]] = None
 
     @property
     def size(self) -> int:
@@ -161,7 +161,7 @@ def convert_image(filename: str) -> Optional[str]:
 
 
 @checkpoint(msg="Bulk-convert to WebP")
-def bulk_convert(browser: Browser, note_ids: Sequence[Any]):
+def bulk_convert(browser: Browser, note_ids: Sequence[NoteId]):
     progress_bar = ProgressBar()
     convert_task = ConvertTask(note_ids)
 
