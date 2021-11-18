@@ -152,9 +152,7 @@ def convert_image(filename: str) -> Optional[str]:
         w = ImageConverter()
         w.load_internal(filename)
         w.convert_internal(filename)
-    except RuntimeError:
-        pass
-    except FileNotFoundError:
+    except (RuntimeError, FileNotFoundError):
         pass
     else:
         return w.filename
