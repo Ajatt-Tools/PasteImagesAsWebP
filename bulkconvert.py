@@ -145,6 +145,9 @@ def find_eligible_images(html: str) -> Generator[str, None, None]:
 
 
 def find_images_to_convert_and_notes(note_ids: Iterable) -> Dict[str, Set[NoteId]]:
+    """
+    Maps each filename to a set of note ids that reference the filename.
+    """
     to_convert = {}
 
     for note_id, note_content in zip(note_ids, (joinFields(mw.col.getNote(note_id).fields) for note_id in note_ids)):
