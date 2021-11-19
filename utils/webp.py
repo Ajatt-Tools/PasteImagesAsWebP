@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Paste Images As WebP add-on for Anki 2.1
 # Copyright (C) 2021  Ren Tatsumoto. <tatsu at autistici.org>
 #
@@ -68,7 +66,7 @@ def smaller_than_requested(image: ImageDimensions) -> bool:
     return image.width < config['image_width'] or image.height < config['image_height']
 
 
-class ImageConverter(object):
+class ImageConverter:
     def __init__(self, editor: Editor = None, action: ShowOptions = None):
         self.editor = editor
         self.action = action

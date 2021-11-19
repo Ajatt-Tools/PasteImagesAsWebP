@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Paste Images As WebP add-on for Anki 2.1
 # Copyright (C) 2021  Ren Tatsumoto. <tatsu at autistici.org>
 #
@@ -90,7 +88,7 @@ class RichSlider:
 
 class SettingsDialog(QDialog):
     def __init__(self, *args, **kwargs):
-        super(SettingsDialog, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.sliderRow = QVBoxLayout()
         self.sliders = {
             'image_width': RichSlider("Width", "px", limit=config['max_image_width']),
@@ -184,10 +182,10 @@ class ImageDimensions(NamedTuple):
 class PasteDialog(SettingsDialog):
     def __init__(self, parent, image: ImageDimensions, *args, **kwargs):
         self.image = image
-        super(PasteDialog, self).__init__(parent, *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
 
     def populate_slider_row(self):
-        super(PasteDialog, self).populate_slider_row()
+        super().populate_slider_row()
         self.sliderRow.addWidget(self.create_scale_settings_group_box())
 
     def create_scale_settings_group_box(self):
@@ -224,7 +222,7 @@ class SettingsMenuDialog(SettingsDialog):
         self.when_show_dialog_combo_box = self.create_when_show_dialog_combo_box()
         self.filename_pattern_combo_box = self.create_filename_pattern_combo_box()
         self.checkboxes = {key: QCheckBox(text) for key, text in self.__checkboxes.items()}
-        super(SettingsMenuDialog, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     def create_when_show_dialog_combo_box() -> QComboBox:
@@ -241,7 +239,7 @@ class SettingsMenuDialog(SettingsDialog):
         return combobox
 
     def populate_slider_row(self):
-        super(SettingsMenuDialog, self).populate_slider_row()
+        super().populate_slider_row()
         self.sliderRow.addWidget(self.create_additional_settings_group_box())
 
     def create_additional_settings_group_box(self):
@@ -257,7 +255,7 @@ class SettingsMenuDialog(SettingsDialog):
         return gbox
 
     def set_initial_values(self):
-        super(SettingsMenuDialog, self).set_initial_values()
+        super().set_initial_values()
         self.when_show_dialog_combo_box.setCurrentIndex(ShowOptions.index_of(config.get("show_settings")))
         self.filename_pattern_combo_box.setCurrentIndex(config.get("filename_pattern_num", 0))
 
@@ -276,4 +274,4 @@ class SettingsMenuDialog(SettingsDialog):
 
         for key, widget in self.checkboxes.items():
             config[key] = widget.isChecked()
-        super(SettingsMenuDialog, self).dialog_accept()
+        super().dialog_accept()

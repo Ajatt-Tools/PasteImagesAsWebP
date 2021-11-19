@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Paste Images As WebP add-on for Anki 2.1
 # Copyright (C) 2021  Ren Tatsumoto. <tatsu at autistici.org>
 #
@@ -18,7 +16,6 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
-
 import itertools
 import random
 import re
@@ -27,6 +24,7 @@ import unicodedata
 from functools import wraps
 from time import gmtime, strftime
 from typing import AnyStr, List
+
 from anki.utils import htmlToTextLine
 from aqt.editor import Editor
 from aqt.qt import *

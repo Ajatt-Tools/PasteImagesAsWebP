@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Paste Images As WebP add-on for Anki 2.1
 # Copyright (C) 2021  Ren Tatsumoto. <tatsu at autistici.org>
 #
@@ -17,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Any modifications to this file must keep this entire header intact.
+
 import re
 import threading
 from typing import Optional, Generator, Sequence, Iterable, Dict, Set
@@ -99,7 +98,7 @@ class ProgressBar(QDialog):
     update_progress = pyqtSignal(int)
 
     def __init__(self, *args, **kwargs):
-        super(ProgressBar, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.bar = QProgressBar()
         self.cancel_button = QPushButton('Cancel')
         self.setLayout(self.setup_layout())

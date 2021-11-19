@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Paste Images As WebP add-on for Anki 2.1
 # Copyright (C) 2021  Ren Tatsumoto. <tatsu at autistici.org>
 #

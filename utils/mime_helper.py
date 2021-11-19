@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Paste Images As WebP add-on for Anki 2.1
 # Copyright (C) 2021  Ren Tatsumoto. <tatsu at autistici.org>
 #
@@ -20,12 +18,12 @@
 
 import re
 from typing import Optional, Iterable, List
-import socket
+
 import requests
 from aqt.qt import *
 from requests.exceptions import Timeout, InvalidSchema
 
-from ..consts import REQUEST_TIMEOUTS, REQUEST_HEADERS, IMAGE_EXTENSIONS
+from ..consts import REQUEST_TIMEOUTS, REQUEST_HEADERS
 
 
 def urls_from_html(html: str) -> list:
@@ -49,7 +47,7 @@ def image_from_url(src_url: str) -> Optional[QImage]:
     try:
         with requests.get(src_url, timeout=REQUEST_TIMEOUTS, headers=REQUEST_HEADERS) as r:
             image.loadFromData(r.content)
-    except (Timeout, InvalidSchema, socket.error):
+    except (Timeout, InvalidSchema, OSError):
         return None
     return image
 

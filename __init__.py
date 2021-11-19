@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Paste Images As WebP add-on for Anki 2.1
 # Copyright (C) 2021  Ren Tatsumoto. <tatsu at autistici.org>
 #
@@ -18,9 +16,7 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
-from . import bulkconvert
-from . import events
-from . import menus
+from . import bulkconvert, events, menus
 
 bulkconvert.init()
 menus.init()

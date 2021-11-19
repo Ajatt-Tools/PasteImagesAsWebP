@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Paste Images As WebP add-on for Anki 2.1
 # Copyright (C) 2021  Ren Tatsumoto. <tatsu at autistici.org>
 #
@@ -39,8 +37,8 @@ def get_config() -> dict:
     return cfg
 
 
-config = get_config()
-
-
 def write_config():
     mw.addonManager.writeConfig(__name__, config)
+
+
+config = get_config()
