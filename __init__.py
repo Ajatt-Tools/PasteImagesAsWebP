@@ -16,8 +16,9 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
-from . import bulkconvert, events, menus
+from . import bulkconvert, events, menus, media_rename
 
 bulkconvert.init()
 menus.init()
 events.init()
+media_rename.init()

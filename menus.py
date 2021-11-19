@@ -62,7 +62,7 @@ def setup_editor_menus():
             tip=action_tooltip,
             keys=shortcut
         )
-        buttons.extend([b])
+        buttons.append(b)
         return buttons
 
     if config.get("show_context_menu_entry") is True:
