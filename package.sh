@@ -52,7 +52,7 @@ git archive "$branch" --format=zip --output "$package_filename"
 zip -ur "$package_filename" ./"$manifest" ./$support_dir/cwebp*
 
 # shellcheck disable=SC2016
-git submodule foreach 'git archive main --prefix=$path/ --format=zip --output "$root_dir/${path}_${branch}.zip"'
+git submodule foreach 'git archive HEAD --prefix=$path/ --format=zip --output "$root_dir/${path}_${branch}.zip"'
 
 zipmerge "$package_filename" ./*.zip
 
