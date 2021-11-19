@@ -19,7 +19,7 @@
 # Any modifications to this file must keep this entire header intact.
 import re
 import threading
-from typing import Optional, Generator, Sequence, Set, Iterable, Dict, List
+from typing import Optional, Generator, Sequence, Iterable, Dict, Set
 
 from anki.collection import Collection
 from anki.notes import Note
@@ -58,17 +58,17 @@ class ConvertTask:
                 self.failed[filename] = None
 
     def update_notes_op(self, col: Collection) -> ResultWithChanges:
-        pos = col.add_custom_undo_entry("Convert images to WebP")
-        notes: List[Note] = []
+        pos = col.add_custom_undo_entry(f"Convert {len(self.converted)} images to WebP")
+        to_update: Dict[NoteId, Note] = {}
 
         for initial_filename, converted_filename in self.converted.items():
             for note_id in self.to_convert[initial_filename]:
-                note = mw.col.getNote(note_id)
-                for key in note.keys():
+                if note_id not in to_update:
+                    to_update[note_id] = mw.col.getNote(note_id)
+                for key in (note := to_update[note_id]).keys():
                     note[key] = note[key].replace(initial_filename, converted_filename)
-                notes.append(note)
 
-        col.update_notes(notes)
+        col.update_notes(tuple(to_update.values()))
         return col.merge_undo_entries(pos)
 
     def update_notes(self, parent: QWidget):
