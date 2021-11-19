@@ -50,8 +50,8 @@ class ConvertTask:
         self.converted = {}
         self.failed = {}
 
-        for i, filename in enumerate(self.to_convert):
-            yield i
+        for progress, filename in enumerate(self.to_convert):
+            yield progress
             if converted_filename := convert_image(filename):
                 self.converted[filename] = converted_filename
             else:
