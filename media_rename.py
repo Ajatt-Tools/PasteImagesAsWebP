@@ -96,8 +96,8 @@ def rename_file(old_filename: str, new_filename: str) -> str:
 def rename_media_files(editor: Editor) -> None:
     if (note := editor.note) and (filenames := collect_media_filenames(joinFields(note.fields))):
         dialog = MediaRenameDialog(parent=editor.widget, filenames=filenames)
-        if dialog.exec():
-            for old_filename, new_filename in dialog.to_rename():
+        if dialog.exec() and (to_rename := list(dialog.to_rename())):
+            for old_filename, new_filename in to_rename:
                 new_filename = rename_file(old_filename, new_filename)
                 for field_name, field_value in note.items():
                     note[field_name] = field_value.replace(old_filename, new_filename)
@@ -105,7 +105,7 @@ def rename_media_files(editor: Editor) -> None:
                 parent=editor.widget,
                 op=lambda col: col.update_note(note)
             ).success(
-                lambda out: tooltip("Renamed files", parent=editor.parentWindow)
+                lambda out: tooltip(f"Renamed {len(to_rename)} files", parent=editor.parentWindow)
             ).run_in_background()
 
 
