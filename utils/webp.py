@@ -20,7 +20,7 @@
 
 import subprocess
 from distutils.spawn import find_executable
-from typing import Optional, AnyStr
+from typing import Optional, AnyStr, Tuple
 
 from aqt import mw
 from aqt.editor import Editor
@@ -105,18 +105,16 @@ class ImageConverter(object):
             return dlg.exec_()
         return QDialog.Accepted
 
-    def save_image(self, tmp_path: str, mime: QMimeData) -> bool:
-        for image in image_candidates(mime):
+    def save_image(self, tmp_path: str, mime: QMimeData) -> Tuple[bool, str]:
+        for path, image in image_candidates(mime):
             if image and image.save(tmp_path, 'png') is True:
                 self.image = ImageDimensions(image.width(), image.height())
-                break
+                return True, os.path.basename(path)
         else:
             if any(not image_like_filename(url.fileName()) for url in mime.urls()):
                 raise InvalidInput("Not an image file.")
 
-            return False
-
-        return True
+            return False, ''
 
     def get_resize_args(self):
         if config['avoid_upscaling'] and smaller_than_requested(self.image):
@@ -152,13 +150,14 @@ class ImageConverter(object):
 
     def convert(self, mime: QMimeData) -> None:
         with TempFile() as tmp_file:
-            if self.save_image(tmp_file.path(), mime) is False:
+            saved, filename = self.save_image(tmp_file.path(), mime)
+            if saved is False:
                 raise RuntimeError("Couldn't save the image.")
 
             if self.decide_show_settings() == QDialog.Rejected:
                 raise CanceledPaste("Cancelled.")
 
-            webp_filepath = self.filepath_factory.make_unique_filepath()
+            webp_filepath = self.filepath_factory.make_unique_filepath(filename)
 
             if self.to_webp(tmp_file, webp_filepath) is False:
                 raise RuntimeError("cwebp failed")
