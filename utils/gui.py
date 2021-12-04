@@ -87,6 +87,8 @@ class RichSlider:
 
 
 class SettingsDialog(QDialog):
+    """Dialog shown on bulk-convert."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.sliderRow = QVBoxLayout()
@@ -180,6 +182,8 @@ class ImageDimensions(NamedTuple):
 
 
 class PasteDialog(SettingsDialog):
+    """Dialog shown on paste."""
+
     def __init__(self, parent, image: ImageDimensions, *args, **kwargs):
         self.image = image
         super().__init__(parent, *args, **kwargs)
@@ -212,10 +216,13 @@ class PasteDialog(SettingsDialog):
 
 
 class SettingsMenuDialog(SettingsDialog):
+    """Settings dialog available from the main menu."""
+
     __checkboxes = {
         'drag_and_drop': 'Convert images on drag and drop',
         'copy_paste': 'Convert images on copy-paste',
         'avoid_upscaling': 'Avoid upscaling',
+        'preserve_original_filenames': 'Preserve original filenames, if available',
     }
 
     def __init__(self, *args, **kwargs):
