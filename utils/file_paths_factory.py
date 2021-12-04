@@ -91,13 +91,16 @@ class FilePathFactory:
 
         return pattern
 
-    def make_unique_filepath(self) -> AnyStr:
-        try:
-            pattern = self.patterns[config.get('filename_pattern_num', 0)]
-        except IndexError:
-            pattern = self.patterns[0]
+    def make_unique_filepath(self, filename: str) -> AnyStr:
+        if filename:
+            out_filename = os.path.splitext(filename)[0] + self.ext
+        else:
+            try:
+                pattern = self.patterns[config.get('filename_pattern_num', 0)]
+            except IndexError:
+                pattern = self.patterns[0]
+            out_filename = self.make_filename(pattern)
 
-        out_filename = self.make_filename(pattern)
         out_filename = ensure_unique(out_filename)
         return os.path.join(self.target_dir_path, out_filename)
 

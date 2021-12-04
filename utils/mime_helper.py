@@ -19,7 +19,7 @@
 # Any modifications to this file must keep this entire header intact.
 
 import re
-from typing import Optional, Iterable, List
+from typing import Optional, Iterable, List, Tuple
 import socket
 import requests
 from aqt.qt import *
@@ -59,13 +59,13 @@ def image_from_file(filepath: str):
         return QImage.fromData(f.read())
 
 
-def image_candidates(mime: QMimeData) -> Iterable[Optional[QImage]]:
-    yield mime.imageData()
+def image_candidates(mime: QMimeData) -> Iterable[Tuple[str, Optional[QImage]]]:
+    yield '', mime.imageData()
     for data in data_from_html(mime.html()):
-        yield QImage.fromData(data)
+        yield '', QImage.fromData(data)
     for file in files(mime):
-        yield image_from_file(file)
+        yield file, image_from_file(file)
     for url in urls(mime):
-        yield image_from_url(url)
+        yield '', image_from_url(url)
     for url in urls_from_html(mime.html()):
-        yield image_from_url(url)
+        yield '', image_from_url(url)
