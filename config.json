@@ -20,5 +20,6 @@
         "-m", "6"
     ],
     "filename_pattern_num": 0,
-    "tooltip_duration_seconds": 5
+    "tooltip_duration_seconds": 5,
+    "preserve_original_filenames": true
 }

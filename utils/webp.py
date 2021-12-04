@@ -18,15 +18,15 @@
 
 import subprocess
 from distutils.spawn import find_executable
-from typing import Optional, AnyStr
+from typing import Optional, AnyStr, List
 
 from aqt import mw
 from aqt.editor import Editor
 from aqt.qt import *
 
-from .file_paths_factory import FilePathFactory, ensure_unique
+from .file_paths_factory import FilePathFactory
 from .gui import ShowOptions, PasteDialog, ImageDimensions
-from .mime_helper import image_candidates
+from .mime_helper import image_candidates, files
 from .temp_file import TempFile
 from ..config import config
 from ..consts import ADDON_PATH, IMAGE_EXTENSIONS
@@ -66,58 +66,59 @@ def smaller_than_requested(image: ImageDimensions) -> bool:
     return image.width < config['image_width'] or image.height < config['image_height']
 
 
+def fetch_filename(mime: QMimeData) -> Optional[str]:
+    for file in files(mime):
+        if base := os.path.basename(file):
+            return base
+
+
 class ImageConverter:
     def __init__(self, editor: Editor = None, action: ShowOptions = None):
         self.editor = editor
         self.action = action
         self.dest_dir = mw.col.media.dir()
+        self.original_filename: Optional[str] = None
         self.filepath: Optional[AnyStr] = None
-        self.image: Optional[ImageDimensions] = None
+        self.dimensions: Optional[ImageDimensions] = None
         self.filepath_factory = FilePathFactory(self.dest_dir, self.editor)
 
     @property
     def filename(self):
         return os.path.basename(self.filepath)
 
-    def load_internal(self, filename: str):
+    def load_internal(self, filename: str) -> None:
         with open(os.path.join(self.dest_dir, filename), 'rb') as f:
             image = QImage.fromData(f.read())
-            self.image = ImageDimensions(image.width(), image.height())
+            self.dimensions = ImageDimensions(image.width(), image.height())
 
-    def convert_internal(self, filename: str):
-        source_filepath = os.path.join(self.dest_dir, filename)
-        dest_filepath = os.path.splitext(source_filepath)[0] + self.filepath_factory.ext
-        dest_filepath = ensure_unique(dest_filepath)
-
-        if self.to_webp(source_filepath, dest_filepath) is False:
+    def convert_internal(self, filename: str) -> None:
+        self.filepath = self.filepath_factory.make_unique_filepath(filename)
+        if self.to_webp(os.path.join(self.dest_dir, filename), self.filepath) is False:
             raise RuntimeError("cwebp failed")
-
-        self.filepath = dest_filepath
 
     def should_show_settings(self) -> bool:
         return config.get("show_settings") == ShowOptions.always or config.get("show_settings") == self.action
 
     def decide_show_settings(self) -> int:
         if self.should_show_settings() is True:
-            dlg = PasteDialog(self.editor.widget, self.image)
+            dlg = PasteDialog(self.editor.widget, self.dimensions)
             return dlg.exec_()
         return QDialog.Accepted
 
     def save_image(self, tmp_path: str, mime: QMimeData) -> bool:
         for image in image_candidates(mime):
             if image and image.save(tmp_path, 'png') is True:
-                self.image = ImageDimensions(image.width(), image.height())
+                self.dimensions = ImageDimensions(image.width(), image.height())
+                self.original_filename = fetch_filename(mime)
                 break
         else:
             if any(not image_like_filename(url.fileName()) for url in mime.urls()):
                 raise InvalidInput("Not an image file.")
 
-            return False
+        return self.dimensions is not None
 
-        return True
-
-    def get_resize_args(self):
-        if config['avoid_upscaling'] and smaller_than_requested(self.image):
+    def get_resize_args(self) -> List[Union[str, int]]:
+        if config['avoid_upscaling'] and smaller_than_requested(self.dimensions):
             # skip resizing if the image is already smaller than the requested size
             return []
 
@@ -148,6 +149,12 @@ class ImageConverter:
 
         return True
 
+    def set_output_filepath(self) -> str:
+        self.filepath = self.filepath_factory.make_unique_filepath(
+            self.original_filename if config['preserve_original_filenames'] else None
+        )
+        return self.filepath
+
     def convert(self, mime: QMimeData) -> None:
         with TempFile() as tmp_file:
             if self.save_image(tmp_file.path(), mime) is False:
@@ -156,12 +163,8 @@ class ImageConverter:
             if self.decide_show_settings() == QDialog.Rejected:
                 raise CanceledPaste("Cancelled.")
 
-            webp_filepath = self.filepath_factory.make_unique_filepath()
-
-            if self.to_webp(tmp_file, webp_filepath) is False:
+            if self.to_webp(tmp_file, self.set_output_filepath()) is False:
                 raise RuntimeError("cwebp failed")
-
-        self.filepath = webp_filepath
 
 
 cwebp = find_cwebp()

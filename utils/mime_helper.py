@@ -17,7 +17,7 @@
 # Any modifications to this file must keep this entire header intact.
 
 import re
-from typing import Optional, Iterable, List
+from typing import Optional, Iterable, List, Tuple
 
 import requests
 from aqt.qt import *
