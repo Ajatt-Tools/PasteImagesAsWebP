@@ -31,6 +31,9 @@ from .temp_file import TempFile
 from ..config import config
 from ..consts import ADDON_PATH, IMAGE_EXTENSIONS
 
+is_mac = sys.platform.startswith("darwin")
+is_win = sys.platform.startswith("win32")
+
 
 class CanceledPaste(Warning):
     pass
@@ -49,10 +52,10 @@ def find_cwebp():
     if exe is None:
         # https://developers.google.com/speed/webp/download
         exe = os.path.join(ADDON_PATH, "support", "cwebp")
-        if isWin:
+        if is_win:
             exe += ".exe"
         else:
-            if isMac:
+            if is_mac:
                 exe += '_macos'
             os.chmod(exe, 0o755)
     return exe
@@ -169,7 +172,7 @@ class ImageConverter:
 
 cwebp = find_cwebp()
 
-if isWin:
+if is_win:
     # Prevents a console window from popping up on Windows
     si = subprocess.STARTUPINFO()
     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
