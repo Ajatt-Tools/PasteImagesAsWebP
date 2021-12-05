@@ -3,8 +3,9 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import re
-from typing import List, Iterable, Tuple
+from typing import List, Iterable, Tuple, Optional, Dict
 
+from anki.notes import Note
 from anki.utils import joinFields
 from aqt import gui_hooks, mw
 from aqt.editor import Editor
@@ -45,19 +46,35 @@ class FileNameEdit(QLineEdit):
 
 
 class MediaRenameDialog(QDialog):
-    def __init__(self, parent: QWidget, filenames: List[str], *args, **kwargs):
-        super().__init__(parent=parent, *args, **kwargs)
-        self.edits = {filename: FileNameEdit(text=filename) for filename in filenames}
+    def __init__(self, editor: Editor, *args, **kwargs):
+        super().__init__(parent=editor.widget, *args, **kwargs)
+        self.editor: Editor = editor
+        self.edits: Optional[Dict[str, FileNameEdit]] = None
+        self.note: Optional[Note] = None
+        self.edits_layout = QVBoxLayout()
         self.bottom_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.setWindowTitle(f"{ADDON_NAME}: rename files")
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
         self.setLayout(self.make_layout())
         self.connect_ui_elements()
 
+    def invoke(self, note: Note, filenames: List[str]) -> None:
+        self.note = note
+        self.clear_edits()
+        self.edits = {filename: FileNameEdit(text=filename) for filename in filenames}
+        for widget in self.edits.values():
+            self.edits_layout.addWidget(widget)
+        self.show()
+
+    def clear_edits(self):
+        if self.edits:
+            for widget in self.edits.values():
+                self.edits_layout.removeWidget(widget)
+        assert self.edits_layout.count() == 0
+
     def make_layout(self) -> QLayout:
         layout = QVBoxLayout()
-        for widget in self.edits.values():
-            layout.addWidget(widget)
+        layout.addLayout(self.edits_layout)
         layout.addWidget(self.bottom_box)
         return layout
 
@@ -73,6 +90,11 @@ class MediaRenameDialog(QDialog):
 
     def on_accept(self):
         return self.accept() if all(e.valid for e in self.edits.values()) else None
+
+    def accept(self) -> None:
+        super().accept()
+        if to_rename := list(self.to_rename()):
+            rename_media_files(to_rename, self.note, self.editor)
 
 
 def find_sounds(html: str) -> List[str]:
@@ -93,31 +115,43 @@ def rename_file(old_filename: str, new_filename: str) -> str:
         return mw.col.media.write_data(new_filename, f.read())
 
 
-def rename_media_files(editor: Editor) -> None:
-    if (note := editor.note) and (filenames := collect_media_filenames(joinFields(note.fields))):
-        dialog = MediaRenameDialog(parent=editor.widget, filenames=filenames)
-        if dialog.exec() and (to_rename := list(dialog.to_rename())):
-            for old_filename, new_filename in to_rename:
-                new_filename = rename_file(old_filename, new_filename)
-                for field_name, field_value in note.items():
-                    note[field_name] = field_value.replace(old_filename, new_filename)
-            CollectionOp(
-                parent=editor.widget,
-                op=lambda col: col.update_note(note)
-            ).success(
-                lambda out: tooltip(f"Renamed {len(to_rename)} files", parent=editor.parentWindow)
-            ).run_in_background()
+def rename_media_files(to_rename: List[Tuple[str, str]], note: Note, parent: Editor):
+    for old_filename, new_filename in to_rename:
+        new_filename = rename_file(old_filename, new_filename)
+        for field_name, field_value in note.items():
+            note[field_name] = field_value.replace(old_filename, new_filename)
+    CollectionOp(
+        parent=parent.widget,
+        op=lambda col: col.update_note(note)
+    ).success(
+        lambda out: tooltip(f"Renamed {len(to_rename)} files", parent=parent.parentWindow)
+    ).run_in_background()
 
 
-def add_editor_button(buttons: List[str], editor: Editor) -> None:
-    b = editor.addButton(
-        icon=os.path.join(ADDON_PATH, "icons", "edit.svg"),
-        cmd="rename_media_files",
-        func=rename_media_files,
-        tip="Rename media files referenced by note.",
-    )
-    buttons.append(b)
+class Menus:
+    file_rename_dialog: Optional[MediaRenameDialog] = None
+
+    @classmethod
+    def editor_post_init(cls, editor: Editor) -> None:
+        cls.file_rename_dialog = editor.file_rename_dialog = MediaRenameDialog(editor)
+
+    @classmethod
+    def show_rename_dialog(cls, editor: Editor) -> None:
+        if cls.file_rename_dialog and not cls.file_rename_dialog.isVisible() and editor.note:
+            if filenames := collect_media_filenames(joinFields(editor.note.fields)):
+                cls.file_rename_dialog.invoke(editor.note, filenames)
+
+    @classmethod
+    def add_editor_button(cls, buttons: List[str], editor: Editor) -> None:
+        b = editor.addButton(
+            icon=os.path.join(ADDON_PATH, "icons", "edit.svg"),
+            cmd="rename_media_files",
+            func=cls.show_rename_dialog,
+            tip="Rename media files referenced by note.",
+        )
+        buttons.append(b)
 
 
 def init():
-    gui_hooks.editor_did_init_buttons.append(add_editor_button)
+    gui_hooks.editor_did_init.append(Menus.editor_post_init)
+    gui_hooks.editor_did_init_buttons.append(Menus.add_editor_button)
