@@ -18,7 +18,7 @@
 
 import subprocess
 from distutils.spawn import find_executable
-from typing import Optional, AnyStr, List
+from typing import Optional, AnyStr, List, Any
 
 from aqt import mw
 from aqt.editor import Editor
@@ -61,7 +61,7 @@ def find_cwebp():
     return exe
 
 
-def stringify_args(args: list) -> list:
+def stringify_args(args: List[Any]) -> List[str]:
     return [str(arg) for arg in args]
 
 
