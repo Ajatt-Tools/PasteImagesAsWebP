@@ -64,6 +64,10 @@ There's also a button in the Editor toolbar that lets you do the same.
 
 To bulk-convert existing images in your collection, select `Edit` > `Bulk-convert to WebP` in the card browser.
 
+To rename media files on a particular note,
+open the Anki Browser, select the note and click on the pencil icon on the toolbar.
+A dialog will pop up asking you to enter new filenames.
+
 ## Contributions
 
 If you've found a bug or want to extend the add-on, please let us know in the
