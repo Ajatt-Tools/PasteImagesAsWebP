@@ -170,6 +170,19 @@ def convert_image(filename: str) -> Optional[str]:
         return w.filename
 
 
+def reload_note(f: Callable[[Browser, Sequence[NoteId]], None]):
+    def decorator(browser: Browser, note_ids: Sequence[NoteId]):
+        note = browser.editor.note
+        if note:
+            browser.editor.set_note(None)
+        f(browser, note_ids)
+        if note:
+            browser.editor.set_note(note)
+
+    return decorator
+
+
+@reload_note
 def bulk_convert(browser: Browser, note_ids: Sequence[NoteId]):
     progress_bar = ProgressBar()
     convert_task = ConvertTask(note_ids)
