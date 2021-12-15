@@ -188,9 +188,8 @@ def bulk_convert(browser: Browser, note_ids: Sequence[NoteId]):
 def on_bulk_convert(browser: Browser):
     selected_nids = browser.selectedNotes()
     if selected_nids:
-        dialog = SettingsDialog(browser)
-        dialog.exec_()
-        bulk_convert(browser, selected_nids)
+        if SettingsDialog(browser).exec():
+            bulk_convert(browser, selected_nids)
     else:
         tooltip("No cards selected.")
 
