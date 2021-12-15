@@ -197,7 +197,7 @@ def on_bulk_convert(browser: Browser):
 
 def setup_menu(browser: Browser):
     a = QAction("Bulk-convert to WebP", browser)
-    a.triggered.connect(lambda: on_bulk_convert(browser))
+    qconnect(a.triggered, lambda: on_bulk_convert(browser))
     browser.form.menuEdit.addSeparator()
     browser.form.menuEdit.addAction(a)
 

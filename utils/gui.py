@@ -159,21 +159,18 @@ class SettingsDialog(QDialog):
         self.sliders['image_quality'].set_tooltip(quality_tooltip)
 
     def setup_logic(self):
-        self.okButton.clicked.connect(self.dialog_accept)
-        self.cancelButton.clicked.connect(self.dialog_reject)
+        qconnect(self.okButton.clicked, self.on_accept)
+        qconnect(self.cancelButton.clicked, self.reject)
 
     def set_initial_values(self):
         for key, slider in self.sliders.items():
             slider.value = config.get(key)
 
-    def dialog_accept(self):
+    def on_accept(self):
         for key, slider in self.sliders.items():
             config[key] = slider.value
         write_config()
         self.accept()
-
-    def dialog_reject(self):
-        self.reject()
 
 
 class ImageDimensions(NamedTuple):
@@ -275,10 +272,10 @@ class SettingsMenuDialog(SettingsDialog):
         layout.addRow("Filename pattern", self.filename_pattern_combo_box)
         return layout
 
-    def dialog_accept(self):
+    def on_accept(self):
         config['show_settings'] = self.when_show_dialog_combo_box.currentData()
         config['filename_pattern_num'] = self.filename_pattern_combo_box.currentIndex()
 
         for key, widget in self.checkboxes.items():
             config[key] = widget.isChecked()
-        super().dialog_accept()
+        super().on_accept()
