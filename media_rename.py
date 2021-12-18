@@ -3,7 +3,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import re
-from typing import List, Iterable, Tuple, Optional, Dict
+from typing import List, Iterable, Tuple, Optional
 
 from anki.notes import Note
 from anki.utils import joinFields
@@ -13,6 +13,7 @@ from aqt.operations import CollectionOp
 from aqt.qt import *
 from aqt.utils import tooltip
 
+from .ajt_common import tweak_window
 from .consts import *
 
 
@@ -46,31 +47,23 @@ class FileNameEdit(QLineEdit):
 
 
 class MediaRenameDialog(QDialog):
-    def __init__(self, editor: Editor, *args, **kwargs):
-        super().__init__(parent=editor.widget, *args, **kwargs)
+    def __init__(self, editor: Editor, note: Note, filenames: List[str]):
+        super().__init__(parent=editor.widget)
         self.editor: Editor = editor
-        self.edits: Optional[Dict[str, FileNameEdit]] = None
-        self.note: Optional[Note] = None
+        self.edits = {filename: FileNameEdit(text=filename) for filename in filenames}
+        self.note = note
         self.edits_layout = QVBoxLayout()
         self.bottom_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.setWindowTitle(f"{ADDON_NAME}: rename files")
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
         self.setLayout(self.make_layout())
         self.connect_ui_elements()
+        tweak_window(self)
 
-    def invoke(self, note: Note, filenames: List[str]) -> None:
-        self.note = note
-        self.clear_edits()
-        self.edits = {filename: FileNameEdit(text=filename) for filename in filenames}
+    def show(self) -> None:
         for widget in self.edits.values():
             self.edits_layout.addWidget(widget)
-        self.show()
-
-    def clear_edits(self):
-        if self.edits:
-            for widget in self.edits.values():
-                self.edits_layout.removeWidget(widget)
-        assert self.edits_layout.count() == 0
+        super().show()
 
     def make_layout(self) -> QLayout:
         layout = QVBoxLayout()
@@ -132,14 +125,21 @@ class Menus:
     file_rename_dialog: Optional[MediaRenameDialog] = None
 
     @classmethod
-    def editor_post_init(cls, editor: Editor) -> None:
-        cls.file_rename_dialog = editor.file_rename_dialog = MediaRenameDialog(editor)
+    def del_ref(cls) -> None:
+        cls.file_rename_dialog = None
+
+    @classmethod
+    def create_rename_dialog(cls, *args, **kwargs) -> MediaRenameDialog:
+        d = cls.file_rename_dialog = MediaRenameDialog(*args, **kwargs)
+        qconnect(d.finished, lambda result: cls.del_ref())
+        return d
 
     @classmethod
     def show_rename_dialog(cls, editor: Editor) -> None:
-        if cls.file_rename_dialog and not cls.file_rename_dialog.isVisible() and editor.note:
-            if filenames := collect_media_filenames(joinFields(editor.note.fields)):
-                cls.file_rename_dialog.invoke(editor.note, filenames)
+        if cls.file_rename_dialog:
+            return
+        elif editor.note and (filenames := collect_media_filenames(joinFields(editor.note.fields))):
+            cls.create_rename_dialog(editor, editor.note, filenames).show()
 
     @classmethod
     def add_editor_button(cls, buttons: List[str], editor: Editor) -> None:
@@ -153,5 +153,4 @@ class Menus:
 
 
 def init():
-    gui_hooks.editor_did_init.append(Menus.editor_post_init)
     gui_hooks.editor_did_init_buttons.append(Menus.add_editor_button)
