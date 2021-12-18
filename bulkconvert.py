@@ -16,6 +16,7 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
+import functools
 import re
 import threading
 from typing import Optional, Generator, Sequence, Iterable, Dict, Set
@@ -171,6 +172,7 @@ def convert_image(filename: str) -> Optional[str]:
 
 
 def reload_note(f: Callable[[Browser, Sequence[NoteId]], None]):
+    @functools.wraps(f)
     def decorator(browser: Browser, note_ids: Sequence[NoteId]):
         note = browser.editor.note
         if note:
