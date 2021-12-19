@@ -25,7 +25,7 @@ class FileNameEdit(QLineEdit):
         self.setMaxLength(self._edit_max_len)
         self.setFont(QFont("Monospace", 11))
         self.setText(text)
-        self.textChanged.connect(self.validate)
+        qconnect(self.textChanged, self.validate)
         self._valid = True
 
     @property
@@ -36,10 +36,10 @@ class FileNameEdit(QLineEdit):
         return super().text().strip('-_ ')
 
     def validate(self):
-        self._valid = all((
-            len(self.text().encode('utf-8')) <= self._edit_max_len,
-            re.match(r'^[^\[\]<>:\'"/|?*\\]+\.[\w]+$', self.text()),
-        ))
+        self._valid = (
+            len(self.text().encode('utf-8')) <= self._edit_max_len
+            and re.match(r'^[^\[\]<>:\'"/|?*\\]+\.[\w]+$', self.text())
+        )
         if self._valid:
             self.setStyleSheet("")
         else:
@@ -47,8 +47,8 @@ class FileNameEdit(QLineEdit):
 
 
 class MediaRenameDialog(QDialog):
-    def __init__(self, editor: Editor, note: Note, filenames: List[str]):
-        super().__init__(parent=editor.widget)
+    def __init__(self, editor: Editor, note: Note, filenames: List[str], *args, **kwargs):
+        super().__init__(parent=editor.widget, *args, **kwargs)
         self.editor: Editor = editor
         self.edits = {filename: FileNameEdit(text=filename) for filename in filenames}
         self.note = note
@@ -122,6 +122,7 @@ def rename_media_files(to_rename: List[Tuple[str, str]], note: Note, parent: Edi
 
 
 class Menus:
+    """Holds a reference to MediaRenameDialog to avoid spawning the same window multiple times."""
     file_rename_dialog: Optional[MediaRenameDialog] = None
 
     @classmethod
