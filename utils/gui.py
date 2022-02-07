@@ -98,9 +98,7 @@ class SettingsDialog(QDialog):
             'image_quality': RichSlider("Quality", "%", limit=100),
         }
 
-        self.buttonRow = QHBoxLayout()
-        self.okButton = QPushButton("Ok")
-        self.cancelButton = QPushButton("Cancel")
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self._setup_ui()
 
     def _setup_ui(self):
@@ -109,7 +107,6 @@ class SettingsDialog(QDialog):
 
         self.setLayout(self.create_main_layout())
         self.populate_slider_row()
-        self.populate_button_row()
         self.setup_tool_tips()
         self.setup_logic()
         self.set_initial_values()
@@ -118,7 +115,7 @@ class SettingsDialog(QDialog):
         layout = QVBoxLayout()
         layout.addLayout(self.sliderRow)
         layout.addStretch()
-        layout.addLayout(self.buttonRow)
+        layout.addWidget(self.button_box)
         return layout
 
     def populate_slider_row(self):
@@ -135,12 +132,6 @@ class SettingsDialog(QDialog):
 
         gbox.setLayout(grid)
         return gbox
-
-    def populate_button_row(self):
-        for button in (self.okButton, self.cancelButton):
-            button.setMinimumHeight(BUTTON_MIN_HEIGHT)
-            self.buttonRow.addWidget(button)
-        self.buttonRow.addStretch()
 
     def setup_tool_tips(self):
         side_tooltip = str(
@@ -159,8 +150,8 @@ class SettingsDialog(QDialog):
         self.sliders['image_quality'].set_tooltip(quality_tooltip)
 
     def setup_logic(self):
-        qconnect(self.okButton.clicked, self.on_accept)
-        qconnect(self.cancelButton.clicked, self.reject)
+        qconnect(self.button_box.accepted, self.on_accept)
+        qconnect(self.button_box.rejected, self.reject)
 
     def set_initial_values(self):
         for key, slider in self.sliders.items():

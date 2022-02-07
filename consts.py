@@ -22,7 +22,6 @@ ADDON_PATH = os.path.dirname(__file__)
 ADDON_NAME = "Paste Images As WebP"
 
 WINDOW_MIN_WIDTH = 400
-BUTTON_MIN_HEIGHT = 29
 IMAGE_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif', '.bmp')
 
 REQUEST_HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; Anki)'}
