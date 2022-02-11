@@ -29,7 +29,7 @@ from .gui import ShowOptions, PasteDialog, ImageDimensions
 from .mime_helper import image_candidates, files
 from .temp_file import TempFile
 from ..config import config
-from ..consts import ADDON_PATH, IMAGE_EXTENSIONS
+from ..consts import ADDON_PATH
 
 is_mac = sys.platform.startswith("darwin")
 is_win = sys.platform.startswith("win32")
@@ -41,10 +41,6 @@ class CanceledPaste(Warning):
 
 class InvalidInput(Warning):
     pass
-
-
-def image_like_filename(filename: str):
-    return any(filename.lower().endswith(ext) for ext in IMAGE_EXTENSIONS)
 
 
 def find_cwebp():
@@ -115,8 +111,7 @@ class ImageConverter:
                 self.original_filename = fetch_filename(mime)
                 break
         else:
-            if any(not image_like_filename(url.fileName()) for url in mime.urls()):
-                raise InvalidInput("Not an image file.")
+            raise InvalidInput("Not an image file.")
 
         return self.dimensions is not None
 
