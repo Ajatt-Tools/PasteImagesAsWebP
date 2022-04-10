@@ -152,6 +152,7 @@ class SettingsDialog(QDialog):
     def setup_logic(self):
         qconnect(self.button_box.accepted, self.on_accept)
         qconnect(self.button_box.rejected, self.reject)
+        self.button_box.button(QDialogButtonBox.Ok).setFocus()
 
     def set_initial_values(self):
         for key, slider in self.sliders.items():
