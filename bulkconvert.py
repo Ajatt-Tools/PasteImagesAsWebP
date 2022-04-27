@@ -171,11 +171,11 @@ def convert_image(filename: str) -> Optional[str]:
 
 def reload_note(f: Callable[[Browser, Sequence[NoteId]], None]):
     @functools.wraps(f)
-    def decorator(browser: Browser, note_ids: Sequence[NoteId]):
+    def decorator(browser: Browser, *args, **kwargs):
         note = browser.editor.note
         if note:
             browser.editor.set_note(None)
-        f(browser, note_ids)
+        f(browser, *args, **kwargs)
         if note:
             browser.editor.set_note(note)
 
