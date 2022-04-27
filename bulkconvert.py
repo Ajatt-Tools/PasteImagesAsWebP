@@ -19,18 +19,17 @@
 import functools
 import re
 import threading
-from typing import Optional, Generator, Sequence, Iterable, Dict, Set
+from typing import Optional, Sequence, Iterable, Dict, Set
 
 from anki.collection import Collection
 from anki.notes import Note
-from anki.utils import joinFields
 from aqt import mw, gui_hooks
 from aqt.browser import Browser
 from aqt.operations import CollectionOp, ResultWithChanges
 from aqt.qt import *
 from aqt.utils import showInfo
 
-from .common import tooltip, NoteId
+from .common import tooltip, NoteId, join_fields
 from .utils.gui import SettingsDialog
 from .utils.webp import ImageConverter
 
@@ -138,7 +137,7 @@ class ProgressBar(QDialog):
         return self.bar.setRange(min_val, max_val)
 
 
-def find_eligible_images(html: str) -> Generator[str, None, None]:
+def find_eligible_images(html: str) -> Iterable[str]:
     for image in re.findall(r'<img[^>]*src="([^"]+)"[^>]*>', html):
         if image[-5:] != '.webp':
             yield image
@@ -150,12 +149,11 @@ def find_images_to_convert_and_notes(note_ids: Iterable) -> Dict[str, Set[NoteId
     """
     to_convert = {}
 
-    for note_id, note_content in zip(note_ids, (joinFields(mw.col.getNote(note_id).fields) for note_id in note_ids)):
+    for note_id, note_content in zip(note_ids, (join_fields(mw.col.get_note(note_id).fields) for note_id in note_ids)):
         if '<img' not in note_content:
             continue
         for filename in find_eligible_images(note_content):
-            to_convert[filename] = to_convert.get(filename, set())
-            to_convert[filename].add(note_id)
+            to_convert.setdefault(filename, set()).add(note_id)
 
     return to_convert
 

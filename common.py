@@ -18,7 +18,6 @@
 
 from aqt.editor import Editor
 from aqt.qt import *
-from aqt.utils import tooltip as __tooltip
 
 from .config import config
 from .utils.gui import ShowOptions
@@ -31,8 +30,15 @@ except ImportError:
 
     NoteId = NewType("NoteId", int)
 
+try:
+    from anki.utils import join_fields
+except ImportError:
+    from anki.utils import joinFields as join_fields  # type: ignore
+
 
 def tooltip(msg: str) -> None:
+    from aqt.utils import tooltip as __tooltip
+
     return __tooltip(
         msg=msg,
         period=int(config.get('tooltip_duration_seconds', 5)) * 1000
