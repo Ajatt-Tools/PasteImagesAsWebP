@@ -21,5 +21,6 @@
     ],
     "filename_pattern_num": 0,
     "tooltip_duration_seconds": 5,
-    "preserve_original_filenames": true
+    "preserve_original_filenames": true,
+    "bulk_convert_field": null
 }

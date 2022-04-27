@@ -184,6 +184,13 @@ class FieldSelector(QGroupBox):
     def selected_field(self) -> Optional[str]:
         return self._combo.currentText() if self.isChecked() else None
 
+    def set_field(self, field: Optional[str]):
+        if field:
+            self.setChecked(True)
+            self._combo.setCurrentText(field)
+        else:
+            self.setChecked(False)
+
 
 class BulkConvertDialog(SettingsDialog):
     """Dialog shown on bulk-convert."""
@@ -199,9 +206,17 @@ class BulkConvertDialog(SettingsDialog):
         return (mw.col.get_note(nid) for nid in self.parent().selectedNotes())
 
     def populate_main_vbox(self):
-        super().populate_main_vbox()
         self._main_vbox.addWidget(self._field_selector)
+        super().populate_main_vbox()
+
+    def set_initial_values(self):
         self._field_selector.add_fields(get_all_keys(self.selected_notes()))
+        self._field_selector.set_field(config.get('bulk_convert_field'))
+        super().set_initial_values()
+
+    def on_accept(self):
+        config['bulk_convert_field'] = self._field_selector.selected_field()
+        super().on_accept()
 
 
 class ImageDimensions(NamedTuple):
