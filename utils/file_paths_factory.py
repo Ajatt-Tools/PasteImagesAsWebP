@@ -99,7 +99,7 @@ class FilePathFactory:
                 pattern = self.patterns[0]
             out_filename = self.make_filename(pattern)
 
-        return os.path.join(self.target_dir_path, ensure_unique(out_filename))
+        return ensure_unique(os.path.join(self.target_dir_path, out_filename))
 
     @compatible_filename
     def sort_field(self) -> str:
