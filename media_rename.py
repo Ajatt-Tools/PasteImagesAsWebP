@@ -6,7 +6,7 @@ import re
 from typing import List, Iterable, Tuple, Optional
 
 from anki.notes import Note
-from anki.utils import joinFields
+from .common import join_fields
 from aqt import gui_hooks, mw
 from aqt.editor import Editor
 from aqt.operations import CollectionOp
@@ -139,7 +139,7 @@ class Menus:
     def show_rename_dialog(cls, editor: Editor) -> None:
         if cls.file_rename_dialog:
             return
-        elif editor.note and (filenames := collect_media_filenames(joinFields(editor.note.fields))):
+        elif editor.note and (filenames := collect_media_filenames(join_fields(editor.note.fields))):
             cls.create_rename_dialog(editor, editor.note, filenames).show()
 
     @classmethod
