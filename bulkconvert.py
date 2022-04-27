@@ -29,9 +29,16 @@ from aqt.operations import CollectionOp, ResultWithChanges
 from aqt.qt import *
 from aqt.utils import showInfo
 
+from .config import config
 from .common import tooltip, NoteId, join_fields
 from .utils.gui import BulkConvertDialog
 from .utils.webp import ImageConverter
+
+
+def find_eligible_images(html: str, include_webp: bool = False) -> Iterable[str]:
+    for image in re.findall(r'<img[^<>]*src="([^"]+)"[^<>]*>', html):
+        if include_webp or image[-5:] != '.webp':
+            yield image
 
 
 class ConvertTask:
@@ -60,7 +67,7 @@ class ConvertTask:
             note_content = join_fields([note[field] for field in self.keys_to_update(note)])
             if '<img' not in note_content:
                 continue
-            for filename in find_eligible_images(note_content):
+            for filename in find_eligible_images(note_content, include_webp=config.get('bulk_reconvert_webp')):
                 to_convert.setdefault(filename, set()).add(note.id)
 
         return to_convert
@@ -161,12 +168,6 @@ class ProgressBar(QDialog):
 
     def set_range(self, min_val: int, max_val: int) -> None:
         return self.bar.setRange(min_val, max_val)
-
-
-def find_eligible_images(html: str) -> Iterable[str]:
-    for image in re.findall(r'<img[^>]*src="([^"]+)"[^>]*>', html):
-        if image[-5:] != '.webp':
-            yield image
 
 
 def convert_image(filename: str) -> Optional[str]:

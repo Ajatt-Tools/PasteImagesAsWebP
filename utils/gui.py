@@ -197,6 +197,7 @@ class BulkConvertDialog(SettingsDialog):
 
     def __init__(self, *args, **kwargs):
         self._field_selector = FieldSelector()
+        self._reconvert_checkbox = QCheckBox("Reconvert existing WebP images")
         super().__init__(*args, **kwargs)
 
     def selected_field(self):
@@ -206,16 +207,19 @@ class BulkConvertDialog(SettingsDialog):
         return (mw.col.get_note(nid) for nid in self.parent().selectedNotes())
 
     def populate_main_vbox(self):
-        self._main_vbox.addWidget(self._field_selector)
         super().populate_main_vbox()
+        self._main_vbox.addWidget(self._field_selector)
+        self._main_vbox.addWidget(self._reconvert_checkbox)
 
     def set_initial_values(self):
         self._field_selector.add_fields(get_all_keys(self.selected_notes()))
         self._field_selector.set_field(config.get('bulk_convert_field'))
+        self._reconvert_checkbox.setChecked(config.get('bulk_reconvert_webp'))
         super().set_initial_values()
 
     def on_accept(self):
         config['bulk_convert_field'] = self._field_selector.selected_field()
+        config['bulk_reconvert_webp'] = self._reconvert_checkbox.isChecked()
         super().on_accept()
 
 
