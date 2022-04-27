@@ -91,14 +91,13 @@ class SettingsDialog(QDialog):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.sliderRow = QVBoxLayout()
-        self.sliders = {
+        self._sliders = {
             'image_width': RichSlider("Width", "px", limit=config['max_image_width']),
             'image_height': RichSlider("Height", "px", limit=config['max_image_height']),
             'image_quality': RichSlider("Quality", "%", limit=100),
         }
-
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self._main_vbox = QVBoxLayout()
+        self._button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self._setup_ui()
 
     def _setup_ui(self):
@@ -106,20 +105,20 @@ class SettingsDialog(QDialog):
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
 
         self.setLayout(self.create_main_layout())
-        self.populate_slider_row()
+        self.populate_main_vbox()
         self.setup_tool_tips()
         self.setup_logic()
         self.set_initial_values()
 
     def create_main_layout(self):
         layout = QVBoxLayout()
-        layout.addLayout(self.sliderRow)
+        layout.addLayout(self._main_vbox)
         layout.addStretch()
-        layout.addWidget(self.button_box)
+        layout.addWidget(self._button_box)
         return layout
 
-    def populate_slider_row(self):
-        self.sliderRow.addWidget(self.create_sliders_group_box(self.sliders.values()))
+    def populate_main_vbox(self):
+        self._main_vbox.addWidget(self.create_sliders_group_box(self._sliders.values()))
 
     @staticmethod
     def create_sliders_group_box(sliders: Iterable[RichSlider]) -> QGroupBox:
@@ -145,21 +144,21 @@ class SettingsDialog(QDialog):
             "A small factor produces a smaller file with lower quality.\n"
             "Best quality is achieved by using a value of 100."
         )
-        self.sliders['image_width'].set_tooltip(side_tooltip % 'width')
-        self.sliders['image_height'].set_tooltip(side_tooltip % 'height')
-        self.sliders['image_quality'].set_tooltip(quality_tooltip)
+        self._sliders['image_width'].set_tooltip(side_tooltip % 'width')
+        self._sliders['image_height'].set_tooltip(side_tooltip % 'height')
+        self._sliders['image_quality'].set_tooltip(quality_tooltip)
 
     def setup_logic(self):
-        qconnect(self.button_box.accepted, self.on_accept)
-        qconnect(self.button_box.rejected, self.reject)
-        self.button_box.button(QDialogButtonBox.Ok).setFocus()
+        qconnect(self._button_box.accepted, self.on_accept)
+        qconnect(self._button_box.rejected, self.reject)
+        self._button_box.button(QDialogButtonBox.Ok).setFocus()
 
     def set_initial_values(self):
-        for key, slider in self.sliders.items():
+        for key, slider in self._sliders.items():
             slider.value = config.get(key)
 
     def on_accept(self):
-        for key, slider in self.sliders.items():
+        for key, slider in self._sliders.items():
             config[key] = slider.value
         write_config()
         self.accept()
@@ -177,9 +176,9 @@ class PasteDialog(SettingsDialog):
         self.image = image
         super().__init__(parent, *args, **kwargs)
 
-    def populate_slider_row(self):
-        super().populate_slider_row()
-        self.sliderRow.addWidget(self.create_scale_settings_group_box())
+    def populate_main_vbox(self):
+        super().populate_main_vbox()
+        self._main_vbox.addWidget(self.create_scale_settings_group_box())
 
     def create_scale_settings_group_box(self):
         gbox = QGroupBox(f"Original size: {self.image.width} x {self.image.height} px")
@@ -188,7 +187,7 @@ class PasteDialog(SettingsDialog):
 
     def adjust_sliders(self, factor):
         for param in ('width', 'height'):
-            if (widget := self.sliders[f'image_{param}']).value > 0:
+            if (widget := self._sliders[f'image_{param}']).value > 0:
                 widget.value = int(getattr(self.image, param) * factor)
 
     def create_scale_options_grid(self):
@@ -234,9 +233,9 @@ class SettingsMenuDialog(SettingsDialog):
             combobox.addItem(option)
         return combobox
 
-    def populate_slider_row(self):
-        super().populate_slider_row()
-        self.sliderRow.addWidget(self.create_additional_settings_group_box())
+    def populate_main_vbox(self):
+        super().populate_main_vbox()
+        self._main_vbox.addWidget(self.create_additional_settings_group_box())
 
     def create_additional_settings_group_box(self):
         def create_inner_vbox():
