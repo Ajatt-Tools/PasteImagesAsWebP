@@ -16,9 +16,12 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
+import itertools
 from enum import Enum
-from typing import NamedTuple, Iterable, Tuple
+from typing import NamedTuple, Iterable, Tuple, Optional, List
 
+from anki.notes import Note
+from aqt import mw
 from aqt.qt import *
 
 from .file_paths_factory import FilePathFactory
@@ -87,8 +90,6 @@ class RichSlider:
 
 
 class SettingsDialog(QDialog):
-    """Dialog shown on bulk-convert."""
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._sliders = {
@@ -103,7 +104,6 @@ class SettingsDialog(QDialog):
     def _setup_ui(self):
         self.setWindowTitle(ADDON_NAME)
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
-
         self.setLayout(self.create_main_layout())
         self.populate_main_vbox()
         self.setup_tool_tips()
@@ -164,6 +164,46 @@ class SettingsDialog(QDialog):
         self.accept()
 
 
+def get_all_keys(notes: Iterable[Note]) -> List[str]:
+    return sorted(set(itertools.chain(*(note.keys() for note in notes))))
+
+
+class FieldSelector(QGroupBox):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._combo = QComboBox()
+        self.setTitle("Limit to field")
+        self.setCheckable(True)
+        self.setChecked(False)
+        self.setLayout(QVBoxLayout())
+        self.layout().addWidget(self._combo)
+
+    def add_fields(self, fields: Iterable[str]):
+        return self._combo.addItems(fields)
+
+    def selected_field(self) -> Optional[str]:
+        return self._combo.currentText() if self.isChecked() else None
+
+
+class BulkConvertDialog(SettingsDialog):
+    """Dialog shown on bulk-convert."""
+
+    def __init__(self, *args, **kwargs):
+        self._field_selector = FieldSelector()
+        super().__init__(*args, **kwargs)
+
+    def selected_field(self):
+        return self._field_selector.selected_field()
+
+    def selected_notes(self) -> Iterable[Note]:
+        return (mw.col.get_note(nid) for nid in self.parent().selectedNotes())
+
+    def populate_main_vbox(self):
+        super().populate_main_vbox()
+        self._main_vbox.addWidget(self._field_selector)
+        self._field_selector.add_fields(get_all_keys(self.selected_notes()))
+
+
 class ImageDimensions(NamedTuple):
     width: int
     height: int
@@ -172,7 +212,7 @@ class ImageDimensions(NamedTuple):
 class PasteDialog(SettingsDialog):
     """Dialog shown on paste."""
 
-    def __init__(self, parent, image: ImageDimensions, *args, **kwargs):
+    def __init__(self, parent: QWidget, image: ImageDimensions, *args, **kwargs):
         self.image = image
         super().__init__(parent, *args, **kwargs)
 

@@ -30,16 +30,40 @@ from aqt.qt import *
 from aqt.utils import showInfo
 
 from .common import tooltip, NoteId, join_fields
-from .utils.gui import SettingsDialog
+from .utils.gui import BulkConvertDialog
 from .utils.webp import ImageConverter
 
 
 class ConvertTask:
-    def __init__(self, note_ids: Sequence[NoteId]):
+    def __init__(self, note_ids: Sequence[NoteId], selected_field: Optional[str]):
         self.note_ids = note_ids
-        self.to_convert = find_images_to_convert_and_notes(note_ids)
+        self.selected_field = selected_field
+        self.to_convert = self.find_images_to_convert_and_notes()
         self.converted: Optional[Dict[str, str]] = None
         self.failed: Optional[Dict[str, None]] = None
+
+    def keys_to_update(self, note: Note) -> Iterable[str]:
+        if not self.selected_field:
+            return note.keys()
+        elif self.selected_field in note.keys():
+            return self.selected_field,
+        else:
+            return ()
+
+    def find_images_to_convert_and_notes(self) -> Dict[str, Set[NoteId]]:
+        """
+        Maps each filename to a set of note ids that reference the filename.
+        """
+        to_convert = {}
+
+        for note in map(mw.col.get_note, self.note_ids):
+            note_content = join_fields([note[field] for field in self.keys_to_update(note)])
+            if '<img' not in note_content:
+                continue
+            for filename in find_eligible_images(note_content):
+                to_convert.setdefault(filename, set()).add(note.id)
+
+        return to_convert
 
     @property
     def size(self) -> int:
@@ -61,10 +85,12 @@ class ConvertTask:
         to_update: Dict[NoteId, Note] = {}
 
         for initial_filename, converted_filename in self.converted.items():
-            for note_id in self.to_convert[initial_filename]:
-                if note_id not in to_update:
-                    to_update[note_id] = mw.col.getNote(note_id)
-                for key in (note := to_update[note_id]).keys():
+            relevant_notes = map(
+                lambda nid: to_update.setdefault(nid, mw.col.get_note(nid)),
+                self.to_convert[initial_filename]
+            )
+            for note in relevant_notes:
+                for key in self.keys_to_update(note):
                     note[key] = note[key].replace(initial_filename, converted_filename)
 
         col.update_notes(tuple(to_update.values()))
@@ -143,21 +169,6 @@ def find_eligible_images(html: str) -> Iterable[str]:
             yield image
 
 
-def find_images_to_convert_and_notes(note_ids: Iterable) -> Dict[str, Set[NoteId]]:
-    """
-    Maps each filename to a set of note ids that reference the filename.
-    """
-    to_convert = {}
-
-    for note_id, note_content in zip(note_ids, (join_fields(mw.col.get_note(note_id).fields) for note_id in note_ids)):
-        if '<img' not in note_content:
-            continue
-        for filename in find_eligible_images(note_content):
-            to_convert.setdefault(filename, set()).add(note_id)
-
-    return to_convert
-
-
 def convert_image(filename: str) -> Optional[str]:
     try:
         w = ImageConverter()
@@ -183,9 +194,9 @@ def reload_note(f: Callable[[Browser, Sequence[NoteId]], None]):
 
 
 @reload_note
-def bulk_convert(browser: Browser, note_ids: Sequence[NoteId]):
+def bulk_convert(browser: Browser, note_ids: Sequence[NoteId], selected_field: Optional[str]):
     progress_bar = ProgressBar()
-    convert_task = ConvertTask(note_ids)
+    convert_task = ConvertTask(note_ids, selected_field)
 
     progress_bar.set_range(0, convert_task.size)
     progress_bar.task = convert_task
@@ -195,14 +206,16 @@ def bulk_convert(browser: Browser, note_ids: Sequence[NoteId]):
 
     progress_bar.exec_()
     convert_task.update_notes(browser)
+    browser.editor.loadNoteKeepingFocus()
     t.join()
 
 
 def on_bulk_convert(browser: Browser):
     selected_nids = browser.selectedNotes()
     if selected_nids:
-        if SettingsDialog(browser).exec():
-            bulk_convert(browser, selected_nids)
+        dialog = BulkConvertDialog(browser)
+        if dialog.exec():
+            bulk_convert(browser, selected_nids, dialog.selected_field())
     else:
         tooltip("No cards selected.")
 
