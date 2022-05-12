@@ -32,19 +32,28 @@ Install from [AnkiWeb](https://ankiweb.net/shared/info/1151815987), or manually 
 $ git clone 'https://github.com/Ajatt-Tools/PasteImagesAsWebP.git' ~/.local/share/Anki2/addons21/PasteImagesAsWebP
 ```
 
-You also need `cwebp` installed:
+Don't forget to initialize `git` submodules.
+
+The add-on expects `cwebp` executable to be added to PATH.
+On Arch Linux, `cwebp` is a part of `libwebp`.
 ```
 $ sudo pacman -S libwebp
 ```
 
-If you're running MacOS:
+On Debian/Ubuntu:
+
+```
+$ sudo apt install webp
+```
+
+On macOS:
 ```
 $ brew install webp
 ```
 
 Or download it from [google.com](https://developers.google.com/speed/webp/download)
 and save the `cwebp` executable in `~/.local/share/Anki2/addons21/PasteImagesAsWebP/support/`.
-cwebp comes included in the AnkiWeb package.
+`cwebp` comes included in the AnkiWeb package.
 
 ## Configuration
 
