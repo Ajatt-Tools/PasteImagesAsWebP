@@ -53,7 +53,10 @@ def find_cwebp():
         else:
             if is_mac:
                 exe += '_macos'
-            os.chmod(exe, 0o755)
+            if os.path.isfile(exe):
+                os.chmod(exe, 0o755)
+            else:
+                raise RuntimeError("cwebp executable is not found.")
     return exe
 
 
