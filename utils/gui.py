@@ -23,6 +23,7 @@ from typing import NamedTuple, Iterable, Tuple, Optional, List
 from anki.notes import Note
 from aqt import mw
 from aqt.qt import *
+from aqt.utils import showInfo
 
 from .checkable_combobox import CheckableComboBox
 from .file_paths_factory import FilePathFactory
@@ -219,9 +220,12 @@ class BulkConvertDialog(SettingsDialog):
         super().set_initial_values()
 
     def on_accept(self):
-        config['bulk_convert_fields'] = self._field_selector.selected_fields()
-        config['bulk_reconvert_webp'] = self._reconvert_checkbox.isChecked()
-        super().on_accept()
+        if self._field_selector.isChecked() and not self._field_selector.selected_fields():
+            showInfo(title="Can't accept settings", text="No fields selected. Nothing to convert.")
+        else:
+            config['bulk_convert_fields'] = self._field_selector.selected_fields()
+            config['bulk_reconvert_webp'] = self._reconvert_checkbox.isChecked()
+            super().on_accept()
 
 
 class ImageDimensions(NamedTuple):
