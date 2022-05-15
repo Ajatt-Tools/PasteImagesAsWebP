@@ -22,6 +22,6 @@
     "filename_pattern_num": 0,
     "tooltip_duration_seconds": 5,
     "preserve_original_filenames": true,
-    "bulk_convert_field": null,
+    "bulk_convert_fields": [],
     "bulk_reconvert_webp": false
 }

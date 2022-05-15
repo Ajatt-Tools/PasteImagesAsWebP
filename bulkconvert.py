@@ -19,7 +19,7 @@
 import functools
 import re
 import threading
-from typing import Optional, Sequence, Iterable, Dict, Set
+from typing import Optional, Sequence, Iterable, Dict, Set, List
 
 from anki.collection import Collection
 from anki.notes import Note
@@ -29,8 +29,8 @@ from aqt.operations import CollectionOp, ResultWithChanges
 from aqt.qt import *
 from aqt.utils import showInfo
 
-from .config import config
 from .common import tooltip, NoteId, join_fields
+from .config import config
 from .utils.gui import BulkConvertDialog
 from .utils.webp import ImageConverter
 
@@ -42,20 +42,18 @@ def find_eligible_images(html: str, include_webp: bool = False) -> Iterable[str]
 
 
 class ConvertTask:
-    def __init__(self, note_ids: Sequence[NoteId], selected_field: Optional[str]):
+    def __init__(self, note_ids: Sequence[NoteId], selected_fields: List[str]):
         self.note_ids = note_ids
-        self.selected_field = selected_field
+        self.selected_fields = selected_fields
         self.to_convert = self.find_images_to_convert_and_notes()
         self.converted: Optional[Dict[str, str]] = None
         self.failed: Optional[Dict[str, None]] = None
 
     def keys_to_update(self, note: Note) -> Iterable[str]:
-        if not self.selected_field:
+        if not self.selected_fields:
             return note.keys()
-        elif self.selected_field in note.keys():
-            return self.selected_field,
         else:
-            return ()
+            return filter(lambda field: field in self.selected_fields, note.keys())
 
     def find_images_to_convert_and_notes(self) -> Dict[str, Set[NoteId]]:
         """
@@ -195,9 +193,9 @@ def reload_note(f: Callable[[Browser, Sequence[NoteId]], None]):
 
 
 @reload_note
-def bulk_convert(browser: Browser, note_ids: Sequence[NoteId], selected_field: Optional[str]):
+def bulk_convert(browser: Browser, note_ids: Sequence[NoteId], selected_fields: List[str]):
     progress_bar = ProgressBar()
-    convert_task = ConvertTask(note_ids, selected_field)
+    convert_task = ConvertTask(note_ids, selected_fields)
 
     progress_bar.set_range(0, convert_task.size)
     progress_bar.task = convert_task
@@ -216,7 +214,7 @@ def on_bulk_convert(browser: Browser):
     if selected_nids:
         dialog = BulkConvertDialog(browser)
         if dialog.exec():
-            bulk_convert(browser, selected_nids, dialog.selected_field())
+            bulk_convert(browser, selected_nids, dialog.selected_fields())
     else:
         tooltip("No cards selected.")
 

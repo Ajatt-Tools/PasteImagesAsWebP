@@ -24,6 +24,7 @@ from anki.notes import Note
 from aqt import mw
 from aqt.qt import *
 
+from .checkable_combobox import CheckableComboBox
 from .file_paths_factory import FilePathFactory
 from ..config import config, write_config
 from ..consts import *
@@ -171,7 +172,7 @@ def get_all_keys(notes: Iterable[Note]) -> List[str]:
 class FieldSelector(QGroupBox):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._combo = QComboBox()
+        self._combo = CheckableComboBox()
         self.setTitle("Limit to field")
         self.setCheckable(True)
         self.setChecked(False)
@@ -179,15 +180,15 @@ class FieldSelector(QGroupBox):
         self.layout().addWidget(self._combo)
 
     def add_fields(self, fields: Iterable[str]):
-        return self._combo.addItems(fields)
+        return self._combo.addCheckableTexts(fields)
 
-    def selected_field(self) -> Optional[str]:
-        return self._combo.currentText() if self.isChecked() else None
+    def selected_fields(self) -> List[str]:
+        return list(self._combo.checkedTexts()) if self.isChecked() else []
 
-    def set_field(self, field: Optional[str]):
-        if field:
+    def set_fields(self, fields: Optional[List[str]]):
+        if fields:
             self.setChecked(True)
-            self._combo.setCurrentText(field)
+            self._combo.setCheckedTexts(fields)
         else:
             self.setChecked(False)
 
@@ -200,8 +201,8 @@ class BulkConvertDialog(SettingsDialog):
         self._reconvert_checkbox = QCheckBox("Reconvert existing WebP images")
         super().__init__(*args, **kwargs)
 
-    def selected_field(self):
-        return self._field_selector.selected_field()
+    def selected_fields(self) -> List[str]:
+        return self._field_selector.selected_fields()
 
     def selected_notes(self) -> Iterable[Note]:
         return (mw.col.get_note(nid) for nid in self.parent().selectedNotes())
@@ -213,12 +214,12 @@ class BulkConvertDialog(SettingsDialog):
 
     def set_initial_values(self):
         self._field_selector.add_fields(get_all_keys(self.selected_notes()))
-        self._field_selector.set_field(config.get('bulk_convert_field'))
+        self._field_selector.set_fields(config.get('bulk_convert_fields'))
         self._reconvert_checkbox.setChecked(config.get('bulk_reconvert_webp'))
         super().set_initial_values()
 
     def on_accept(self):
-        config['bulk_convert_field'] = self._field_selector.selected_field()
+        config['bulk_convert_fields'] = self._field_selector.selected_fields()
         config['bulk_reconvert_webp'] = self._reconvert_checkbox.isChecked()
         super().on_accept()
 
