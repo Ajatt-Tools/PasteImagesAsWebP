@@ -214,6 +214,8 @@ def on_bulk_convert(browser: Browser):
     if selected_nids:
         dialog = BulkConvertDialog(browser)
         if dialog.exec():
+            if len(selected_nids) == 1:
+                browser.table.clear_selection()
             bulk_convert(browser, selected_nids, dialog.selected_fields())
     else:
         tooltip("No cards selected.")
