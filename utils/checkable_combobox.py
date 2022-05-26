@@ -22,7 +22,7 @@ class CheckableComboBox(QComboBox):
         self.lineEdit().setReadOnly(True)
 
         # Make the lineedit the same color as QPushButton
-        palette = qApp.palette()
+        palette = QApplication.palette()
         palette.setBrush(QPalette.Base, palette.button())
         self.lineEdit().setPalette(palette)
 
