@@ -19,12 +19,15 @@
 from anki.hooks import wrap
 from aqt import mw
 from aqt.editor import EditorWebView
+from aqt.utils import KeyboardModifiersPressed
 
 from .common import *
 from .config import config
 from .utils.gui import ShowOptions
 from .utils.webp import ImageConverter, CanceledPaste, InvalidInput
 
+def should_paste_raw():
+    return KeyboardModifiersPressed().shift
 
 def drop_event(editor: EditorWebView, event: QDropEvent, _old: Callable):
     if config.get("drag_and_drop") is False:
@@ -33,6 +36,9 @@ def drop_event(editor: EditorWebView, event: QDropEvent, _old: Callable):
 
     if event.source():
         # don't filter html from other fields
+        return _old(editor, event)
+
+    if should_paste_raw():
         return _old(editor, event)
 
     # grab cursor position before it's moved by the user
@@ -69,6 +75,9 @@ def paste_event(editor: EditorWebView, _old: Callable):
 
     if mime.html().startswith("<!--anki-->"):
         # no filtering required for internal pastes
+        return _old(editor)
+
+    if should_paste_raw():
         return _old(editor)
 
     if not (mime.hasImage() or has_local_file(mime)):
