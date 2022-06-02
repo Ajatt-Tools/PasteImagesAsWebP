@@ -61,7 +61,7 @@ def find_cwebp():
 
 
 def stringify_args(args: List[Any]) -> List[str]:
-    return [str(arg) for arg in args]
+    return list(map(str, args))
 
 
 def smaller_than_requested(image: ImageDimensions) -> bool:
