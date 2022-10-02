@@ -26,8 +26,10 @@ from .config import config
 from .utils.gui import ShowOptions
 from .utils.webp import ImageConverter, CanceledPaste, InvalidInput
 
+
 def should_paste_raw():
     return KeyboardModifiersPressed().shift
+
 
 def drop_event(editor: EditorWebView, event: QDropEvent, _old: Callable):
     if config.get("drag_and_drop") is False:

@@ -17,7 +17,6 @@
 # Any modifications to this file must keep this entire header intact.
 
 import subprocess
-from distutils.spawn import find_executable
 from typing import Optional, AnyStr, List, Any
 
 from aqt import mw
@@ -43,11 +42,12 @@ class InvalidInput(Warning):
     pass
 
 
-def find_cwebp():
-    exe = find_executable('cwebp')
-    if exe is None:
+def find_executable(name: str):
+    from distutils.spawn import find_executable as _find
+
+    if (exe := _find(name)) is None:
         # https://developers.google.com/speed/webp/download
-        exe = os.path.join(ADDON_PATH, "support", "cwebp")
+        exe = os.path.join(ADDON_PATH, "support", name)
         if is_win:
             exe += ".exe"
         else:
@@ -56,7 +56,7 @@ def find_cwebp():
             if os.path.isfile(exe):
                 os.chmod(exe, 0o755)
             else:
-                raise RuntimeError("cwebp executable is not found.")
+                raise RuntimeError(f"{name} executable is not found.")
     return exe
 
 
@@ -168,7 +168,7 @@ class ImageConverter:
                 raise RuntimeError("cwebp failed")
 
 
-cwebp = find_cwebp()
+cwebp = find_executable('cwebp')
 
 if is_win:
     # Prevents a console window from popping up on Windows
