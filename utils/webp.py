@@ -104,7 +104,7 @@ class ImageConverter:
     def decide_show_settings(self) -> int:
         if self.should_show_settings() is True:
             dlg = PasteDialog(self.editor.widget, self.dimensions)
-            return dlg.exec_()
+            return dlg.exec()
         return QDialog.Accepted
 
     def save_image(self, tmp_path: str, mime: QMimeData) -> bool:
@@ -134,14 +134,19 @@ class ImageConverter:
         args.extend(config.get('cwebp_args', []))
         args.extend(self.get_resize_args())
 
-        p = subprocess.Popen(stringify_args(args),
-                             shell=False,
-                             bufsize=-1,
-                             universal_newlines=True,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT,
-                             startupinfo=si)
-        stdout = p.communicate()[0]
+        p = subprocess.Popen(
+            stringify_args(args),
+            shell=False,
+            bufsize=-1,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            startupinfo=si,
+            universal_newlines=True,
+            encoding="utf8"
+        )
+
+        stdout, stderr = p.communicate()
+
         if p.wait() != 0:
             print(f"cwebp failed.")
             print(f"exit code = {p.returncode}")

@@ -262,7 +262,7 @@ class PasteDialog(SettingsDialog):
             i = int(index / columns)
             j = index - (i * columns)
             button = QPushButton(f"{factor}x")
-            button.clicked.connect(lambda _, f=factor: self.adjust_sliders(f))
+            qconnect(button.clicked, lambda _, f=factor: self.adjust_sliders(f))
             grid.addWidget(button, i, j)
         return grid
 
