@@ -203,7 +203,7 @@ def bulk_convert(browser: Browser, note_ids: Sequence[NoteId], selected_fields: 
     t = threading.Thread(target=progress_bar.run)
     t.start()
 
-    progress_bar.exec_()
+    progress_bar.exec()
     convert_task.update_notes(browser)
     browser.editor.loadNoteKeepingFocus()
     t.join()

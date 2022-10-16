@@ -18,7 +18,7 @@
 
 import itertools
 from enum import Enum
-from typing import NamedTuple, Iterable, Tuple, Optional, List
+from typing import NamedTuple, Iterable, Tuple, Optional, List, Dict
 
 from anki.notes import Note
 from aqt import mw
@@ -61,8 +61,8 @@ class RichSlider:
         self.slider = QSlider(Qt.Horizontal)
         self.spinbox = QSpinBox()
         self.unitLabel = QLabel(unit)
-        self.slider.valueChanged.connect(lambda val: self.spinbox.setValue(val))
-        self.spinbox.valueChanged.connect(lambda val: self.slider.setValue(val))
+        qconnect(self.slider.valueChanged, self.spinbox.setValue)
+        qconnect(self.spinbox.valueChanged, self.slider.setValue)
         self._set_step(step)
         self._set_range(0, limit)
 
@@ -91,7 +91,7 @@ class RichSlider:
         self.spinbox.setSingleStep(step)
 
 
-class SettingsDialog(QDialog):
+class ImageSliderBox(QGroupBox):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._sliders = {
@@ -99,42 +99,49 @@ class SettingsDialog(QDialog):
             'image_height': RichSlider("Height", "px", limit=config['max_image_height']),
             'image_quality': RichSlider("Quality", "%", limit=100),
         }
-        self._main_vbox = QVBoxLayout()
-        self._button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self._setup_ui()
+        self.setLayout(self.create_layout())
+        self.set_tooltips()
 
-    def _setup_ui(self):
-        self.setWindowTitle(ADDON_NAME)
-        self.setMinimumWidth(WINDOW_MIN_WIDTH)
-        self.setLayout(self.create_main_layout())
-        self.populate_main_vbox()
-        self.setup_tool_tips()
-        self.setup_logic()
-        self.set_initial_values()
+    def as_dict(self) -> Dict[str, int]:
+        return {key: slider.value for key, slider in self._sliders.items()}
 
-    def create_main_layout(self):
-        layout = QVBoxLayout()
-        layout.addLayout(self._main_vbox)
-        layout.addStretch()
-        layout.addWidget(self._button_box)
-        return layout
+    @property
+    def quality(self) -> int:
+        return self._sliders['image_quality'].value
 
-    def populate_main_vbox(self):
-        self._main_vbox.addWidget(self.create_sliders_group_box(self._sliders.values()))
+    @property
+    def width(self) -> int:
+        return self._sliders['image_width'].value
 
-    @staticmethod
-    def create_sliders_group_box(sliders: Iterable[RichSlider]) -> QGroupBox:
-        gbox = QGroupBox("Settings")
+    @width.setter
+    def width(self, value: int):
+        self._sliders['image_width'].value = value
+
+    @property
+    def height(self) -> int:
+        return self._sliders['image_height'].value
+
+    @height.setter
+    def height(self, value: int):
+        self._sliders['image_height'].value = value
+
+    def create_layout(self) -> QLayout:
         grid = QGridLayout()
-        for y_index, slider in enumerate(sliders):
+        for y_index, slider in enumerate(self._sliders.values()):
             grid.addWidget(QLabel(slider.title), y_index, 0)
             for x_index, widget in enumerate(slider.widgets):
                 grid.addWidget(widget, y_index, x_index + 1)
+        return grid
 
-        gbox.setLayout(grid)
-        return gbox
+    def populate(self, custom_dict: Optional[Dict[str, int]] = None):
+        for key, slider in self._sliders.items():
+            slider.value = (custom_dict or config).get(key)
 
-    def setup_tool_tips(self):
+    def save_config(self):
+        for key, slider in self._sliders.items():
+            config[key] = slider.value
+
+    def set_tooltips(self):
         side_tooltip = str(
             "Desired %s.\n"
             "If either of the width or height parameters is 0,\n"
@@ -150,18 +157,43 @@ class SettingsDialog(QDialog):
         self._sliders['image_height'].set_tooltip(side_tooltip % 'height')
         self._sliders['image_quality'].set_tooltip(quality_tooltip)
 
+
+class SettingsDialog(QDialog):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setWindowTitle(ADDON_NAME)
+        self.setMinimumWidth(WINDOW_MIN_WIDTH)
+        self._sliders = ImageSliderBox("Image parameters")
+        self._main_vbox = QVBoxLayout()
+        self._button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+
+    def exec(self):
+        self.setLayout(self.create_main_layout())
+        self.populate_main_vbox()
+        self.setup_logic()
+        self.set_initial_values()
+        super().exec()
+
+    def create_main_layout(self):
+        layout = QVBoxLayout()
+        layout.addLayout(self._main_vbox)
+        layout.addStretch()
+        layout.addWidget(self._button_box)
+        return layout
+
+    def populate_main_vbox(self):
+        self._main_vbox.addWidget(self._sliders)
+
     def setup_logic(self):
         qconnect(self._button_box.accepted, self.on_accept)
         qconnect(self._button_box.rejected, self.reject)
         self._button_box.button(QDialogButtonBox.Ok).setFocus()
 
     def set_initial_values(self):
-        for key, slider in self._sliders.items():
-            slider.value = config.get(key)
+        self._sliders.populate()
 
     def on_accept(self):
-        for key, slider in self._sliders.items():
-            config[key] = slider.value
+        self._sliders.save_config()
         write_config()
         self.accept()
 
@@ -249,10 +281,11 @@ class PasteDialog(SettingsDialog):
         gbox.setLayout(self.create_scale_options_grid())
         return gbox
 
-    def adjust_sliders(self, factor):
-        for param in ('width', 'height'):
-            if (widget := self._sliders[f'image_{param}']).value > 0:
-                widget.value = int(getattr(self.image, param) * factor)
+    def adjust_sliders(self, factor: float):
+        if self._sliders.width > 0:
+            self._sliders.width = int(self.image.width * factor)
+        if self._sliders.height > 0:
+            self._sliders.height = int(self.image.height * factor)
 
     def create_scale_options_grid(self):
         grid = QGridLayout()
@@ -267,6 +300,52 @@ class PasteDialog(SettingsDialog):
         return grid
 
 
+def preset_to_str(preset: Dict[str, int]) -> str:
+    return f"{preset['image_width']}x{preset['image_height']} @ {preset['image_quality']}"
+
+
+class PresetsEditor(QGroupBox):
+    def __init__(self, *args, sliders: ImageSliderBox, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._sliders = sliders
+        self.combo = QComboBox()
+        self.add_current = QPushButton("Add current")
+        self.remove_selected = QPushButton("Remove selected")
+        self.apply_selected = QPushButton("Apply selected")
+        self.setLayout(self.create_layout())
+        self.connect_buttons()
+
+    def create_layout(self) -> QLayout:
+        layout = QGridLayout()
+        layout.addWidget(self.combo, 0, 0, 1, 3)  # row, col, row-span, col-span
+        layout.addWidget(self.add_current, 1, 0)
+        layout.addWidget(self.remove_selected, 1, 1)
+        layout.addWidget(self.apply_selected, 1, 2)
+        return layout
+
+    def as_list(self) -> List[Dict[str, int]]:
+        return [
+            self.combo.itemData(index)
+            for index in range(self.combo.count())
+        ]
+
+    def add_items(self, items: List[Dict[str, int]]):
+        for item in items:
+            self.combo.addItem(preset_to_str(item), item)
+
+    def add_new_preset(self):
+        self.combo.addItem(preset_to_str(preset := self._sliders.as_dict()), preset)
+
+    def apply_selected_preset(self):
+        if data := self.combo.currentData():
+            self._sliders.populate(data)
+
+    def connect_buttons(self):
+        qconnect(self.add_current.clicked, self.add_new_preset)
+        qconnect(self.remove_selected.clicked, lambda: self.combo.removeItem(self.combo.currentIndex()))
+        qconnect(self.apply_selected.clicked, self.apply_selected_preset)
+
+
 class SettingsMenuDialog(SettingsDialog):
     """Settings dialog available from the main menu."""
 
@@ -278,10 +357,11 @@ class SettingsMenuDialog(SettingsDialog):
     }
 
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.presets_editor = PresetsEditor("Presets", sliders=self._sliders)
         self.when_show_dialog_combo_box = self.create_when_show_dialog_combo_box()
         self.filename_pattern_combo_box = self.create_filename_pattern_combo_box()
         self.checkboxes = {key: QCheckBox(text) for key, text in self.__checkboxes.items()}
-        super().__init__(*args, **kwargs)
 
     @staticmethod
     def create_when_show_dialog_combo_box() -> QComboBox:
@@ -299,9 +379,10 @@ class SettingsMenuDialog(SettingsDialog):
 
     def populate_main_vbox(self):
         super().populate_main_vbox()
+        self._main_vbox.addWidget(self.presets_editor)
         self._main_vbox.addWidget(self.create_additional_settings_group_box())
 
-    def create_additional_settings_group_box(self):
+    def create_additional_settings_group_box(self) -> QGroupBox:
         def create_inner_vbox():
             vbox = QVBoxLayout()
             vbox.addLayout(self.create_combo_boxes_layout())
@@ -317,6 +398,7 @@ class SettingsMenuDialog(SettingsDialog):
         super().set_initial_values()
         self.when_show_dialog_combo_box.setCurrentIndex(ShowOptions.index_of(config.get("show_settings")))
         self.filename_pattern_combo_box.setCurrentIndex(config.get("filename_pattern_num", 0))
+        self.presets_editor.add_items(config.get('saved_presets', []))
 
         for key, widget in self.checkboxes.items():
             widget.setChecked(config[key])
@@ -330,6 +412,7 @@ class SettingsMenuDialog(SettingsDialog):
     def on_accept(self):
         config['show_settings'] = self.when_show_dialog_combo_box.currentData()
         config['filename_pattern_num'] = self.filename_pattern_combo_box.currentIndex()
+        config['saved_presets'] = self.presets_editor.as_list()
 
         for key, widget in self.checkboxes.items():
             config[key] = widget.isChecked()
