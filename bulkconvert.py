@@ -31,8 +31,8 @@ from aqt.utils import showInfo
 
 from .common import tooltip, NoteId, join_fields
 from .config import config
-from .utils.gui import BulkConvertDialog
-from .utils.webp import ImageConverter
+from .gui import BulkConvertDialog
+from .webp import ImageConverter
 
 
 def find_eligible_images(html: str, include_webp: bool = False) -> Iterable[str]:

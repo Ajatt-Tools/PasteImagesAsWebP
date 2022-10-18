@@ -20,8 +20,8 @@ from aqt.editor import Editor
 from aqt.qt import *
 
 from .config import config
-from .utils.gui import ShowOptions
-from .utils.webp import ImageConverter
+from .utils import ShowOptions
+from .webp import ImageConverter
 
 try:
     from anki.notes import NoteId

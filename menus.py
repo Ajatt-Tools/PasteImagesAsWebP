@@ -25,7 +25,7 @@ from .ajt_common import menu_root_entry
 from .common import *
 from .config import config
 from .consts import ADDON_PATH
-from .utils.gui import SettingsMenuDialog
+from .gui import SettingsMenuDialog
 
 
 def setup_mainwindow_menu():
@@ -39,7 +39,7 @@ def setup_mainwindow_menu():
         dialog.exec()
 
     action = QAction("WebP settings...", root_menu)
-    action.triggered.connect(open_settings)
+    qconnect(action.triggered, open_settings)
     root_menu.addAction(action)
 
 
@@ -52,7 +52,7 @@ def setup_editor_menus():
 
     def add_context_menu_item(webview: EditorWebView, menu: QMenu):
         a: QAction = menu.addAction(action_tooltip)
-        a.triggered.connect(lambda _, e=webview.editor: insert_webp(e))
+        qconnect(a.triggered, lambda _, e=webview.editor: insert_webp(e))
 
     def add_editor_button(buttons, editor):
         b = editor.addButton(

@@ -23,12 +23,14 @@ from aqt import mw
 from aqt.editor import Editor
 from aqt.qt import *
 
-from .file_paths_factory import FilePathFactory
-from .gui import ShowOptions, PasteDialog, ImageDimensions
-from .mime_helper import image_candidates, files
-from .temp_file import TempFile
-from ..config import config
-from ..consts import ADDON_PATH
+from .config import config
+from .consts import ADDON_PATH
+from .gui import PasteDialog, ImageDimensions
+from .utils import FilePathFactory
+from .utils import ShowOptions
+from .utils import TempFile
+from .utils import files
+from .utils import image_candidates
 
 is_mac = sys.platform.startswith("darwin")
 is_win = sys.platform.startswith("win32")
@@ -103,7 +105,7 @@ class ImageConverter:
 
     def decide_show_settings(self) -> int:
         if self.should_show_settings() is True:
-            dlg = PasteDialog(self.editor.widget, self.dimensions)
+            dlg = PasteDialog(self.editor.widget, image=self.dimensions)
             return dlg.exec()
         return QDialog.Accepted
 

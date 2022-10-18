@@ -23,8 +23,7 @@ from aqt.utils import KeyboardModifiersPressed
 
 from .common import *
 from .config import config
-from .utils.gui import ShowOptions
-from .utils.webp import ImageConverter, CanceledPaste, InvalidInput
+from .webp import ShowOptions, ImageConverter, CanceledPaste, InvalidInput
 
 
 def should_paste_raw():
@@ -52,7 +51,7 @@ def drop_event(editor: EditorWebView, event: QDropEvent, _old: Callable):
 
         def paste_field(_):
             insert_image_html(editor.editor, w.filename)
-            editor.activateWindow()  # Fix for windows users
+            editor.activateWindow()  # Fix for Windows users
 
         editor.editor.web.evalWithCallback(f"focusIfField({p.x()}, {p.y()});", paste_field)
         tooltip_filesize(w.filepath)
