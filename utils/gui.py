@@ -172,7 +172,7 @@ class SettingsDialog(QDialog):
         self.populate_main_vbox()
         self.setup_logic()
         self.set_initial_values()
-        super().exec()
+        return super().exec()
 
     def create_main_layout(self):
         layout = QVBoxLayout()
