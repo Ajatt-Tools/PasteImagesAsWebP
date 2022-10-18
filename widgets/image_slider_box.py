@@ -11,47 +11,51 @@ from .rich_slider import RichSlider
 class ImageSliderBox(QGroupBox):
     def __init__(self, *args, max_width: int, max_height: int, **kwargs):
         super().__init__(*args, **kwargs)
-        self._sliders = {
-            'image_width': RichSlider("Width", "px", limit=max_width),
-            'image_height': RichSlider("Height", "px", limit=max_height),
-            'image_quality': RichSlider("Quality", "%", limit=100),
-        }
+        self._width = RichSlider("Width", "px", limit=max_width)
+        self._height = RichSlider("Height", "px", limit=max_height)
+        self._quality = RichSlider("Quality", "%", limit=100)
         self.setLayout(self.create_layout())
         self.set_tooltips()
 
+    def _map(self):
+        return zip(
+            ('image_width', 'image_height', 'image_quality',),
+            (self._width, self._height, self._quality,),
+        )
+
     def as_dict(self) -> Dict[str, int]:
-        return {key: slider.value for key, slider in self._sliders.items()}
+        return {key: slider.value for key, slider in self._map()}
 
     @property
     def quality(self) -> int:
-        return self._sliders['image_quality'].value
+        return self._quality.value
 
     @property
     def width(self) -> int:
-        return self._sliders['image_width'].value
+        return self._width.value
 
     @width.setter
     def width(self, value: int):
-        self._sliders['image_width'].value = value
+        self._width.value = value
 
     @property
     def height(self) -> int:
-        return self._sliders['image_height'].value
+        return self._height.value
 
     @height.setter
     def height(self, value: int):
-        self._sliders['image_height'].value = value
+        self._height.value = value
 
     def create_layout(self) -> QLayout:
         grid = QGridLayout()
-        for y_index, slider in enumerate(self._sliders.values()):
+        for y_index, slider in enumerate((self._width, self._height, self._quality)):
             grid.addWidget(QLabel(slider.title), y_index, 0)
             for x_index, widget in enumerate(slider.widgets):
                 grid.addWidget(widget, y_index, x_index + 1)
         return grid
 
     def populate(self, config: Dict[str, int]):
-        for key, slider in self._sliders.items():
+        for key, slider in self._map():
             slider.value = config.get(key)
 
     def set_tooltips(self):
@@ -66,6 +70,6 @@ class ImageSliderBox(QGroupBox):
             "A small factor produces a smaller file with lower quality.\n"
             "Best quality is achieved by using a value of 100."
         )
-        self._sliders['image_width'].set_tooltip(side_tooltip % 'width')
-        self._sliders['image_height'].set_tooltip(side_tooltip % 'height')
-        self._sliders['image_quality'].set_tooltip(quality_tooltip)
+        self._width.set_tooltip(side_tooltip % 'width')
+        self._height.set_tooltip(side_tooltip % 'height')
+        self._quality.set_tooltip(quality_tooltip)
