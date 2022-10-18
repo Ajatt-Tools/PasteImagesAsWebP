@@ -38,7 +38,11 @@ class SettingsDialog(QDialog):
         super().__init__(*args, **kwargs)
         self.setWindowTitle(ADDON_NAME)
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
-        self._sliders = ImageSliderBox("Image parameters", config=config)
+        self._sliders = ImageSliderBox(
+            "Image parameters",
+            max_width=config['max_image_width'],
+            max_height=config['max_image_height'],
+        )
         self.presets_editor = PresetsEditor("Presets", sliders=self._sliders)
         self._main_vbox = QVBoxLayout()
         self._button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)

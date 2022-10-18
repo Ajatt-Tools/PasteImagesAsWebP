@@ -1,7 +1,7 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from typing import Dict, Any
+from typing import Dict
 
 from aqt.qt import *
 
@@ -9,12 +9,11 @@ from .rich_slider import RichSlider
 
 
 class ImageSliderBox(QGroupBox):
-    def __init__(self, *args, config: Dict[str, Any], **kwargs):
+    def __init__(self, *args, max_width: int, max_height: int, **kwargs):
         super().__init__(*args, **kwargs)
-        self._config = config
         self._sliders = {
-            'image_width': RichSlider("Width", "px", limit=config['max_image_width']),
-            'image_height': RichSlider("Height", "px", limit=config['max_image_height']),
+            'image_width': RichSlider("Width", "px", limit=max_width),
+            'image_height': RichSlider("Height", "px", limit=max_height),
             'image_quality': RichSlider("Quality", "%", limit=100),
         }
         self.setLayout(self.create_layout())
