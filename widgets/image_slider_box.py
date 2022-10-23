@@ -10,7 +10,7 @@ from .rich_slider import RichSlider
 
 class ImageSliderBox(QGroupBox):
     def __init__(self, *args, max_width: int, max_height: int, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)  # type: ignore
         self._width = RichSlider("Width", "px", limit=max_width)
         self._height = RichSlider("Height", "px", limit=max_height)
         self._quality = RichSlider("Quality", "%", limit=100)
