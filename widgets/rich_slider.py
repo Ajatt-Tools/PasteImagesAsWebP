@@ -22,7 +22,13 @@ class RichSlider:
         qconnect(self.slider.valueChanged, self.spinbox.setValue)
         qconnect(self.spinbox.valueChanged, self.slider.setValue)
         self._set_step(step)
-        self._set_range(0, limit)
+        self.set_limit(limit)
+
+    def set_limit(self, limit: int):
+        """
+        Set the maximum value the user is allowed to apply.
+        """
+        return self._set_range(0, limit)
 
     def set_tooltip(self, tooltip: str):
         self.slider.setToolTip(tooltip)

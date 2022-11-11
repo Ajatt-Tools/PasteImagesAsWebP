@@ -9,7 +9,7 @@ from .rich_slider import RichSlider
 
 
 class ImageSliderBox(QGroupBox):
-    def __init__(self, *args, max_width: int, max_height: int, **kwargs):
+    def __init__(self, *args, max_width: int = 1000, max_height: int = 1000, **kwargs):
         super().__init__(*args, **kwargs)  # type: ignore
         self._width = RichSlider("Width", "px", limit=max_width)
         self._height = RichSlider("Height", "px", limit=max_height)
@@ -22,6 +22,10 @@ class ImageSliderBox(QGroupBox):
             ('image_width', 'image_height', 'image_quality',),
             (self._width, self._height, self._quality,),
         )
+
+    def set_limits(self, width: int, height: int):
+        self._width.set_limit(width)
+        self._height.set_limit(height)
 
     def as_dict(self) -> Dict[str, int]:
         return {key: slider.value for key, slider in self._map()}

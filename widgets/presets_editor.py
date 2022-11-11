@@ -41,6 +41,13 @@ class PresetsEditor(QGroupBox):
         for item in items:
             self.combo.addItem(preset_to_str(item), item)
 
+    def set_items(self, items: List[Dict[str, int]]):
+        """
+        Remove all previously added items and add new items.
+        """
+        self.combo.clear()
+        self.add_items(items)
+
     def add_new_preset(self):
         self.combo.addItem(preset_to_str(preset := self._sliders.as_dict()), preset)
 
