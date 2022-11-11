@@ -37,8 +37,13 @@ def get_config() -> dict:
     return cfg
 
 
+def addon_name():
+    return __name__.split(".")[0]
+
+
 def write_config():
     mw.addonManager.writeConfig(__name__, config)
 
 
 config = get_config()
+mw.addonManager.setConfigUpdatedAction(addon_name(), lambda new_conf: config.update(new_conf))
