@@ -16,7 +16,7 @@ class RichSlider:
 
     def __init__(self, title: str, unit: str = "px", limit: int = 100, step: int = SLIDER_STEP):
         self.title = title
-        self.slider = QSlider(Qt.Horizontal)
+        self.slider = QSlider(Qt.Orientation.Horizontal)
         self.spinbox = QSpinBox()
         self.unitLabel = QLabel(unit)
         qconnect(self.slider.valueChanged, self.spinbox.setValue)

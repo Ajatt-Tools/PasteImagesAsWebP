@@ -23,7 +23,7 @@ class CheckableComboBox(QComboBox):
 
         # Make the lineedit the same color as QPushButton
         palette = QApplication.palette()
-        palette.setBrush(QPalette.Base, palette.button())
+        palette.setBrush(QPalette.ColorRole.Base, palette.button())
         self.lineEdit().setPalette(palette)
 
         # Use custom delegate and model
@@ -53,7 +53,7 @@ class CheckableComboBox(QComboBox):
         super().resizeEvent(event)
 
     def eventFilter(self, obj: QObject, event: QEvent):
-        if event.type() == QEvent.MouseButtonRelease:
+        if event.type() == QEvent.Type.MouseButtonRelease:
             if obj == self.lineEdit():
                 self.togglePopup()
                 return True
@@ -85,7 +85,7 @@ class CheckableComboBox(QComboBox):
     def _set_elided_text(self, text: str):
         """ Compute elided text (with "...") """
         metrics = QFontMetrics(self.lineEdit().font())
-        elided_text = metrics.elidedText(text, Qt.ElideRight, self.lineEdit().width())
+        elided_text = metrics.elidedText(text, Qt.TextElideMode.ElideRight, self.lineEdit().width())
         self.lineEdit().setText(elided_text)
 
     def updateText(self):
@@ -97,7 +97,7 @@ class CheckableComboBox(QComboBox):
         item.setText(text)
         item.setCheckable(True)
         item.setEnabled(True)
-        item.setCheckState(Qt.Unchecked)
+        item.setCheckState(Qt.CheckState.Unchecked)
         self.model().appendRow(item)
 
     def addCheckableTexts(self, texts: Iterable[str]):
@@ -108,7 +108,7 @@ class CheckableComboBox(QComboBox):
         return (self.model().item(i) for i in range(self.model().rowCount()))
 
     def checkedItems(self) -> Iterable[QStandardItem]:
-        return filter(lambda item: item.checkState() == Qt.Checked, self.items())
+        return filter(lambda item: item.checkState() == Qt.CheckState.Checked, self.items())
 
     def checkedTexts(self) -> Iterable[str]:
         return map(QStandardItem.text, self.checkedItems())

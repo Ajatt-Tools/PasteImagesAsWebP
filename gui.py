@@ -42,7 +42,7 @@ class SettingsDialog(QDialog):
         self._sliders = ImageSliderBox("Image parameters")
         self.presets_editor = PresetsEditor("Presets", sliders=self._sliders)
         self._main_vbox = QVBoxLayout()
-        self._button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self._button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
 
     def setup_ui(self):
         self.setLayout(self.create_main_layout())
@@ -68,7 +68,7 @@ class SettingsDialog(QDialog):
     def setup_logic(self):
         qconnect(self._button_box.accepted, self.accept)
         qconnect(self._button_box.rejected, self.reject)
-        self._button_box.button(QDialogButtonBox.Ok).setFocus()
+        self._button_box.button(QDialogButtonBox.StandardButton.Ok).setFocus()
 
     def set_initial_values(self):
         self._sliders.set_limits(config['max_image_width'], config['max_image_height'])
@@ -186,7 +186,7 @@ class SettingsMenuDialog(SettingsDialog):
             d = ConfigEditor(self, addon_name(), config)  # type: ignore
             qconnect(d.accepted, self.set_initial_values)
 
-        b = self._button_box.addButton("Advanced", QDialogButtonBox.HelpRole)
+        b = self._button_box.addButton("Advanced", QDialogButtonBox.ButtonRole.HelpRole)
         qconnect(b.clicked, advanced_clicked)
 
     @staticmethod

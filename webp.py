@@ -107,7 +107,7 @@ class ImageConverter:
         if self.should_show_settings() is True:
             dlg = PasteDialog(self.editor.widget, image=self.dimensions)
             return dlg.exec()
-        return QDialog.Accepted
+        return QDialog.DialogCode.Accepted
 
     def save_image(self, tmp_path: str, mime: QMimeData) -> bool:
         for image in image_candidates(mime):
@@ -168,7 +168,7 @@ class ImageConverter:
             if self.save_image(tmp_file.path(), mime) is False:
                 raise RuntimeError("Couldn't save the image.")
 
-            if self.decide_show_settings() == QDialog.Rejected:
+            if self.decide_show_settings() == QDialog.DialogCode.Rejected:
                 raise CanceledPaste("Cancelled.")
 
             if self.to_webp(tmp_file, self.set_output_filepath()) is False:

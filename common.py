@@ -72,7 +72,7 @@ def custom_decorate(old: Callable, new: Callable):
 
 
 def key_to_str(shortcut: str) -> str:
-    return QKeySequence(shortcut).toString(QKeySequence.NativeText)
+    return QKeySequence(shortcut).toString(QKeySequence.SequenceFormat.NativeText)
 
 
 def insert_webp(editor: Editor):
