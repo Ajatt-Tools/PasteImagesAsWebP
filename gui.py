@@ -21,10 +21,11 @@ from typing import NamedTuple, Iterable, List
 
 from anki.notes import Note
 from aqt import mw
+from aqt.addons import ConfigEditor
 from aqt.qt import *
 from aqt.utils import showInfo
 
-from .config import config, write_config
+from .config import config, write_config, addon_name
 from .consts import *
 from .utils import FilePathFactory
 from .utils import ShowOptions
@@ -38,11 +39,7 @@ class SettingsDialog(QDialog):
         super().__init__(*args, **kwargs)
         self.setWindowTitle(ADDON_NAME)
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
-        self._sliders = ImageSliderBox(
-            "Image parameters",
-            max_width=config['max_image_width'],
-            max_height=config['max_image_height'],
-        )
+        self._sliders = ImageSliderBox("Image parameters")
         self.presets_editor = PresetsEditor("Presets", sliders=self._sliders)
         self._main_vbox = QVBoxLayout()
         self._button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -74,8 +71,9 @@ class SettingsDialog(QDialog):
         self._button_box.button(QDialogButtonBox.Ok).setFocus()
 
     def set_initial_values(self):
+        self._sliders.set_limits(config['max_image_width'], config['max_image_height'])
         self._sliders.populate(config)
-        self.presets_editor.add_items(config.get('saved_presets', []))
+        self.presets_editor.set_items(config.get('saved_presets', []))
 
     def accept(self):
         config.update(self._sliders.as_dict())
@@ -177,6 +175,19 @@ class SettingsMenuDialog(SettingsDialog):
         self.when_show_dialog_combo_box = self.create_when_show_dialog_combo_box()
         self.filename_pattern_combo_box = self.create_filename_pattern_combo_box()
         self.checkboxes = {key: QCheckBox(text) for key, text in self.__checkboxes.items()}
+        self.add_advanced_button()
+
+    @property
+    def mgr(self) -> mw.addonManager:
+        return mw.addonManager
+
+    def add_advanced_button(self):
+        def advanced_clicked():
+            d = ConfigEditor(self, addon_name(), config)  # type: ignore
+            qconnect(d.accepted, self.set_initial_values)
+
+        b = self._button_box.addButton("Advanced", QDialogButtonBox.HelpRole)
+        qconnect(b.clicked, advanced_clicked)
 
     @staticmethod
     def create_when_show_dialog_combo_box() -> QComboBox:
