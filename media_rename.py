@@ -47,7 +47,7 @@ class FileNameEdit(QLineEdit):
 
 
 class MediaRenameDialog(QDialog):
-    def __init__(self, editor: Editor, note: Note, filenames: List[str], *args, **kwargs):
+    def __init__(self, editor: Editor, note: Note, filenames: list[str], *args, **kwargs):
         super().__init__(parent=editor.widget, *args, **kwargs)
         self.editor: Editor = editor
         self.edits = {filename: FileNameEdit(text=filename) for filename in filenames}
@@ -75,7 +75,7 @@ class MediaRenameDialog(QDialog):
         qconnect(self.bottom_box.accepted, self.on_accept)
         qconnect(self.bottom_box.rejected, self.reject)
 
-    def to_rename(self) -> Iterable[Tuple[str, str]]:
+    def to_rename(self) -> Iterable[tuple[str, str]]:
         widget: QLineEdit
         for old_filename, widget in self.edits.items():
             if old_filename != (new_filename := widget.text()):
@@ -90,11 +90,11 @@ class MediaRenameDialog(QDialog):
             rename_media_files(to_rename, self.note, self.editor)
 
 
-def find_sounds(html: str) -> List[str]:
+def find_sounds(html: str) -> list[str]:
     return re.findall(r'\[sound:([^\[\]]+)]', html)
 
 
-def find_images(html: str) -> List[str]:
+def find_images(html: str) -> list[str]:
     return re.findall(r'<img[^<>]*src="([^<>\'"]+)"[^<>]*>', html)
 
 
@@ -108,7 +108,7 @@ def rename_file(old_filename: str, new_filename: str) -> str:
         return mw.col.media.write_data(new_filename, f.read())
 
 
-def rename_media_files(to_rename: List[Tuple[str, str]], note: Note, parent: Editor):
+def rename_media_files(to_rename: list[tuple[str, str]], note: Note, parent: Editor):
     for old_filename, new_filename in to_rename:
         new_filename = rename_file(old_filename, new_filename)
         for field_name, field_value in note.items():
@@ -143,7 +143,7 @@ class Menus:
             cls.create_rename_dialog(editor, editor.note, filenames).show()
 
     @classmethod
-    def add_editor_button(cls, buttons: List[str], editor: Editor) -> None:
+    def add_editor_button(cls, buttons: list[str], editor: Editor) -> None:
         b = editor.addButton(
             icon=os.path.join(ADDON_PATH, "icons", "edit.svg"),
             cmd="rename_media_files",

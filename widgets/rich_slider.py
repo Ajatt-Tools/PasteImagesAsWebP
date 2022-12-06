@@ -34,7 +34,7 @@ class RichSlider:
         self.slider.setToolTip(tooltip)
 
     @property
-    def widgets(self) -> Tuple[QWidget, ...]:
+    def widgets(self) -> tuple[QWidget, ...]:
         return self.slider, self.spinbox, self.unitLabel
 
     @property

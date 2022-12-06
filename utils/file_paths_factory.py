@@ -80,7 +80,7 @@ class FilePathFactory:
         self.patterns = [f'{prefix}_{suffix}{self.ext}' for prefix in self.prefixes for suffix in self.suffixes]
 
     @property
-    def patterns_populated(self) -> List[str]:
+    def patterns_populated(self) -> list[str]:
         return [self.make_filename(pattern) for pattern in self.patterns]
 
     def make_filename(self, pattern: str) -> str:

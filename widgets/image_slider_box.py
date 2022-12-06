@@ -27,7 +27,7 @@ class ImageSliderBox(QGroupBox):
         self._width.set_limit(width)
         self._height.set_limit(height)
 
-    def as_dict(self) -> Dict[str, int]:
+    def as_dict(self) -> dict[str, int]:
         return {key: slider.value for key, slider in self._map()}
 
     @property
@@ -58,7 +58,7 @@ class ImageSliderBox(QGroupBox):
                 grid.addWidget(widget, y_index, x_index + 1)
         return grid
 
-    def populate(self, config: Dict[str, int]):
+    def populate(self, config: dict[str, int]):
         for key, slider in self._map():
             slider.value = config.get(key)
 

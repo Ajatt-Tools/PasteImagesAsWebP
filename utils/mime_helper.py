@@ -30,7 +30,7 @@ def urls_from_html(html: str) -> list:
     return re.findall('(?<= src=")http[^"]+(?=")', html)
 
 
-def data_from_html(html: str) -> List[QByteArray]:
+def data_from_html(html: str) -> list[QByteArray]:
     return [QByteArray.fromBase64(data.encode('ascii')) for data in re.findall('(?<=;base64,)[^"]+(?=")', html)]
 
 

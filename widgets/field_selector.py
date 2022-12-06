@@ -21,10 +21,10 @@ class FieldSelector(QGroupBox):
     def add_fields(self, fields: Iterable[str]):
         return self._combo.addCheckableTexts(fields)
 
-    def selected_fields(self) -> List[str]:
+    def selected_fields(self) -> list[str]:
         return list(self._combo.checkedTexts()) if self.isChecked() else []
 
-    def set_fields(self, fields: Optional[List[str]]):
+    def set_fields(self, fields: Optional[list[str]]):
         if fields:
             self.setChecked(True)
             self._combo.setCheckedTexts(fields)

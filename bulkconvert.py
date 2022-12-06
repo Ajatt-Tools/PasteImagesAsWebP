@@ -42,12 +42,12 @@ def find_eligible_images(html: str, include_webp: bool = False) -> Iterable[str]
 
 
 class ConvertTask:
-    def __init__(self, note_ids: Sequence[NoteId], selected_fields: List[str]):
+    def __init__(self, note_ids: Sequence[NoteId], selected_fields: list[str]):
         self.note_ids = note_ids
         self.selected_fields = selected_fields
         self.to_convert = self.find_images_to_convert_and_notes()
-        self.converted: Optional[Dict[str, str]] = None
-        self.failed: Optional[Dict[str, None]] = None
+        self.converted: Optional[dict[str, str]] = None
+        self.failed: Optional[dict[str, None]] = None
 
     def keys_to_update(self, note: Note) -> Iterable[str]:
         if not self.selected_fields:
@@ -55,7 +55,7 @@ class ConvertTask:
         else:
             return filter(lambda field: field in self.selected_fields, note.keys())
 
-    def find_images_to_convert_and_notes(self) -> Dict[str, Set[NoteId]]:
+    def find_images_to_convert_and_notes(self) -> dict[str, set[NoteId]]:
         """
         Maps each filename to a set of note ids that reference the filename.
         """
@@ -87,7 +87,7 @@ class ConvertTask:
 
     def update_notes_op(self, col: Collection) -> ResultWithChanges:
         pos = col.add_custom_undo_entry(f"Convert {len(self.converted)} images to WebP")
-        to_update: Dict[NoteId, Note] = {}
+        to_update: dict[NoteId, Note] = {}
 
         for initial_filename, converted_filename in self.converted.items():
             relevant_notes = map(
@@ -193,7 +193,7 @@ def reload_note(f: Callable[[Browser, Sequence[NoteId]], None]):
 
 
 @reload_note
-def bulk_convert(browser: Browser, note_ids: Sequence[NoteId], selected_fields: List[str]):
+def bulk_convert(browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str]):
     progress_bar = ProgressBar()
     convert_task = ConvertTask(note_ids, selected_fields)
 

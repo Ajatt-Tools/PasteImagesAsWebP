@@ -62,7 +62,7 @@ def find_executable(name: str):
     return exe
 
 
-def stringify_args(args: List[Any]) -> List[str]:
+def stringify_args(args: list[Any]) -> list[str]:
     return list(map(str, args))
 
 
@@ -120,7 +120,7 @@ class ImageConverter:
 
         return self.dimensions is not None
 
-    def get_resize_args(self) -> List[Union[str, int]]:
+    def get_resize_args(self) -> list[Union[str, int]]:
         if config['avoid_upscaling'] and smaller_than_requested(self.dimensions):
             # skip resizing if the image is already smaller than the requested size
             return []

@@ -82,7 +82,7 @@ class SettingsDialog(QDialog):
         return super().accept()
 
 
-def get_all_keys(notes: Iterable[Note]) -> List[str]:
+def get_all_keys(notes: Iterable[Note]) -> list[str]:
     return sorted(set(itertools.chain(*(note.keys() for note in notes))))
 
 
@@ -94,7 +94,7 @@ class BulkConvertDialog(SettingsDialog):
         self._reconvert_checkbox = QCheckBox("Reconvert existing WebP images")
         super().__init__(*args, **kwargs)
 
-    def selected_fields(self) -> List[str]:
+    def selected_fields(self) -> list[str]:
         return self._field_selector.selected_fields()
 
     def selected_notes(self) -> Iterable[Note]:

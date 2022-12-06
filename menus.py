@@ -47,7 +47,7 @@ def setup_editor_menus():
     shortcut: str = config.get("shortcut")
     action_tooltip: str = "Paste as WebP" if not shortcut else f"Paste as WebP ({key_to_str(shortcut)})"
 
-    def add_editor_shortcut(cuts: List[Tuple], self: Editor):
+    def add_editor_shortcut(cuts: list[tuple], self: Editor):
         cuts.append((shortcut, lambda e=self: insert_webp(e)))
 
     def add_context_menu_item(webview: EditorWebView, menu: QMenu):

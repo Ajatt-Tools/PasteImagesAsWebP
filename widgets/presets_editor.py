@@ -8,7 +8,7 @@ from aqt.qt import *
 from . import ImageSliderBox
 
 
-def preset_to_str(preset: Dict[str, int]) -> str:
+def preset_to_str(preset: dict[str, int]) -> str:
     return f"{preset['image_width']}x{preset['image_height']} @ {preset['image_quality']}"
 
 
@@ -31,17 +31,17 @@ class PresetsEditor(QGroupBox):
         layout.addWidget(self.apply_selected, 1, 2)
         return layout
 
-    def as_list(self) -> List[Dict[str, int]]:
+    def as_list(self) -> list[dict[str, int]]:
         return [
             self.combo.itemData(index)
             for index in range(self.combo.count())
         ]
 
-    def add_items(self, items: List[Dict[str, int]]):
+    def add_items(self, items: list[dict[str, int]]):
         for item in items:
             self.combo.addItem(preset_to_str(item), item)
 
-    def set_items(self, items: List[Dict[str, int]]):
+    def set_items(self, items: list[dict[str, int]]):
         """
         Remove all previously added items and add new items.
         """
