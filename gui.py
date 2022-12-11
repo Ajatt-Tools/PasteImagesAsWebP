@@ -17,7 +17,7 @@
 # Any modifications to this file must keep this entire header intact.
 
 import itertools
-from typing import NamedTuple, Iterable, List
+from typing import NamedTuple, Iterable
 
 from anki.notes import Note
 from aqt import mw
@@ -40,7 +40,7 @@ class SettingsDialog(QDialog):
         self.setWindowTitle(ADDON_NAME)
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
         self._sliders = ImageSliderBox("Image parameters")
-        self.presets_editor = PresetsEditor("Presets", sliders=self._sliders)
+        self._presets_editor = PresetsEditor("Presets", sliders=self._sliders)
         self._main_vbox = QVBoxLayout()
         self._button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
 
@@ -63,7 +63,7 @@ class SettingsDialog(QDialog):
 
     def populate_main_vbox(self):
         self._main_vbox.addWidget(self._sliders)
-        self._main_vbox.addWidget(self.presets_editor)
+        self._main_vbox.addWidget(self._presets_editor)
 
     def setup_logic(self):
         qconnect(self._button_box.accepted, self.accept)
@@ -73,11 +73,11 @@ class SettingsDialog(QDialog):
     def set_initial_values(self):
         self._sliders.set_limits(config['max_image_width'], config['max_image_height'])
         self._sliders.populate(config)
-        self.presets_editor.set_items(config.get('saved_presets', []))
+        self._presets_editor.set_items(config.get('saved_presets', []))
 
     def accept(self):
         config.update(self._sliders.as_dict())
-        config['saved_presets'] = self.presets_editor.as_list()
+        config['saved_presets'] = self._presets_editor.as_list()
         write_config()
         return super().accept()
 
