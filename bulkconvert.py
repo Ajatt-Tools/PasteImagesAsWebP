@@ -19,7 +19,7 @@
 import functools
 import re
 import threading
-from typing import Optional, Sequence, Iterable, Dict, Set, List
+from typing import Optional, Sequence, Iterable
 
 from anki.collection import Collection
 from anki.notes import Note
@@ -125,8 +125,8 @@ class ConvertTask:
 
 
 class ProgressBar(QDialog):
-    task_done = pyqtSignal()
-    update_progress = pyqtSignal(int)
+    task_done = pyqtSignal()  # type: ignore
+    update_progress = pyqtSignal(int)  # type: ignore
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
