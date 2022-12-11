@@ -23,7 +23,7 @@ import time
 import unicodedata
 from functools import wraps
 from time import gmtime, strftime
-from typing import AnyStr, List, Optional
+from typing import AnyStr, Optional, Iterable
 
 from anki.utils import htmlToTextLine
 from aqt.editor import Editor
@@ -36,7 +36,10 @@ def compatible_filename(f: Callable[..., str]):
     max_len_bytes = 90
 
     def replace_forbidden_chars(s: str) -> str:
-        return re.sub(r'[-.\[\]<>:"/|?*\\ ]+', '_', s, flags=re.MULTILINE | re.IGNORECASE)
+        return re.sub(r'[-.\[\]<>:"/|?*\\;,&]+', ' ', s, flags=re.MULTILINE | re.IGNORECASE)
+
+    def sub_spaces(s: str) -> str:
+        return re.sub(r' +', ' ', s)
 
     @wraps(f)
     def wrapper(*args, **kwargs) -> str:
@@ -46,6 +49,7 @@ def compatible_filename(f: Callable[..., str]):
         s = unicodedata.normalize('NFC', s)
         s = replace_forbidden_chars(s)
         s = s.lower()
+        s = sub_spaces(s)
         s = s.strip('-_ ')
         return s if s else FilePathFactory.default_prefix
 
@@ -55,7 +59,7 @@ def compatible_filename(f: Callable[..., str]):
 def ensure_unique(file_path: str) -> str:
     name, ext = os.path.splitext(file_path)
     while os.path.isfile(file_path):
-        file_path = name + '_' + str(random.randint(100, 999)) + ext
+        file_path = name + '_' + str(random.randint(0, 9999)).zfill(4) + ext
     return file_path
 
 
@@ -64,54 +68,55 @@ class FilePathFactory:
     default_prefix = 'paste'
 
     def __init__(self, target_dir_path: str = None, editor: Editor = None):
-        self.target_dir_path = target_dir_path
-        self.editor = editor
+        self._target_dir_path = target_dir_path
+        self._editor = editor
 
-        self.prefixes = {
+        self._prefixes = {
             self.default_prefix: lambda: self.default_prefix,
-            'sort-field': self.sort_field,
-            'current-field': self.current_field,
+            'sort-field': self._sort_field,
+            'current-field': self._current_field,
         }
-        self.suffixes = {
+        self._suffixes = {
             'time-number': lambda: str(int(time.time() * 1000)),
             'time-human': lambda: strftime("%d-%b-%Y_%H-%M-%S", gmtime()),
         }
 
-        self.patterns = [f'{prefix}_{suffix}{self.ext}' for prefix in self.prefixes for suffix in self.suffixes]
+        self._patterns = [f'{prefix}_{suffix}{self.ext}' for prefix in self._prefixes for suffix in self._suffixes]
 
     @property
-    def patterns_populated(self) -> list[str]:
-        return [self.make_filename(pattern) for pattern in self.patterns]
-
-    def make_filename(self, pattern: str) -> str:
-        for k, v in itertools.chain(self.prefixes.items(), self.suffixes.items()):
-            pattern = pattern.replace(k, v())
-
-        return pattern
+    def patterns_populated(self) -> Iterable[str]:
+        return (self._apply_pattern(pattern) for pattern in self._patterns)
 
     def make_unique_filepath(self, original_filename: Optional[str]) -> AnyStr:
-        if original_filename:
-            out_filename = os.path.splitext(original_filename)[0] + self.ext
-        else:
-            try:
-                pattern = self.patterns[config.get('filename_pattern_num', 0)]
-            except IndexError:
-                pattern = self.patterns[0]
-            out_filename = self.make_filename(pattern)
-
-        return ensure_unique(os.path.join(self.target_dir_path, out_filename))
+        return ensure_unique(os.path.join(self._target_dir_path, self._make_filename(original_filename)))
 
     @compatible_filename
-    def sort_field(self) -> str:
+    def _make_filename(self, original_filename: Optional[str]):
+        if original_filename:
+            return os.path.splitext(original_filename)[0] + self.ext
+        else:
+            def get_pattern():
+                try:
+                    return self._patterns[config.get('filename_pattern_num', 0)]
+                except IndexError:
+                    return self._patterns[0]
+
+            return self._apply_pattern(get_pattern())
+
+    def _sort_field(self) -> str:
         try:
-            sort_field = self.editor.note.note_type()['sortf']
-            return self.editor.note.values()[sort_field]
+            sort_field = self._editor.note.note_type()['sortf']
+            return self._editor.note.values()[sort_field]
         except AttributeError:
             return 'sort-field'
 
-    @compatible_filename
-    def current_field(self) -> str:
+    def _current_field(self) -> str:
         try:
-            return self.editor.note.values()[self.editor.currentField]
+            return self._editor.note.values()[self._editor.currentField]
         except (AttributeError, TypeError):
             return 'current-field'
+
+    def _apply_pattern(self, pattern: str) -> str:
+        for k, v in itertools.chain(self._prefixes.items(), self._suffixes.items()):
+            pattern = pattern.replace(k, v())
+        return pattern
