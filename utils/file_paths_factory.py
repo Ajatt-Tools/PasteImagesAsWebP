@@ -36,7 +36,7 @@ def compatible_filename(f: Callable[..., str]):
     max_len_bytes = 90
 
     def replace_forbidden_chars(s: str) -> str:
-        return re.sub(r'[-.\[\]<>:"/|?*\\;,&]+', ' ', s, flags=re.MULTILINE | re.IGNORECASE)
+        return re.sub(r'[\[\]<>:"/|?*\\;,&\']+', ' ', s, flags=re.MULTILINE | re.IGNORECASE)
 
     def sub_spaces(s: str) -> str:
         return re.sub(r' +', ' ', s)
@@ -81,21 +81,24 @@ class FilePathFactory:
             'time-human': lambda: strftime("%d-%b-%Y_%H-%M-%S", gmtime()),
         }
 
-        self._patterns = [f'{prefix}_{suffix}{self.ext}' for prefix in self._prefixes for suffix in self._suffixes]
+        self._patterns = [f'{prefix}_{suffix}' for prefix in self._prefixes for suffix in self._suffixes]
 
     @property
     def patterns_populated(self) -> Iterable[str]:
         return (self._apply_pattern(pattern) for pattern in self._patterns)
 
     def make_unique_filepath(self, original_filename: Optional[str]) -> AnyStr:
-        return ensure_unique(os.path.join(self._target_dir_path, self._make_filename(original_filename)))
+        return ensure_unique(os.path.join(
+            self._target_dir_path,
+            self._make_filename_no_ext(original_filename) + self.ext,
+        ))
 
     @compatible_filename
-    def _make_filename(self, original_filename: Optional[str]):
+    def _make_filename_no_ext(self, original_filename: Optional[str]):
         if original_filename:
-            return os.path.splitext(original_filename)[0] + self.ext
+            return os.path.splitext(original_filename)[0]
         else:
-            def get_pattern():
+            def get_pattern() -> str:
                 try:
                     return self._patterns[config.get('filename_pattern_num', 0)]
                 except IndexError:

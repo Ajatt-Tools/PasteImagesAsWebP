@@ -45,7 +45,7 @@ def tooltip(msg: str) -> None:
     )
 
 
-def tooltip_filesize(filepath: os.PathLike) -> None:
+def tooltip_filesize(filepath: str) -> None:
     filesize_kib = str(os.stat(filepath).st_size / 1024)
     tooltip(f"Image added. File size: {filesize_kib[:filesize_kib.find('.') + 3]} KiB.")
 
