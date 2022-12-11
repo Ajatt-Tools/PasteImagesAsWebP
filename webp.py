@@ -17,7 +17,7 @@
 # Any modifications to this file must keep this entire header intact.
 
 import subprocess
-from typing import Optional, AnyStr, List, Any
+from typing import Optional, AnyStr, Any
 
 from aqt import mw
 from aqt.editor import Editor
@@ -78,50 +78,68 @@ def fetch_filename(mime: QMimeData) -> Optional[str]:
 
 class ImageConverter:
     def __init__(self, editor: Editor = None, action: ShowOptions = None):
-        self.editor = editor
-        self.action = action
-        self.dest_dir = mw.col.media.dir()
-        self.original_filename: Optional[str] = None
-        self.filepath: Optional[AnyStr] = None
-        self.dimensions: Optional[ImageDimensions] = None
-        self.filepath_factory = FilePathFactory(self.dest_dir, self.editor)
+        self._editor = editor
+        self._action = action
+        self._dest_dir = mw.col.media.dir()
+        self._original_filename: Optional[str] = None
+        self._filepath: Optional[AnyStr] = None
+        self._dimensions: Optional[ImageDimensions] = None
+        self._filepath_factory = FilePathFactory(self._dest_dir, self._editor)
+
+    @property
+    def filepath(self) -> str:
+        if self._filepath:
+            return self._filepath
+        else:
+            raise RuntimeError("File path hasn't been set.")
 
     @property
     def filename(self):
         return os.path.basename(self.filepath)
 
     def load_internal(self, filename: str) -> None:
-        with open(os.path.join(self.dest_dir, filename), 'rb') as f:
+        with open(os.path.join(self._dest_dir, filename), 'rb') as f:
             image = QImage.fromData(f.read())
-            self.dimensions = ImageDimensions(image.width(), image.height())
+            self._dimensions = ImageDimensions(image.width(), image.height())
 
     def convert_internal(self, filename: str) -> None:
-        self.filepath = self.filepath_factory.make_unique_filepath(filename)
-        if self.to_webp(os.path.join(self.dest_dir, filename), self.filepath) is False:
+        self._filepath = self._filepath_factory.make_unique_filepath(filename)
+        if self._to_webp(os.path.join(self._dest_dir, filename), self._filepath) is False:
             raise RuntimeError("cwebp failed")
 
-    def should_show_settings(self) -> bool:
-        return config.get("show_settings") == ShowOptions.always or config.get("show_settings") == self.action
+    def convert(self, mime: QMimeData) -> None:
+        with TempFile() as tmp_file:
+            if self._save_image(tmp_file.path(), mime) is False:
+                raise RuntimeError("Couldn't save the image.")
 
-    def decide_show_settings(self) -> int:
-        if self.should_show_settings() is True:
-            dlg = PasteDialog(self.editor.widget, image=self.dimensions)
+            if self._decide_show_settings() == QDialog.DialogCode.Rejected:
+                raise CanceledPaste("Cancelled.")
+
+            if self._to_webp(tmp_file, self._set_output_filepath()) is False:
+                raise RuntimeError("cwebp failed")
+
+    def _should_show_settings(self) -> bool:
+        return config.get("show_settings") == ShowOptions.always or config.get("show_settings") == self._action
+
+    def _decide_show_settings(self) -> int:
+        if self._should_show_settings() is True:
+            dlg = PasteDialog(self._editor.widget, image=self._dimensions)
             return dlg.exec()
         return QDialog.DialogCode.Accepted
 
-    def save_image(self, tmp_path: str, mime: QMimeData) -> bool:
+    def _save_image(self, tmp_path: str, mime: QMimeData) -> bool:
         for image in image_candidates(mime):
             if image and image.save(tmp_path, 'png') is True:
-                self.dimensions = ImageDimensions(image.width(), image.height())
-                self.original_filename = fetch_filename(mime)
+                self._dimensions = ImageDimensions(image.width(), image.height())
+                self._original_filename = fetch_filename(mime)
                 break
         else:
             raise InvalidInput("Not an image file.")
 
-        return self.dimensions is not None
+        return self._dimensions is not None
 
-    def get_resize_args(self) -> list[Union[str, int]]:
-        if config['avoid_upscaling'] and smaller_than_requested(self.dimensions):
+    def _get_resize_args(self) -> list[Union[str, int]]:
+        if config['avoid_upscaling'] and smaller_than_requested(self._dimensions):
             # skip resizing if the image is already smaller than the requested size
             return []
 
@@ -131,10 +149,10 @@ class ImageConverter:
 
         return ['-resize', config['image_width'], config['image_height']]
 
-    def to_webp(self, source_path: AnyStr, destination_path: AnyStr) -> bool:
+    def _to_webp(self, source_path: AnyStr, destination_path: AnyStr) -> bool:
         args = [cwebp, source_path, '-o', destination_path, '-q', config.get('image_quality')]
         args.extend(config.get('cwebp_args', []))
-        args.extend(self.get_resize_args())
+        args.extend(self._get_resize_args())
 
         p = subprocess.Popen(
             stringify_args(args),
@@ -157,22 +175,11 @@ class ImageConverter:
 
         return True
 
-    def set_output_filepath(self) -> str:
-        self.filepath = self.filepath_factory.make_unique_filepath(
-            self.original_filename if config['preserve_original_filenames'] else None
+    def _set_output_filepath(self) -> str:
+        self._filepath = self._filepath_factory.make_unique_filepath(
+            self._original_filename if config['preserve_original_filenames'] else None
         )
-        return self.filepath
-
-    def convert(self, mime: QMimeData) -> None:
-        with TempFile() as tmp_file:
-            if self.save_image(tmp_file.path(), mime) is False:
-                raise RuntimeError("Couldn't save the image.")
-
-            if self.decide_show_settings() == QDialog.DialogCode.Rejected:
-                raise CanceledPaste("Cancelled.")
-
-            if self.to_webp(tmp_file, self.set_output_filepath()) is False:
-                raise RuntimeError("cwebp failed")
+        return self._filepath
 
 
 cwebp = find_executable('cwebp')
