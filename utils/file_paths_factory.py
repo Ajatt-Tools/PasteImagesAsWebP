@@ -74,6 +74,7 @@ class FilePathFactory:
         self._prefixes = {
             self.default_prefix: lambda: self.default_prefix,
             'sort-field': self._sort_field,
+            'custom-field': self._custom_field,
             'current-field': self._current_field,
         }
         self._suffixes = {
@@ -111,7 +112,15 @@ class FilePathFactory:
             sort_field = self._editor.note.note_type()['sortf']
             return self._editor.note.values()[sort_field]
         except AttributeError:
-            return 'sort-field'
+            return 'sort field'
+
+    def _custom_field(self) -> str:
+        try:
+            return self._editor.note[config['custom_name_field']]
+        except AttributeError:
+            return 'custom field'
+        except (TypeError, KeyError):
+            return self._sort_field()
 
     def _current_field(self) -> str:
         try:
