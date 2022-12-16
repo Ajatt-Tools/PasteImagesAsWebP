@@ -45,9 +45,12 @@ def tooltip(msg: str) -> None:
     )
 
 
-def tooltip_filesize(filepath: str) -> None:
-    filesize_kib = str(os.stat(filepath).st_size / 1024)
-    tooltip(f"Image added. File size: {filesize_kib[:filesize_kib.find('.') + 3]} KiB.")
+def filesize_kib(filepath: str) -> float:
+    return os.stat(filepath).st_size / 1024.0
+
+
+def result_tooltip(filepath: str) -> None:
+    tooltip(f"<strong>{os.path.basename(filepath)}</strong> added.<br>File size: {filesize_kib(filepath):.3f} KiB.")
 
 
 def insert_image_html(editor: Editor, image_filename: str):
@@ -81,6 +84,6 @@ def insert_webp(editor: Editor):
     try:
         w.convert(mime)
         insert_image_html(editor, w.filename)
-        tooltip_filesize(w.filepath)
+        result_tooltip(w.filepath)
     except Exception as ex:
         tooltip(str(ex))

@@ -54,7 +54,7 @@ def drop_event(editor: EditorWebView, event: QDropEvent, _old: Callable):
             editor.activateWindow()  # Fix for Windows users
 
         editor.editor.web.evalWithCallback(f"focusIfField({p.x()}, {p.y()});", paste_field)
-        tooltip_filesize(w.filepath)
+        result_tooltip(w.filepath)
     except InvalidInput:
         return _old(editor, event)
     except CanceledPaste as ex:
@@ -89,7 +89,7 @@ def paste_event(editor: EditorWebView, _old: Callable):
     try:
         w.convert(mime)
         insert_image_html(editor.editor, w.filename)
-        tooltip_filesize(w.filepath)
+        result_tooltip(w.filepath)
     except CanceledPaste as ex:
         tooltip(str(ex))
     except InvalidInput:
