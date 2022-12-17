@@ -3,17 +3,17 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import re
-from typing import List, Iterable, Tuple, Optional
+from typing import Iterable, Optional
 
 from anki.notes import Note
-from .common import join_fields
 from aqt import gui_hooks, mw
 from aqt.editor import Editor
 from aqt.operations import CollectionOp
 from aqt.qt import *
 from aqt.utils import tooltip
 
-from .ajt_common import tweak_window
+from .ajt_common.about_menu import tweak_window
+from .common import join_fields
 from .consts import *
 
 
@@ -37,8 +37,8 @@ class FileNameEdit(QLineEdit):
 
     def validate(self):
         self._valid = (
-            len(self.text().encode('utf-8')) <= self._edit_max_len
-            and re.match(r'^[^\[\]<>:\'"/|?*\\]+\.[\w]+$', self.text())
+                len(self.text().encode('utf-8')) <= self._edit_max_len
+                and re.fullmatch(r'^[^\[\]<>:\'"/|?*\\]+\.\w{,5}$', self.text())
         )
         if self._valid:
             self.setStyleSheet("")

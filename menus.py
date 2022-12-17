@@ -16,12 +16,10 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
-from typing import List, Tuple
-
 from aqt import mw, gui_hooks
 from aqt.editor import EditorWebView
 
-from .ajt_common import menu_root_entry
+from .ajt_common.about_menu import menu_root_entry
 from .common import *
 from .config import config
 from .consts import ADDON_PATH

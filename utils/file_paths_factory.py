@@ -126,7 +126,9 @@ class FilePathFactory:
         try:
             return self._editor.note.values()[self._editor.currentField]
         except (AttributeError, TypeError):
-            return 'current-field'
+            # AttributeError is raised when editor is None
+            # TypeError is raised when current field is None
+            return 'current field'
 
     def _apply_pattern(self, pattern: str) -> str:
         for k, v in itertools.chain(self._prefixes.items(), self._suffixes.items()):
