@@ -17,14 +17,16 @@
 # Any modifications to this file must keep this entire header intact.
 
 import itertools
-from typing import NamedTuple, Iterable
+from typing import NamedTuple, Iterable, cast
 
 from anki.notes import Note
 from aqt import mw
 from aqt.addons import ConfigEditor
+from aqt.browser import Browser
 from aqt.qt import *
 from aqt.utils import showInfo
 
+from .ajt_common.widgets import AnkiFieldSelector
 from .config import config, write_config, addon_name
 from .consts import *
 from .utils import FilePathFactory
@@ -98,7 +100,7 @@ class BulkConvertDialog(SettingsDialog):
         return self._field_selector.selected_fields()
 
     def selected_notes(self) -> Iterable[Note]:
-        return (mw.col.get_note(nid) for nid in self.parent().selectedNotes())  # parent: Browser
+        return (mw.col.get_note(nid) for nid in cast(Browser, self.parent()).selectedNotes())
 
     def populate_main_vbox(self):
         super().populate_main_vbox()
@@ -163,7 +165,7 @@ class PasteDialog(SettingsDialog):
 class SettingsMenuDialog(SettingsDialog):
     """Settings dialog available from the main menu."""
 
-    __checkboxes = {
+    _checkboxes = {
         'drag_and_drop': 'Convert images on drag and drop',
         'copy_paste': 'Convert images on copy-paste',
         'avoid_upscaling': 'Avoid upscaling',
@@ -174,11 +176,13 @@ class SettingsMenuDialog(SettingsDialog):
         super().__init__(*args, **kwargs)
         self.when_show_dialog_combo_box = self.create_when_show_dialog_combo_box()
         self.filename_pattern_combo_box = self.create_filename_pattern_combo_box()
-        self.checkboxes = {key: QCheckBox(text) for key, text in self.__checkboxes.items()}
+        self.custom_name_field_combo_box = AnkiFieldSelector(self)
+        self.checkboxes = {key: QCheckBox(text) for key, text in self._checkboxes.items()}
         self.add_advanced_button()
 
     @property
     def mgr(self) -> mw.addonManager:
+        """Anki's ConfigEditor requires this property."""
         return mw.addonManager
 
     def add_advanced_button(self):
@@ -208,34 +212,39 @@ class SettingsMenuDialog(SettingsDialog):
         self._main_vbox.addWidget(self.create_additional_settings_group_box())
 
     def create_additional_settings_group_box(self) -> QGroupBox:
-        def create_inner_vbox():
+        """Creates the "Behavior" groupbox showing additional settings and checkboxes."""
+
+        def create_combo_boxes_layout():
+            layout = QFormLayout()
+            layout.addRow("Show this dialog", self.when_show_dialog_combo_box)
+            layout.addRow("Filename pattern", self.filename_pattern_combo_box)
+            layout.addRow("Custom name field", self.custom_name_field_combo_box)
+            return layout
+
+        def create_inner_layout():
             vbox = QVBoxLayout()
-            vbox.addLayout(self.create_combo_boxes_layout())
+            vbox.addLayout(create_combo_boxes_layout())
             for widget in self.checkboxes.values():
                 vbox.addWidget(widget)
             return vbox
 
         gbox = QGroupBox("Behavior")
-        gbox.setLayout(create_inner_vbox())
+        gbox.setLayout(create_inner_layout())
         return gbox
 
     def set_initial_values(self):
         super().set_initial_values()
         self.when_show_dialog_combo_box.setCurrentIndex(ShowOptions.index_of(config.get("show_settings")))
         self.filename_pattern_combo_box.setCurrentIndex(config.get("filename_pattern_num", 0))
+        self.custom_name_field_combo_box.setCurrentText(config.get("custom_name_field", "VocabKanji"))
 
         for key, widget in self.checkboxes.items():
             widget.setChecked(config[key])
 
-    def create_combo_boxes_layout(self):
-        layout = QFormLayout()
-        layout.addRow("Show this dialog", self.when_show_dialog_combo_box)
-        layout.addRow("Filename pattern", self.filename_pattern_combo_box)
-        return layout
-
     def accept(self):
         config['show_settings'] = self.when_show_dialog_combo_box.currentData()
         config['filename_pattern_num'] = self.filename_pattern_combo_box.currentIndex()
+        config['custom_name_field'] = self.custom_name_field_combo_box.currentText()
         for key, widget in self.checkboxes.items():
             config[key] = widget.isChecked()
 
