@@ -13,17 +13,17 @@ from aqt.qt import *
 from aqt.utils import tooltip
 
 from .ajt_common.about_menu import tweak_window
+from .ajt_common.monospace_line_edit import MonoSpaceLineEdit
 from .common import join_fields
 from .consts import *
 
 
-class FileNameEdit(QLineEdit):
+class FileNameEdit(MonoSpaceLineEdit):
     _edit_max_len = 119
 
     def __init__(self, text: str):
         super().__init__()
         self.setMaxLength(self._edit_max_len)
-        self.setFont(QFont("Monospace", 11))
         self.setText(text)
         qconnect(self.textChanged, self.validate)
         self._valid = True
