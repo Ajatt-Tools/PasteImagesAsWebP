@@ -26,7 +26,7 @@ from aqt.browser import Browser
 from aqt.qt import *
 from aqt.utils import showInfo
 
-from .ajt_common.widgets import AnkiFieldSelector
+from .ajt_common.anki_field_selector import AnkiFieldSelector
 from .config import config, write_config, addon_name
 from .consts import *
 from .utils import FilePathFactory
