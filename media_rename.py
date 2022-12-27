@@ -10,7 +10,7 @@ from aqt import gui_hooks, mw
 from aqt.editor import Editor
 from aqt.operations import CollectionOp
 from aqt.qt import *
-from aqt.utils import tooltip
+from aqt.utils import tooltip, showCritical
 
 from .ajt_common.about_menu import tweak_window
 from .ajt_common.monospace_line_edit import MonoSpaceLineEdit
@@ -110,7 +110,11 @@ def rename_file(old_filename: str, new_filename: str) -> str:
 
 def rename_media_files(to_rename: list[tuple[str, str]], note: Note, parent: Editor):
     for old_filename, new_filename in to_rename:
-        new_filename = rename_file(old_filename, new_filename)
+        try:
+            new_filename = rename_file(old_filename, new_filename)
+        except FileNotFoundError:
+            showCritical(f"{old_filename} doesn't exist.", title="Couldn't rename file.")
+            continue
         for field_name, field_value in note.items():
             note[field_name] = field_value.replace(old_filename, new_filename)
     CollectionOp(
