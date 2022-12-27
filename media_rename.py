@@ -98,8 +98,14 @@ def find_images(html: str) -> list[str]:
     return re.findall(r'<img[^<>]*src="([^<>\'"]+)"[^<>]*>', html)
 
 
+def unquote(filenames: list[str]):
+    import urllib.parse
+
+    return list(map(urllib.parse.unquote, filenames))
+
+
 def collect_media_filenames(html: str):
-    return find_images(html) + find_sounds(html)
+    return unquote(find_images(html) + find_sounds(html))
 
 
 def rename_file(old_filename: str, new_filename: str) -> str:
