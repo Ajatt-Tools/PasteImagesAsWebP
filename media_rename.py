@@ -63,7 +63,7 @@ class MediaRenameDialog(QDialog):
     def show(self) -> None:
         for widget in self.edits.values():
             self.edits_layout.addWidget(widget)
-        super().show()
+        return super().show()
 
     def make_layout(self) -> QLayout:
         layout = QVBoxLayout()
@@ -140,23 +140,19 @@ class Menus:
         cls.file_rename_dialog = None
 
     @classmethod
-    def create_rename_dialog(cls, *args, **kwargs) -> MediaRenameDialog:
-        d = cls.file_rename_dialog = MediaRenameDialog(*args, **kwargs)
-        qconnect(d.finished, lambda result: cls.del_ref())
-        return d
-
-    @classmethod
     def show_rename_dialog(cls, editor: Editor) -> None:
         if cls.file_rename_dialog:
             return
         elif editor.note and (filenames := collect_media_filenames(join_fields(editor.note.fields))):
-            cls.create_rename_dialog(editor, editor.note, filenames).show()
+            d = cls.file_rename_dialog = MediaRenameDialog(editor, editor.note, filenames)
+            qconnect(d.finished, lambda result: cls.del_ref())
+            d.show()
 
     @classmethod
     def add_editor_button(cls, buttons: list[str], editor: Editor) -> None:
         b = editor.addButton(
             icon=os.path.join(ADDON_PATH, "icons", "edit.svg"),
-            cmd="rename_media_files",
+            cmd="ajt__rename_media_files",
             func=cls.show_rename_dialog,
             tip="Rename media files referenced by note.",
         )
