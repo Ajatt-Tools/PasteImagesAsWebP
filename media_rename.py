@@ -13,6 +13,7 @@ from aqt.qt import *
 from aqt.utils import tooltip, showCritical
 
 from .ajt_common.about_menu import tweak_window
+from .ajt_common.media import find_all_media
 from .ajt_common.monospace_line_edit import MonoSpaceLineEdit
 from .common import join_fields
 from .consts import *
@@ -90,24 +91,6 @@ class MediaRenameDialog(QDialog):
             rename_media_files(to_rename, self.note, self.editor)
 
 
-def find_sounds(html: str) -> list[str]:
-    return re.findall(r'\[sound:([^\[\]]+)]', html)
-
-
-def find_images(html: str) -> list[str]:
-    return re.findall(r'<img[^<>]*src="([^<>\'"]+)"[^<>]*>', html)
-
-
-def unquote(filenames: list[str]):
-    import urllib.parse
-
-    return list(map(urllib.parse.unquote, filenames))
-
-
-def collect_media_filenames(html: str):
-    return unquote(find_images(html) + find_sounds(html))
-
-
 def rename_file(old_filename: str, new_filename: str) -> str:
     print(f"{old_filename} => {new_filename}")
     with open(os.path.join(mw.col.media.dir(), old_filename), 'rb') as f:
@@ -143,7 +126,7 @@ class Menus:
     def show_rename_dialog(cls, editor: Editor) -> None:
         if cls.file_rename_dialog:
             return
-        elif editor.note and (filenames := collect_media_filenames(join_fields(editor.note.fields))):
+        elif editor.note and (filenames := find_all_media(join_fields(editor.note.fields))):
             d = cls.file_rename_dialog = MediaRenameDialog(editor, editor.note, filenames)
             qconnect(d.finished, lambda result: cls.del_ref())
             d.show()
