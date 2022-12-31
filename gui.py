@@ -27,7 +27,7 @@ from aqt.qt import *
 from aqt.utils import showInfo
 
 from .ajt_common.anki_field_selector import AnkiFieldSelector
-from .config import config, write_config, addon_name
+from .config import config, addon_name
 from .consts import *
 from .utils import FilePathFactory
 from .utils import ShowOptions
@@ -80,7 +80,7 @@ class SettingsDialog(QDialog):
     def accept(self):
         config.update(self._sliders.as_dict())
         config['saved_presets'] = self._presets_editor.as_list()
-        write_config()
+        config.write_config()
         return super().accept()
 
 

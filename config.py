@@ -18,32 +18,12 @@
 
 from aqt import mw
 
-
-def get_config() -> dict:
-    cfg: dict = mw.addonManager.getConfig(__name__) or dict()
-    cfg['avoid_upscaling']: bool = cfg.get('avoid_upscaling', True)
-    cfg['show_context_menu_entry']: bool = cfg.get('show_context_menu_entry', True)
-    cfg['show_editor_button']: bool = cfg.get('show_editor_button', True)
-    cfg['shortcut']: str = cfg.get('shortcut', 'Ctrl+Meta+v')
-    cfg['image_width']: int = cfg.get('image_width', 0)
-    cfg['image_height']: int = cfg.get('image_height', 200)
-    cfg['image_quality']: str = cfg.get('image_quality', 20)
-    cfg['show_settings']: str = cfg.get('show_settings', 'toolbar')
-    cfg["drag_and_drop"]: bool = cfg.get('drag_and_drop', True)
-    cfg['copy_paste']: bool = cfg.get('copy_paste', False)
-    cfg['max_image_width']: int = cfg.get('max_image_width', 800)
-    cfg['max_image_height']: int = cfg.get('max_image_height', 600)
-
-    return cfg
+from .ajt_common.addon_config import AddonConfigManager
 
 
 def addon_name():
     return __name__.split(".")[0]
 
 
-def write_config():
-    mw.addonManager.writeConfig(__name__, config)
-
-
-config = get_config()
+config = AddonConfigManager()
 mw.addonManager.setConfigUpdatedAction(addon_name(), lambda new_conf: config.update(new_conf))

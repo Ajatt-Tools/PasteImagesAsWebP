@@ -24,5 +24,6 @@
     "preserve_original_filenames": true,
     "bulk_convert_fields": [],
     "bulk_reconvert_webp": false,
-    "custom_name_field": "VocabKanji"
+    "custom_name_field": "VocabKanji",
+    "saved_presets": []
 }
