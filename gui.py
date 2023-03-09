@@ -187,7 +187,7 @@ class SettingsMenuDialog(SettingsDialog):
 
     def add_advanced_button(self):
         def advanced_clicked():
-            d = ConfigEditor(self, addon_name(), config)  # type: ignore
+            d = ConfigEditor(self, addon_name(), config.dict_copy())  # type: ignore
             qconnect(d.accepted, self.set_initial_values)
 
         b = self._button_box.addButton("Advanced", QDialogButtonBox.ButtonRole.HelpRole)

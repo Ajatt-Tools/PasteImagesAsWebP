@@ -17,6 +17,7 @@
 # Any modifications to this file must keep this entire header intact.
 
 from aqt import mw
+from aqt.utils import showCritical
 
 from .ajt_common.addon_config import AddonConfigManager
 
@@ -25,5 +26,19 @@ def addon_name():
     return __name__.split(".")[0]
 
 
-config = AddonConfigManager()
-mw.addonManager.setConfigUpdatedAction(addon_name(), lambda new_conf: config.update(new_conf))
+class PasteImagesAsWebPConfig(AddonConfigManager):
+    def dict_copy(self):
+        return self._config.copy()
+
+    def update_from_addon_manager(self, new_conf: dict):
+        try:
+            # Config has been already written to disk by aqt.addons.ConfigEditor
+            self.update(new_conf, clear_old=True)
+        except RuntimeError as ex:
+            showCritical(str(ex), parent=mw, help=None)  # type: ignore
+            # Restore previous config.
+            self.write_config()
+
+
+config = PasteImagesAsWebPConfig()
+mw.addonManager.setConfigUpdatedAction(addon_name(), config.update_from_addon_manager)
