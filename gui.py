@@ -73,13 +73,13 @@ class SettingsDialog(QDialog):
         self._button_box.button(QDialogButtonBox.StandardButton.Ok).setFocus()
 
     def set_initial_values(self):
-        self._sliders.set_limits(config['max_image_width'], config['max_image_height'])
+        self._sliders.set_limits(config["max_image_width"], config["max_image_height"])
         self._sliders.populate(config)
-        self._presets_editor.set_items(config.get('saved_presets', []))
+        self._presets_editor.set_items(config["saved_presets"])
 
     def accept(self):
         config.update(self._sliders.as_dict())
-        config['saved_presets'] = self._presets_editor.as_list()
+        config["saved_presets"] = self._presets_editor.as_list()
         config.write_config()
         return super().accept()
 
@@ -109,16 +109,16 @@ class BulkConvertDialog(SettingsDialog):
 
     def set_initial_values(self):
         self._field_selector.add_fields(get_all_keys(self.selected_notes()))
-        self._field_selector.set_fields(config.get('bulk_convert_fields'))
-        self._reconvert_checkbox.setChecked(config.get('bulk_reconvert_webp'))
+        self._field_selector.set_fields(config["bulk_convert_fields"])
+        self._reconvert_checkbox.setChecked(config["bulk_reconvert_webp"])
         super().set_initial_values()
 
     def accept(self):
         if self._field_selector.isChecked() and not self._field_selector.selected_fields():
             showInfo(title="Can't accept settings", text="No fields selected. Nothing to convert.")
         else:
-            config['bulk_convert_fields'] = self._field_selector.selected_fields()
-            config['bulk_reconvert_webp'] = self._reconvert_checkbox.isChecked()
+            config["bulk_convert_fields"] = self._field_selector.selected_fields()
+            config["bulk_reconvert_webp"] = self._reconvert_checkbox.isChecked()
             return super().accept()
 
 
@@ -234,17 +234,17 @@ class SettingsMenuDialog(SettingsDialog):
 
     def set_initial_values(self):
         super().set_initial_values()
-        self.when_show_dialog_combo_box.setCurrentIndex(ShowOptions.index_of(config.get("show_settings")))
-        self.filename_pattern_combo_box.setCurrentIndex(config.get("filename_pattern_num", 0))
-        self.custom_name_field_combo_box.setCurrentText(config.get("custom_name_field", "VocabKanji"))
+        self.when_show_dialog_combo_box.setCurrentIndex(ShowOptions.index_of(config["show_settings"]))
+        self.filename_pattern_combo_box.setCurrentIndex(config["filename_pattern_num"])
+        self.custom_name_field_combo_box.setCurrentText(config["custom_name_field"])
 
         for key, widget in self.checkboxes.items():
             widget.setChecked(config[key])
 
     def accept(self):
-        config['show_settings'] = self.when_show_dialog_combo_box.currentData()
-        config['filename_pattern_num'] = self.filename_pattern_combo_box.currentIndex()
-        config['custom_name_field'] = self.custom_name_field_combo_box.currentText()
+        config["show_settings"] = self.when_show_dialog_combo_box.currentData()
+        config["filename_pattern_num"] = self.filename_pattern_combo_box.currentIndex()
+        config["custom_name_field"] = self.custom_name_field_combo_box.currentText()
         for key, widget in self.checkboxes.items():
             config[key] = widget.isChecked()
 
