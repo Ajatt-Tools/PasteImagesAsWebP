@@ -3,5 +3,4 @@
 
 from .image_slider_box import ImageSliderBox
 from .rich_slider import RichSlider
-from .field_selector import FieldSelector
 from .presets_editor import PresetsEditor
