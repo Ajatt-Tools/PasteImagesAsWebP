@@ -36,7 +36,7 @@ def setup_mainwindow_menu():
         dialog = SettingsMenuDialog(mw)
         dialog.exec()
 
-    action = QAction("WebP settings...", root_menu)
+    action = QAction("WebP Options...", root_menu)
     qconnect(action.triggered, open_settings)
     root_menu.addAction(action)
 
