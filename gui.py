@@ -26,12 +26,12 @@ from aqt.browser import Browser
 from aqt.qt import *
 from aqt.utils import showInfo
 
+from .ajt_common.multiple_choice_selector import MultipleChoiceSelector
 from .ajt_common.anki_field_selector import AnkiFieldSelector
 from .config import config, addon_name
 from .consts import *
 from .utils import FilePathFactory
 from .utils import ShowOptions
-from .widgets import FieldSelector
 from .widgets import ImageSliderBox
 from .widgets import PresetsEditor
 
@@ -92,12 +92,12 @@ class BulkConvertDialog(SettingsDialog):
     """Dialog shown on bulk-convert."""
 
     def __init__(self, *args, **kwargs):
-        self._field_selector = FieldSelector()
+        self._field_selector = MultipleChoiceSelector()
         self._reconvert_checkbox = QCheckBox("Reconvert existing WebP images")
         super().__init__(*args, **kwargs)
 
     def selected_fields(self) -> list[str]:
-        return self._field_selector.selected_fields()
+        return self._field_selector.checked_texts()
 
     def selected_notes(self) -> Iterable[Note]:
         return (mw.col.get_note(nid) for nid in cast(Browser, self.parent()).selectedNotes())
@@ -108,16 +108,16 @@ class BulkConvertDialog(SettingsDialog):
         self._main_vbox.addWidget(self._reconvert_checkbox)
 
     def set_initial_values(self):
-        self._field_selector.add_fields(get_all_keys(self.selected_notes()))
-        self._field_selector.set_fields(config["bulk_convert_fields"])
+        self._field_selector.set_texts(get_all_keys(self.selected_notes()))
+        self._field_selector.set_checked_texts(config["bulk_convert_fields"])
         self._reconvert_checkbox.setChecked(config["bulk_reconvert_webp"])
         super().set_initial_values()
 
     def accept(self):
-        if self._field_selector.isChecked() and not self._field_selector.selected_fields():
+        if self._field_selector.isChecked() and not self._field_selector.checked_texts():
             showInfo(title="Can't accept settings", text="No fields selected. Nothing to convert.")
         else:
-            config["bulk_convert_fields"] = self._field_selector.selected_fields()
+            config["bulk_convert_fields"] = self._field_selector.checked_texts()
             config["bulk_reconvert_webp"] = self._reconvert_checkbox.isChecked()
             return super().accept()
 
