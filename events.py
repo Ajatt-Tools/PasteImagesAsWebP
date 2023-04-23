@@ -16,9 +16,8 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
-from anki.hooks import wrap
-from aqt import mw
-from aqt.editor import EditorWebView
+import aqt.editor
+from aqt import gui_hooks
 from aqt.utils import KeyboardModifiersPressed
 
 from .common import *
@@ -30,78 +29,44 @@ def should_paste_raw():
     return KeyboardModifiersPressed().shift
 
 
-def drop_event(editor: EditorWebView, event: QDropEvent, _old: Callable):
-    if config.get("drag_and_drop") is False:
-        # the feature is disabled by the user
-        return _old(editor, event)
-
-    if event.source():
-        # don't filter html from other fields
-        return _old(editor, event)
-
-    if should_paste_raw():
-        return _old(editor, event)
-
-    # grab cursor position before it's moved by the user
-    p = editor.editor.web.mapFromGlobal(QCursor.pos())
-
-    w = ImageConverter(editor.editor, ShowOptions.drag_and_drop)
-    try:
-        w.convert(event.mimeData())
-
-        def paste_field(_):
-            insert_image_html(editor.editor, w.filename)
-            editor.activateWindow()  # Fix for Windows users
-
-        editor.editor.web.evalWithCallback(f"focusIfField({p.x()}, {p.y()});", paste_field)
-        result_tooltip(w.filepath)
-    except InvalidInput:
-        return _old(editor, event)
-    except CanceledPaste as ex:
-        tooltip(str(ex))
-    except RuntimeError as ex:
-        tooltip(str(ex))
-        return _old(editor, event)
-    except FileNotFoundError:
-        tooltip("File not found.")
-        return _old(editor, event)
-
-
-def paste_event(editor: EditorWebView, _old: Callable):
-    if config.get("copy_paste") is False:
-        # the feature is disabled by the user
-        return _old(editor)
-
-    mime: QMimeData = mw.app.clipboard().mimeData()
-
-    if mime.html().startswith("<!--anki-->"):
-        # no filtering required for internal pastes
-        return _old(editor)
-
-    if should_paste_raw():
-        return _old(editor)
-
-    if not (mime.hasImage() or has_local_file(mime)):
-        # no image was copied
-        return _old(editor)
-
-    w = ImageConverter(editor.editor, ShowOptions.menus)
+def convert_mime(mime: QMimeData, editor: Editor, action: ShowOptions):
+    w = ImageConverter(editor, action)
     try:
         w.convert(mime)
-        insert_image_html(editor.editor, w.filename)
-        result_tooltip(w.filepath)
+    except InvalidInput:
+        pass
     except CanceledPaste as ex:
         tooltip(str(ex))
-    except InvalidInput:
-        return _old(editor)
     except RuntimeError as ex:
         tooltip(str(ex))
-        return _old(editor)
     except FileNotFoundError:
         tooltip("File not found.")
-        return _old(editor)
+    else:
+        mime = QMimeData()
+        mime.setHtml(f'<img webp_converted="true" src="{w.filename}">')
+        result_tooltip(w.filepath)
+
+    return mime
+
+
+
+def on_process_mime(
+        mime: QMimeData,
+        editor_web_view: aqt.editor.EditorWebView,
+        internal: bool,
+        _extended: bool,
+        drop_event: bool) -> QMimeData:
+    if internal or should_paste_raw():
+        return mime
+
+    if config["drag_and_drop"] and drop_event:
+        return convert_mime(mime, editor_web_view.editor, action=ShowOptions.drag_and_drop)
+
+    if config["copy_paste"] and not drop_event and (mime.hasImage() or has_local_file(mime)):
+        return convert_mime(mime, editor_web_view.editor, action=ShowOptions.menus)
+
+    return mime
 
 
 def init():
-    EditorWebView.dropEvent = wrap(EditorWebView.dropEvent, drop_event, 'around')
-    EditorWebView.onPaste = custom_decorate(EditorWebView.onPaste, paste_event)
+    gui_hooks.editor_will_process_mime.append(on_process_mime)
