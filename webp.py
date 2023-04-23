@@ -107,6 +107,12 @@ class ImageConverter:
         if self._to_webp(os.path.join(self._dest_dir, filename), self._filepath) is False:
             raise RuntimeError("cwebp failed")
 
+    def _set_output_filepath(self) -> str:
+        self._filepath = self._filepath_factory.make_unique_filepath(
+            self._original_filename if config['preserve_original_filenames'] else None
+        )
+        return self._filepath
+
     def convert(self, mime: QMimeData) -> None:
         with TempFile() as tmp_file:
             if self._save_image(tmp_file.path(), mime) is False:
@@ -174,12 +180,6 @@ class ImageConverter:
             return False
 
         return True
-
-    def _set_output_filepath(self) -> str:
-        self._filepath = self._filepath_factory.make_unique_filepath(
-            self._original_filename if config['preserve_original_filenames'] else None
-        )
-        return self._filepath
 
 
 cwebp = find_executable('cwebp')
