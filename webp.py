@@ -125,7 +125,7 @@ class ImageConverter:
                 raise RuntimeError("cwebp failed")
 
     def _should_show_settings(self) -> bool:
-        return config.get("show_settings") == ShowOptions.always or config.get("show_settings") == self._action
+        return config["show_settings"] == ShowOptions.always or config["show_settings"] == self._action
 
     def _decide_show_settings(self) -> int:
         if self._should_show_settings() is True:
