@@ -43,7 +43,7 @@ def convert_mime(mime: QMimeData, editor: Editor, action: ShowOptions):
         tooltip("File not found.")
     else:
         mime = QMimeData()
-        mime.setHtml(f'<img webp_converted="true" src="{w.filename}">')
+        mime.setHtml(f'<img alt="webp image" src="{w.filename}">')
         result_tooltip(w.filepath)
 
     return mime

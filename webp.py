@@ -108,6 +108,10 @@ class ImageConverter:
             raise RuntimeError("cwebp failed")
 
     def _set_output_filepath(self) -> str:
+        """
+        Set and return a unique output file path, optionally based on the original name.
+        If a file with this name exists in the collection, will append digits at the end of the new name.
+        """
         self._filepath = self._filepath_factory.make_unique_filepath(
             self._original_filename if config['preserve_original_filenames'] else None
         )
