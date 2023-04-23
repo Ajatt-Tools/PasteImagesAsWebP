@@ -170,6 +170,8 @@ class SettingsMenuDialog(SettingsDialog):
         'copy_paste': 'Convert images on copy-paste',
         'avoid_upscaling': 'Avoid upscaling',
         'preserve_original_filenames': 'Preserve original filenames, if available',
+        'show_editor_button': 'Show a WebP button on the Editor Toolbar',
+        'show_context_menu_entry': 'Show a separate context menu item',
     }
 
     def __init__(self, *args, **kwargs):
