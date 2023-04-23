@@ -41,35 +41,47 @@ def setup_mainwindow_menu():
     root_menu.addAction(action)
 
 
-def setup_editor_menus():
-    shortcut: str = config.get("shortcut")
-    action_tooltip: str = "Paste as WebP" if not shortcut else f"Paste as WebP ({key_to_str(shortcut)})"
+def action_tooltip():
+    return (
+        "Paste as WebP"
+        if not config['shortcut']
+        else f"Paste as WebP ({key_to_str(config['shortcut'])})"
+    )
 
-    def add_editor_shortcut(cuts: list[tuple], self: Editor):
-        cuts.append((shortcut, lambda e=self: insert_webp(e)))
 
-    def add_context_menu_item(webview: EditorWebView, menu: QMenu):
-        a: QAction = menu.addAction(action_tooltip)
-        qconnect(a.triggered, lambda _, e=webview.editor: insert_webp(e))
-
-    def add_editor_button(buttons, editor):
-        b = editor.addButton(
-            os.path.join(ADDON_PATH, "icons", "webp.png"),
-            "paste_webp_button",
-            lambda e=editor: insert_webp(e),
-            tip=action_tooltip,
-            keys=shortcut
-        )
-        buttons.append(b)
-        return buttons
-
+def on_editor_will_show_context_menu(webview: EditorWebView, menu: QMenu):
     if config.get("show_context_menu_entry") is True:
-        gui_hooks.editor_will_show_context_menu.append(add_context_menu_item)
+        action: QAction = menu.addAction(action_tooltip())
+        qconnect(action.triggered, lambda _, e=webview.editor: insert_webp(e))
 
-    if config.get("show_editor_button") is True:
-        gui_hooks.editor_did_init_buttons.append(add_editor_button)
-    elif shortcut:
-        gui_hooks.editor_did_init_shortcuts.append(add_editor_shortcut)
+
+def on_editor_did_init_buttons(buttons: list[str], editor: Editor):
+    """
+    Append a new editor button if it's enabled.
+    """
+    if config["show_editor_button"] is True:
+        buttons.append(editor.addButton(
+            icon=os.path.join(ADDON_PATH, "icons", "webp.png"),
+            cmd="ajt__paste_webp_button",
+            func=lambda e=editor: insert_webp(e),
+            tip=action_tooltip(),
+            keys=config['shortcut'] or None,
+        ))
+
+
+def on_editor_did_init_shortcuts(cuts: list[tuple], self: Editor):
+    """
+    Add keyboard shortcut if it is set and if editor button is disabled.
+    If editor button is enabled, it has its own keyboard shortcut.
+    """
+    if config["show_editor_button"] is False and config['shortcut']:
+        cuts.append((config['shortcut'], lambda e=self: insert_webp(e)))
+
+
+def setup_editor_menus():
+    gui_hooks.editor_did_init_buttons.append(on_editor_did_init_buttons)
+    gui_hooks.editor_did_init_shortcuts.append(on_editor_did_init_shortcuts)
+    gui_hooks.editor_will_show_context_menu.append(on_editor_will_show_context_menu)
 
 
 def init():
