@@ -99,7 +99,7 @@ class ImageConverter:
 
     def load_internal(self, filename: str) -> None:
         with open(os.path.join(self._dest_dir, filename), 'rb') as f:
-            image = QImage.fromData(f.read())
+            image = QImage.fromData(f.read())  # type: ignore
             self._dimensions = ImageDimensions(image.width(), image.height())
 
     def convert_internal(self, filename: str) -> None:
