@@ -37,6 +37,7 @@ def convert_mime(mime: QMimeData, editor: Editor, action: ShowOptions):
         pass
     except CanceledPaste as ex:
         tooltip(str(ex))
+        mime = QMimeData()
     except RuntimeError as ex:
         tooltip(str(ex))
     except FileNotFoundError:
@@ -47,7 +48,6 @@ def convert_mime(mime: QMimeData, editor: Editor, action: ShowOptions):
         result_tooltip(w.filepath)
 
     return mime
-
 
 
 def on_process_mime(
