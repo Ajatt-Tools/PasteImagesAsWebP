@@ -17,28 +17,20 @@
 # Any modifications to this file must keep this entire header intact.
 
 import functools
-import re
 import threading
-from typing import Optional, Sequence, Iterable
+from typing import Optional, Sequence
 
 from anki.collection import Collection
 from anki.notes import Note
 from aqt import mw, gui_hooks
 from aqt.browser import Browser
 from aqt.operations import CollectionOp, ResultWithChanges
-from aqt.qt import *
 from aqt.utils import showInfo
 
-from .common import tooltip, NoteId, join_fields
+from .common import *
 from .config import config
 from .gui import BulkConvertDialog
 from .webp import ImageConverter
-
-
-def find_eligible_images(html: str, include_webp: bool = False) -> Iterable[str]:
-    for image in re.findall(r'<img[^<>]*src="([^"]+)"[^<>]*>', html):
-        if include_webp or image[-5:] != '.webp':
-            yield image
 
 
 class ConvertTask:
@@ -65,7 +57,7 @@ class ConvertTask:
             note_content = join_fields([note[field] for field in self.keys_to_update(note)])
             if '<img' not in note_content:
                 continue
-            for filename in find_eligible_images(note_content, include_webp=config.get('bulk_reconvert_webp')):
+            for filename in find_convertible_images(note_content, include_webp=config['bulk_reconvert_webp']):
                 to_convert.setdefault(filename, set()).add(note.id)
 
         return to_convert
@@ -80,7 +72,7 @@ class ConvertTask:
 
         for progress, filename in enumerate(self.to_convert):
             yield progress
-            if converted_filename := convert_image(filename):
+            if converted_filename := convert_stored_image(filename):
                 self.converted[filename] = converted_filename
             else:
                 self.failed[filename] = None
@@ -168,7 +160,7 @@ class ProgressBar(QDialog):
         return self.bar.setRange(min_val, max_val)
 
 
-def convert_image(filename: str) -> Optional[str]:
+def convert_stored_image(filename: str) -> Optional[str]:
     try:
         w = ImageConverter()
         w.load_internal(filename)

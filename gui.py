@@ -168,8 +168,9 @@ class SettingsMenuDialog(SettingsDialog):
     _checkboxes = {
         'drag_and_drop': 'Convert images on drag and drop',
         'copy_paste': 'Convert images on copy-paste',
-        'avoid_upscaling': 'Avoid upscaling',
+        'convert_on_note_add': 'Convert when AnkiConnect creates new notes',
         'preserve_original_filenames': 'Preserve original filenames, if available',
+        'avoid_upscaling': 'Avoid upscaling',
         'show_editor_button': 'Show a WebP button on the Editor Toolbar',
         'show_context_menu_entry': 'Show a separate context menu item',
     }
@@ -181,6 +182,13 @@ class SettingsMenuDialog(SettingsDialog):
         self.custom_name_field_combo_box = AnkiFieldSelector(self)
         self.checkboxes = {key: QCheckBox(text) for key, text in self._checkboxes.items()}
         self.add_advanced_button()
+        self.add_tooltips()
+
+    def add_tooltips(self):
+        self.checkboxes['convert_on_note_add'].setToolTip(
+            "Convert images when a new note is added by an external tool, such as AnkiConnect.\n"
+            "Does not apply to the native Add dialog."
+        )
 
     @property
     def mgr(self) -> mw.addonManager:

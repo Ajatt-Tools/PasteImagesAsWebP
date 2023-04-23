@@ -5,6 +5,7 @@ class ShowOptions(enum.Enum):
     always = "Always"
     menus = "Toolbar and menus"
     drag_and_drop = "On drag and drop"
+    add_note = "Note added"
     never = "Never"
 
     def __eq__(self, other: str):

@@ -2,6 +2,7 @@
     "avoid_upscaling": true,
     "show_context_menu_entry": false,
     "show_editor_button": true,
+    "convert_on_note_add": true,
     "shortcut": "Ctrl+Meta+v",
     "image_width": 0,
     "image_height": 200,

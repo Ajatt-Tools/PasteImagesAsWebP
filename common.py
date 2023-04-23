@@ -16,6 +16,9 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
+import re
+from typing import Iterable
+
 from aqt.editor import Editor
 from aqt.qt import *
 
@@ -35,11 +38,20 @@ try:
 except ImportError:
     from anki.utils import joinFields as join_fields  # type: ignore
 
+RE_IMAGE_HTML_TAG = re.compile(r'<img[^<>]*src="([^"]+)"[^<>]*>', flags=re.IGNORECASE)
+
+
+def find_convertible_images(html: str, include_webp: bool = False) -> Iterable[str]:
+    for filename in re.findall(RE_IMAGE_HTML_TAG, html):
+        filename: str
+        if include_webp or not filename.endswith('.webp'):
+            yield filename
+
 
 def tooltip(msg: str) -> None:
-    from aqt.utils import tooltip as __tooltip
+    from aqt.utils import tooltip as _tooltip
 
-    return __tooltip(
+    return _tooltip(
         msg=msg,
         period=int(config.get('tooltip_duration_seconds', 5)) * 1000
     )
