@@ -16,19 +16,18 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
+import functools
 import itertools
 import random
-import re
 import time
 import unicodedata
-from functools import wraps
 from time import gmtime, strftime
-from typing import AnyStr, Optional, Iterable
+from typing import AnyStr, Optional
 
 from anki.utils import htmlToTextLine
-from aqt.editor import Editor
-from aqt.qt import *
 
+from .image_converter import ImageConverter
+from ..common import *
 from ..config import config
 
 
@@ -41,7 +40,7 @@ def compatible_filename(f: Callable[..., str]):
     def sub_spaces(s: str) -> str:
         return re.sub(r' +', ' ', s)
 
-    @wraps(f)
+    @functools.wraps(f)
     def wrapper(*args, **kwargs) -> str:
         s = f(*args, **kwargs)
         s = htmlToTextLine(s)
@@ -67,10 +66,8 @@ class FilePathFactory:
     ext = '.webp'
     default_prefix = 'paste'
 
-    def __init__(self, target_dir_path: str = None, editor: Editor = None):
-        self._target_dir_path = target_dir_path
-        self._editor = editor
-
+    def __init__(self, converter: Optional[ImageConverter] = None):
+        self._converter = converter
         self._prefixes = {
             self.default_prefix: lambda: self.default_prefix,
             'sort-field': self._sort_field,
@@ -81,8 +78,11 @@ class FilePathFactory:
             'time-number': lambda: str(int(time.time() * 1000)),
             'time-human': lambda: strftime("%d-%b-%Y_%H-%M-%S", gmtime()),
         }
-
-        self._patterns = [f'{prefix}_{suffix}' for prefix in self._prefixes for suffix in self._suffixes]
+        self._patterns = [
+            f'{prefix}_{suffix}'
+            for prefix in self._prefixes
+            for suffix in self._suffixes
+        ]
 
     @property
     def patterns_populated(self) -> Iterable[str]:
@@ -90,7 +90,7 @@ class FilePathFactory:
 
     def make_unique_filepath(self, original_filename: Optional[str]) -> AnyStr:
         return ensure_unique(os.path.join(
-            self._target_dir_path,
+            self._converter.dest_dir,
             self._make_filename_no_ext(original_filename) + self.ext,
         ))
 
@@ -101,7 +101,7 @@ class FilePathFactory:
         else:
             def get_pattern() -> str:
                 try:
-                    return self._patterns[config.get('filename_pattern_num', 0)]
+                    return self._patterns[config['filename_pattern_num']]
                 except IndexError:
                     return self._patterns[0]
 
@@ -109,14 +109,14 @@ class FilePathFactory:
 
     def _sort_field(self) -> str:
         try:
-            sort_field = self._editor.note.note_type()['sortf']
-            return self._editor.note.values()[sort_field]
+            sort_field = self._converter.note.note_type()['sortf']
+            return self._converter.note.values()[sort_field]
         except AttributeError:
             return 'sort field'
 
     def _custom_field(self) -> str:
         try:
-            return self._editor.note[config['custom_name_field']]
+            return self._converter.note[config['custom_name_field']]
         except AttributeError:
             return 'custom field'
         except (TypeError, KeyError):
@@ -124,7 +124,7 @@ class FilePathFactory:
 
     def _current_field(self) -> str:
         try:
-            return self._editor.note.values()[self._editor.currentField]
+            return self._converter.note.values()[self._converter.editor.currentField]
         except (AttributeError, TypeError):
             # AttributeError is raised when editor is None
             # TypeError is raised when current field is None
