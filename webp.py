@@ -100,11 +100,13 @@ class ImageConverter:
     def load_internal(self, filename: str) -> None:
         with open(os.path.join(self._dest_dir, filename), 'rb') as f:
             image = QImage.fromData(f.read())  # type: ignore
-            self._dimensions = ImageDimensions(image.width(), image.height())
+        self._dimensions = ImageDimensions(image.width(), image.height())
+        self._original_filename = filename
 
     def convert_internal(self, filename: str) -> None:
-        self._filepath = self._filepath_factory.make_unique_filepath(filename)
-        if self._to_webp(os.path.join(self._dest_dir, filename), self._filepath) is False:
+        if not self._original_filename:
+            raise RuntimeError("file wasn't loaded before converting")
+        if self._to_webp(os.path.join(self._dest_dir, filename), self._set_output_filepath()) is False:
             raise RuntimeError("cwebp failed")
 
     def _set_output_filepath(self) -> str:
