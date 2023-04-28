@@ -30,88 +30,125 @@ from aqt.utils import showInfo
 from .common import *
 from .config import config
 from .gui import BulkConvertDialog
-from .webp import ImageConverter
+from .webp import WebPConverter
+
+
+class ConvertResult:
+    def __init__(self):
+        self._converted: dict[str, str] = {}
+        self._failed: dict[str, None] = {}
+
+    def add_converted(self, old_filename: str, new_filename: str):
+        self._converted[old_filename] = new_filename
+
+    def add_failed(self, filename: str):
+        self._failed[filename] = None
+
+    @property
+    def converted(self):
+        return self._converted
+
+    @property
+    def failed(self) -> Sequence[str]:
+        return self._failed
+
+    def is_dirty(self) -> bool:
+        return bool(self._converted or self._failed)
 
 
 class ConvertTask:
-    def __init__(self, note_ids: Sequence[NoteId], selected_fields: list[str]):
-        self.note_ids = note_ids
-        self.selected_fields = selected_fields
-        self.to_convert = self.find_images_to_convert_and_notes()
-        self.converted: Optional[dict[str, str]] = None
-        self.failed: Optional[dict[str, None]] = None
-
-    def keys_to_update(self, note: Note) -> Iterable[str]:
-        if not self.selected_fields:
-            return note.keys()
-        else:
-            return filter(lambda field: field in self.selected_fields, note.keys())
-
-    def find_images_to_convert_and_notes(self) -> dict[str, set[NoteId]]:
-        """
-        Maps each filename to a set of note ids that reference the filename.
-        """
-        to_convert = {}
-
-        for note in map(mw.col.get_note, self.note_ids):
-            note_content = join_fields([note[field] for field in self.keys_to_update(note)])
-            if '<img' not in note_content:
-                continue
-            for filename in find_convertible_images(note_content, include_webp=config['bulk_reconvert_webp']):
-                to_convert.setdefault(filename, set()).add(note.id)
-
-        return to_convert
+    def __init__(self, browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str]):
+        self._browser: Browser = browser
+        self._selected_fields: list[str] = selected_fields
+        self._to_convert: dict[str, dict[NoteId, Note]] = self._find_images_to_convert_and_notes(note_ids)
+        self._result = ConvertResult()
 
     @property
     def size(self) -> int:
-        return len(self.to_convert)
+        return len(self._to_convert)
 
     def __call__(self):
-        self.converted = {}
-        self.failed = {}
+        if self._result.is_dirty():
+            raise RuntimeError("Already converted.")
 
-        for progress, filename in enumerate(self.to_convert):
-            yield progress
-            if converted_filename := convert_stored_image(filename):
-                self.converted[filename] = converted_filename
+        for progress_idx, filename in enumerate(self._to_convert):
+            yield progress_idx
+            if converted_filename := self._convert_stored_image(filename, self._first_referenced(filename)):
+                self._result.add_converted(filename, converted_filename)
             else:
-                self.failed[filename] = None
+                self._result.add_failed(filename)
 
-    def update_notes_op(self, col: Collection) -> ResultWithChanges:
-        pos = col.add_custom_undo_entry(f"Convert {len(self.converted)} images to WebP")
+    def update_notes(self):
+        def show_report_message():
+            showInfo(
+                parent=self._browser,
+                title="Task done",
+                textFormat="rich",
+                text=self._form_report_message()
+            )
+
+        if self._result.is_dirty():
+            if not self._result.converted:
+                return show_report_message()
+            CollectionOp(
+                parent=self._browser, op=lambda col: self._update_notes_op(col)
+            ).success(
+                lambda out: show_report_message()
+            ).run_in_background()
+
+    def _first_referenced(self, filename: str) -> Note:
+        return next(note for note in self._to_convert[filename].values())
+
+    def _keys_to_update(self, note: Note) -> Iterable[str]:
+        if not self._selected_fields:
+            return note.keys()
+        else:
+            return set(note.keys()).intersection(self._selected_fields)
+
+    def _find_images_to_convert_and_notes(self, note_ids: Sequence[NoteId]) -> dict[str, dict[NoteId, Note]]:
+        """
+        Maps each filename to a set of note ids that reference the filename.
+        """
+        to_convert: dict[str, dict[NoteId, Note]] = {}
+
+        for note in map(mw.col.get_note, note_ids):
+            note_content = join_fields([note[field] for field in self._keys_to_update(note)])
+            if '<img' not in note_content:
+                continue
+            for filename in find_convertible_images(note_content, include_webp=config['bulk_reconvert_webp']):
+                to_convert.setdefault(filename, dict())[note.id] = note
+
+        return to_convert
+
+    def _convert_stored_image(self, filename: str, note: Note) -> Optional[str]:
+        try:
+            w = WebPConverter(self._browser.editor, note)
+            w.load_internal(filename)
+            w.convert_internal(filename)
+        except (OSError, RuntimeError, FileNotFoundError):
+            pass
+        else:
+            return w.filename
+
+    def _update_notes_op(self, col: Collection) -> ResultWithChanges:
+        pos = col.add_custom_undo_entry(f"Convert {len(self._result.converted)} images to WebP")
         to_update: dict[NoteId, Note] = {}
 
-        for initial_filename, converted_filename in self.converted.items():
-            relevant_notes = map(
-                lambda nid: to_update.setdefault(nid, mw.col.get_note(nid)),
-                self.to_convert[initial_filename]
-            )
-            for note in relevant_notes:
-                for key in self.keys_to_update(note):
+        for initial_filename, converted_filename in self._result.converted.items():
+            for note in self._to_convert[initial_filename].values():
+                for key in self._keys_to_update(note):
                     note[key] = note[key].replace(initial_filename, converted_filename)
+                to_update[note.id] = note
 
         col.update_notes(tuple(to_update.values()))
         return col.merge_undo_entries(pos)
 
-    def update_notes(self, parent: QWidget):
-        if self.converted:
-            CollectionOp(
-                parent=parent, op=lambda col: self.update_notes_op(col)
-            ).success(
-                lambda out: showInfo(
-                    parent=parent,
-                    title="Task done",
-                    textFormat="rich",
-                    text=self.form_report_message()
-                )
-            ).run_in_background()
-
-    def form_report_message(self) -> str:
-        text = f"<p>Converted <b>{len(self.converted)}</b> files.</p>"
-        if self.failed:
-            text += f"<p>Failed <b>{len(self.failed)}</b> files:</p>"
+    def _form_report_message(self) -> str:
+        text = f"<p>Converted <b>{len(self._result.converted)}</b> files.</p>"
+        if self._result.failed:
+            text += f"<p>Failed <b>{len(self._result.failed)}</b> files:</p>"
             text += "<ol>"
-            text += ''.join(f"<li>{filename}</li>" for filename in self.failed)
+            text += ''.join(f"<li>{filename}</li>" for filename in self._result.failed)
             text += "</ol>"
         return text
 
@@ -160,22 +197,12 @@ class ProgressBar(QDialog):
         return self.bar.setRange(min_val, max_val)
 
 
-def convert_stored_image(filename: str) -> Optional[str]:
-    try:
-        w = ImageConverter()
-        w.load_internal(filename)
-        w.convert_internal(filename)
-    except (OSError, RuntimeError, FileNotFoundError):
-        pass
-    else:
-        return w.filename
-
-
 def reload_note(f: Callable[[Browser, Sequence[NoteId]], None]):
     @functools.wraps(f)
     def decorator(browser: Browser, *args, **kwargs):
         note = browser.editor.note
         if note:
+            browser.editor.currentField = None
             browser.editor.set_note(None)
         f(browser, *args, **kwargs)
         if note:
@@ -187,7 +214,7 @@ def reload_note(f: Callable[[Browser, Sequence[NoteId]], None]):
 @reload_note
 def bulk_convert(browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str]):
     progress_bar = ProgressBar()
-    convert_task = ConvertTask(note_ids, selected_fields)
+    convert_task = ConvertTask(browser, note_ids, selected_fields)
 
     progress_bar.set_range(0, convert_task.size)
     progress_bar.task = convert_task
@@ -196,7 +223,7 @@ def bulk_convert(browser: Browser, note_ids: Sequence[NoteId], selected_fields: 
     t.start()
 
     progress_bar.exec()
-    convert_task.update_notes(browser)
+    convert_task.update_notes()
     browser.editor.loadNoteKeepingFocus()
     t.join()
 
