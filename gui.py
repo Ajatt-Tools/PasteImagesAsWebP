@@ -17,23 +17,24 @@
 # Any modifications to this file must keep this entire header intact.
 
 import itertools
-from typing import NamedTuple, Iterable, cast
+from typing import cast
 
 from anki.notes import Note
 from aqt import mw
 from aqt.addons import ConfigEditor
 from aqt.browser import Browser
-from aqt.qt import *
 from aqt.utils import showInfo
 
-from .ajt_common.multiple_choice_selector import MultipleChoiceSelector
+from .ajt_common.checkable_combobox import CheckableComboBox
 from .ajt_common.anki_field_selector import AnkiFieldSelector
+from .ajt_common.multiple_choice_selector import MultipleChoiceSelector
+from .common import *
 from .config import config, addon_name
 from .consts import *
-from .utils import FilePathFactory
-from .utils import ShowOptions
-from .widgets import ImageSliderBox
-from .widgets import PresetsEditor
+from .utils.converter_interfaces import FileNamePatterns
+from .utils.show_options import ShowOptions
+from .widgets.image_slider_box import ImageSliderBox
+from .widgets.presets_editor import PresetsEditor
 
 
 class SettingsDialog(QDialog):
@@ -122,11 +123,6 @@ class BulkConvertDialog(SettingsDialog):
             return super().accept()
 
 
-class ImageDimensions(NamedTuple):
-    width: int
-    height: int
-
-
 class PasteDialog(SettingsDialog):
     """Dialog shown on paste."""
 
@@ -204,16 +200,16 @@ class SettingsMenuDialog(SettingsDialog):
         qconnect(b.clicked, advanced_clicked)
 
     @staticmethod
-    def create_when_show_dialog_combo_box() -> QComboBox:
-        combobox = QComboBox()
+    def create_when_show_dialog_combo_box() -> CheckableComboBox:
+        combobox = CheckableComboBox()
         for option in ShowOptions:
-            combobox.addItem(option.value, option.name)
+            combobox.addCheckableItem(option.value, option)
         return combobox
 
     @staticmethod
     def create_filename_pattern_combo_box() -> QComboBox:
         combobox = QComboBox()
-        for option in FilePathFactory().patterns_populated:
+        for option in FileNamePatterns().all_examples():
             combobox.addItem(option)
         return combobox
 
@@ -244,7 +240,7 @@ class SettingsMenuDialog(SettingsDialog):
 
     def set_initial_values(self):
         super().set_initial_values()
-        self.when_show_dialog_combo_box.setCurrentIndex(ShowOptions.index_of(config["show_settings"]))
+        self.when_show_dialog_combo_box.setCheckedData(config.show_settings())
         self.filename_pattern_combo_box.setCurrentIndex(config["filename_pattern_num"])
         self.custom_name_field_combo_box.setCurrentText(config["custom_name_field"])
 
@@ -252,7 +248,7 @@ class SettingsMenuDialog(SettingsDialog):
             widget.setChecked(config[key])
 
     def accept(self):
-        config["show_settings"] = self.when_show_dialog_combo_box.currentData()
+        config.set_show_options(item.data() for item in self.when_show_dialog_combo_box.checkedItems())
         config["filename_pattern_num"] = self.filename_pattern_combo_box.currentIndex()
         config["custom_name_field"] = self.custom_name_field_combo_box.currentText()
         for key, widget in self.checkboxes.items():

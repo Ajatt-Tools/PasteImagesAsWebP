@@ -16,10 +16,13 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
+from typing import Iterable
+
 from aqt import mw
 from aqt.utils import showCritical
 
 from .ajt_common.addon_config import AddonConfigManager
+from .utils.show_options import ShowOptions
 
 
 def addon_name():
@@ -29,6 +32,16 @@ def addon_name():
 class PasteImagesAsWebPConfig(AddonConfigManager):
     def dict_copy(self):
         return self._config.copy()
+
+    def show_settings(self) -> Iterable[ShowOptions]:
+        for key in self['show_settings'].split(','):
+            try:
+                yield ShowOptions[key]
+            except KeyError:
+                pass
+
+    def set_show_options(self, options: Iterable[ShowOptions]):
+        self['show_settings'] = ','.join(option.name for option in options)
 
     def update_from_addon_manager(self, new_conf: dict):
         try:
