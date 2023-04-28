@@ -248,7 +248,7 @@ class SettingsMenuDialog(SettingsDialog):
             widget.setChecked(config[key])
 
     def accept(self):
-        config.set_show_options(item.data() for item in self.when_show_dialog_combo_box.checkedItems())
+        config.set_show_options(self.when_show_dialog_combo_box.checkedData())
         config["filename_pattern_num"] = self.filename_pattern_combo_box.currentIndex()
         config["custom_name_field"] = self.custom_name_field_combo_box.currentText()
         for key, widget in self.checkboxes.items():
