@@ -5,7 +5,7 @@ from typing import List, Dict
 
 from aqt.qt import *
 
-from . import ImageSliderBox
+from .image_slider_box import ImageSliderBox
 
 
 def preset_to_str(preset: dict[str, int]) -> str:

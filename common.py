@@ -18,13 +18,12 @@
 
 import re
 from typing import Iterable
+from typing import NamedTuple
 
 from aqt.editor import Editor
 from aqt.qt import *
 
 from .config import config
-from .utils import ShowOptions
-from .webp import ImageConverter
 
 try:
     from anki.notes import NoteId
@@ -39,6 +38,11 @@ except ImportError:
     from anki.utils import joinFields as join_fields  # type: ignore
 
 RE_IMAGE_HTML_TAG = re.compile(r'<img[^<>]*src="([^"]+)"[^<>]*>', flags=re.IGNORECASE)
+
+
+class ImageDimensions(NamedTuple):
+    width: int
+    height: int
 
 
 def find_convertible_images(html: str, include_webp: bool = False) -> Iterable[str]:
@@ -65,8 +69,12 @@ def result_tooltip(filepath: str) -> None:
     tooltip(f"<strong>{os.path.basename(filepath)}</strong> added.<br>File size: {filesize_kib(filepath):.3f} KiB.")
 
 
+def image_html(image_filename: str) -> str:
+    return f'<img alt="webp image" src="{image_filename}">'
+
+
 def insert_image_html(editor: Editor, image_filename: str):
-    editor.doPaste(html=f'<img src="{image_filename}">', internal=True)
+    editor.doPaste(html=image_html(image_filename), internal=True)
 
 
 def has_local_file(mime: QMimeData) -> bool:
@@ -88,14 +96,3 @@ def custom_decorate(old: Callable, new: Callable):
 
 def key_to_str(shortcut: str) -> str:
     return QKeySequence(shortcut).toString(QKeySequence.SequenceFormat.NativeText)
-
-
-def insert_webp(editor: Editor):
-    mime: QMimeData = editor.mw.app.clipboard().mimeData()
-    w = ImageConverter(editor, ShowOptions.menus)
-    try:
-        w.convert(mime)
-        insert_image_html(editor, w.filename)
-        result_tooltip(w.filepath)
-    except Exception as ex:
-        tooltip(str(ex))

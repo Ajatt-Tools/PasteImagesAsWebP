@@ -24,6 +24,8 @@ from .common import *
 from .config import config
 from .consts import ADDON_PATH
 from .gui import SettingsMenuDialog
+from .utils.show_options import ShowOptions
+from .webp import OnPasteConverter
 
 
 def setup_mainwindow_menu():
@@ -47,6 +49,17 @@ def action_tooltip():
         if not config['shortcut']
         else f"Paste as WebP ({key_to_str(config['shortcut'])})"
     )
+
+
+def insert_webp(editor: Editor):
+    mime: QMimeData = editor.mw.app.clipboard().mimeData()
+    w = OnPasteConverter(editor, editor.note, ShowOptions.menus)
+    try:
+        w.convert_mime(mime)
+        insert_image_html(editor, w.filename)
+        result_tooltip(w.filepath)
+    except Exception as ex:
+        tooltip(str(ex))
 
 
 def on_editor_will_show_context_menu(webview: EditorWebView, menu: QMenu):

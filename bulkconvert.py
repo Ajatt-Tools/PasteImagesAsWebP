@@ -30,7 +30,7 @@ from aqt.utils import showInfo
 from .common import *
 from .config import config
 from .gui import BulkConvertDialog
-from .webp import WebPConverter
+from .webp import InternalFileConverter
 
 
 class ConvertResult:
@@ -122,7 +122,7 @@ class ConvertTask:
 
     def _convert_stored_image(self, filename: str, note: Note) -> Optional[str]:
         try:
-            w = WebPConverter(self._browser.editor, note)
+            w = InternalFileConverter(self._browser.editor, note)
             w.load_internal(filename)
             w.convert_internal(filename)
         except (OSError, RuntimeError, FileNotFoundError):
