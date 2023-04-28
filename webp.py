@@ -221,7 +221,7 @@ class OnPasteConverter(WebPConverter):
 
 class InternalFileConverter(WebPConverter):
     """
-    Converter used when converting an image already stored in the collection.
+    Converter used when converting an image already stored in the collection (e.g. bulk-convert).
     """
 
     def load_internal(self, filename: str) -> None:
@@ -247,6 +247,7 @@ class OnAddNoteConverter(InternalFileConverter):
         self._settings_shown = False
 
     def _should_show_settings(self) -> bool:
+        """ If a note contains multiple images, show settings only once per note. """
         if self._settings_shown is False:
             self._settings_shown = True
             return super()._should_show_settings()
