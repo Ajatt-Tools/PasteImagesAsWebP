@@ -230,10 +230,10 @@ class InternalFileConverter(WebPConverter):
         self._dimensions = ImageDimensions(image.width(), image.height())
         self._original_filename = filename
 
-    def convert_internal(self, filename: str) -> None:
+    def convert_internal(self) -> None:
         if not self._original_filename:
             raise ImageNotLoaded("file wasn't loaded before converting")
-        if self._to_webp(os.path.join(self.dest_dir, filename), self._set_output_filepath()) is False:
+        if self._to_webp(os.path.join(self.dest_dir, self._original_filename), self._set_output_filepath()) is False:
             raise RuntimeError("cwebp failed")
 
 
@@ -256,7 +256,7 @@ class OnAddNoteConverter(InternalFileConverter):
         self.load_internal(filename)
         if self._maybe_show_settings() == QDialog.DialogCode.Rejected:
             raise CanceledPaste("Cancelled.")
-        self.convert_internal(filename)
+        self.convert_internal()
         if self.filename:
             for field_name, field_value in self._note.items():
                 self._note[field_name] = field_value.replace(f'src="{filename}"', f'src="{self.filename}"')

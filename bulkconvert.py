@@ -124,7 +124,7 @@ class ConvertTask:
         try:
             w = InternalFileConverter(self._browser.editor, note)
             w.load_internal(filename)
-            w.convert_internal(filename)
+            w.convert_internal()
         except (OSError, RuntimeError, FileNotFoundError):
             pass
         else:
