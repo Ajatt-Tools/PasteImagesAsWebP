@@ -2,7 +2,6 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import abc
-import itertools
 from typing import Protocol, Optional, Iterable
 
 from anki.notes import Note
@@ -45,12 +44,7 @@ class FileNamePatterns:
         ]
 
     def all_examples(self) -> Iterable[str]:
-        return (self._apply_pattern(pattern) for pattern in self._patterns)
-
-    def _apply_pattern(self, pattern: str) -> str:
-        for k, v in itertools.chain(self._prefixes.items(), self._suffixes.items()):
-            pattern = pattern.replace(k, v())
-        return pattern
+        return self._patterns
 
     @staticmethod
     def _default_prefix():

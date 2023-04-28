@@ -17,6 +17,7 @@
 # Any modifications to this file must keep this entire header intact.
 
 import functools
+import itertools
 import random
 import time
 import unicodedata
@@ -86,6 +87,11 @@ class FilePathFactory(FileNamePatterns):
                     return self._patterns[0]
 
             return self._apply_pattern(get_pattern())
+
+    def _apply_pattern(self, pattern: str) -> str:
+        for k, v in itertools.chain(self._prefixes.items(), self._suffixes.items()):
+            pattern = pattern.replace(k, v())
+        return pattern
 
     def _sort_field(self) -> str:
         sort_field = self._converter.note.note_type()['sortf']
