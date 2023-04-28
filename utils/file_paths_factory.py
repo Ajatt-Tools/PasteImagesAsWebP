@@ -24,6 +24,7 @@ import unicodedata
 from time import gmtime, strftime
 from typing import AnyStr, Optional
 
+from anki.notes import Note
 from anki.utils import htmlToTextLine
 
 from .converter_interfaces import ImageConverter, FileNamePatterns
@@ -62,6 +63,10 @@ def ensure_unique(file_path: str) -> str:
     return file_path
 
 
+def note_sort_field_content(note: Note) -> str:
+    return note.values()[note.note_type()['sortf']]
+
+
 class FilePathFactory(FileNamePatterns):
     ext = '.webp'
 
@@ -94,19 +99,21 @@ class FilePathFactory(FileNamePatterns):
         return pattern
 
     def _sort_field(self) -> str:
-        sort_field = self._converter.note.note_type()['sortf']
-        return self._converter.note.values()[sort_field]
+        try:
+            return note_sort_field_content(self._converter.note)
+        except (AttributeError, TypeError, KeyError):
+            return 'image'
 
     def _custom_field(self) -> str:
         try:
             return self._converter.note[config['custom_name_field']]
-        except (TypeError, KeyError):
+        except (AttributeError, TypeError, KeyError):
             return self._sort_field()
 
     def _current_field(self) -> str:
         try:
             return self._converter.note.values()[self._converter.editor.currentField]
-        except (TypeError, KeyError):
+        except (AttributeError, TypeError, KeyError):
             return self._sort_field()
 
     @staticmethod
