@@ -2,11 +2,9 @@ import enum
 
 
 class ShowOptions(enum.Enum):
-    always = "Always"
     menus = "Toolbar and menus"
     drag_and_drop = "On drag and drop"
     add_note = "Note added"
-    never = "Never"
 
     def __eq__(self, other: str):
         return self.name == other
@@ -17,3 +15,11 @@ class ShowOptions(enum.Enum):
             if name == item.name:
                 return index
         return 0
+
+
+def main():
+    print(ShowOptions['menus'])
+
+
+if __name__ == '__main__':
+    main()
