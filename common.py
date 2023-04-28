@@ -84,15 +84,5 @@ def has_local_file(mime: QMimeData) -> bool:
     return False
 
 
-def custom_decorate(old: Callable, new: Callable):
-    """Avoids crash by discarding args[1](=False) when called from context menu."""
-
-    # https://forums.ankiweb.net/t/investigating-an-ambigous-add-on-error/12846
-    def wrapper(*args):
-        return new(args[0], _old=old)
-
-    return wrapper
-
-
 def key_to_str(shortcut: str) -> str:
     return QKeySequence(shortcut).toString(QKeySequence.SequenceFormat.NativeText)
