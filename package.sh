@@ -1,4 +1,15 @@
-#!/usr/bin/env bash
+#!/bin/bash
+
+readonly NC='\033[0m'
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+
+for exe in git zip zipmerge; do
+	if ! command -v "$exe" >/dev/null; then
+		echo -e "${RED}Missing dependency:${NC} $exe"
+		exit 1
+	fi
+done
 
 readonly root_dir=$(git rev-parse --show-toplevel)
 readonly target=${1:?Please provide build target: \"ankiweb\" or \"github\"}
@@ -37,3 +48,4 @@ zipmerge "$package_filename" ./*.zip
 
 rm -- $manifest 2>/dev/null
 rm -- ./*.zip
+echo -e "${GREEN}Done.${NC}"
