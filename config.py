@@ -33,12 +33,14 @@ class PasteImagesAsWebPConfig(AddonConfigManager):
     def dict_copy(self):
         return self._config.copy()
 
-    def show_settings(self) -> Iterable[ShowOptions]:
-        for key in self['show_settings'].split(','):
+    def show_settings(self) -> list[ShowOptions]:
+        instances = []
+        for name in self['show_settings'].split(','):
             try:
-                yield ShowOptions[key]
+                instances.append(ShowOptions[name])
             except KeyError:
-                pass
+                continue
+        return instances
 
     def set_show_options(self, options: Iterable[ShowOptions]):
         self['show_settings'] = ','.join(option.name for option in options)
