@@ -73,7 +73,7 @@ class MediaRenameDialog(QDialog):
         return layout
 
     def connect_ui_elements(self):
-        qconnect(self.bottom_box.accepted, self.on_accept)
+        qconnect(self.bottom_box.accepted, self.accept)
         qconnect(self.bottom_box.rejected, self.reject)
 
     def to_rename(self) -> Iterable[tuple[str, str]]:
@@ -82,13 +82,10 @@ class MediaRenameDialog(QDialog):
             if old_filename != (new_filename := widget.text()):
                 yield old_filename, new_filename
 
-    def on_accept(self):
-        return self.accept() if all(e.valid for e in self.edits.values()) else None
-
     def accept(self) -> None:
-        super().accept()
-        if to_rename := list(self.to_rename()):
+        if all(e.valid for e in self.edits.values()) and (to_rename := list(self.to_rename())):
             rename_media_files(to_rename, self.note, self.editor)
+        super().accept()
 
 
 def rename_file(old_filename: str, new_filename: str) -> str:
