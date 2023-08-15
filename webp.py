@@ -70,7 +70,7 @@ def stringify_args(args: list[Any]) -> list[str]:
 
 
 def smaller_than_requested(image: ImageDimensions) -> bool:
-    return image.width < config['image_width'] or image.height < config['image_height']
+    return 0 < image.width < config['image_width'] or 0 < image.height < config['image_height']
 
 
 def fetch_filename(mime: QMimeData) -> Optional[str]:
