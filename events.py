@@ -18,6 +18,7 @@
 
 import anki
 import aqt.editor
+from anki import hooks
 from aqt import gui_hooks
 from aqt import mw
 from aqt.utils import KeyboardModifiersPressed
@@ -82,7 +83,7 @@ def should_convert_images_in_new_note(note: anki.notes.Note) -> bool:
     )
 
 
-def on_add_note(_self: anki.collection.Collection, note: anki.notes.Note, _deck_id: anki.decks.DeckId):
+def on_add_note(_self: anki.collection.Collection, note: anki.notes.Note, _deck_id: anki.decks.DeckId) -> None:
     if should_convert_images_in_new_note(note):
         converter = OnAddNoteConverter(mw, note, action=ShowOptions.add_note)
         try:
@@ -95,9 +96,4 @@ def on_add_note(_self: anki.collection.Collection, note: anki.notes.Note, _deck_
 
 def init():
     gui_hooks.editor_will_process_mime.append(on_process_mime)
-    anki.collection.Collection.add_note = anki.hooks.wrap(
-        # TODO replace this call with a hook when a hook is available.
-        old=anki.collection.Collection.add_note,
-        new=on_add_note,
-        pos='before',
-    )
+    hooks.note_will_be_added.append(on_add_note)
