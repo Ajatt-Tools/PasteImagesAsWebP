@@ -25,7 +25,7 @@ from time import gmtime, strftime
 from typing import AnyStr, Optional
 
 from anki.notes import Note
-from anki.utils import htmlToTextLine
+from anki.utils import html_to_text_line
 
 from .converter_interfaces import ImageConverter, FileNamePatterns
 from ..common import *
@@ -44,7 +44,7 @@ def compatible_filename(f: Callable[..., str]):
     @functools.wraps(f)
     def wrapper(*args, **kwargs) -> str:
         s = f(*args, **kwargs)
-        s = htmlToTextLine(s)
+        s = html_to_text_line(s)
         s = s.encode('utf-8')[:max_len_bytes].decode('utf-8', errors='ignore')
         s = unicodedata.normalize('NFC', s)
         s = replace_forbidden_chars(s)
