@@ -50,11 +50,11 @@ class FileNameEdit(MonoSpaceLineEdit):
 class MediaRenameDialog(QDialog):
     def __init__(self, editor: Editor, note: Note, filenames: list[str], *args, **kwargs):
         super().__init__(parent=editor.widget, *args, **kwargs)
-        self.editor: Editor = editor
+        self.editor = editor
         self.edits = {filename: FileNameEdit(text=filename) for filename in filenames}
         self.note = note
         self.edits_layout = QVBoxLayout()
-        self.bottom_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.bottom_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         self.setWindowTitle(f"{ADDON_NAME}: rename files")
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
         self.setLayout(self.make_layout())
