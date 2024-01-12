@@ -20,6 +20,7 @@ import os
 
 ADDON_PATH = os.path.dirname(__file__)
 ADDON_NAME = "Paste Images As WebP"
+THIS_ADDON_MODULE = __name__.split(".")[0]
 
 WINDOW_MIN_WIDTH = 400
 

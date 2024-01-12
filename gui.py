@@ -21,15 +21,16 @@ from typing import cast
 
 from anki.notes import Note
 from aqt import mw
-from aqt.addons import ConfigEditor
+from aqt.addons import ConfigEditor, AddonsDialog
 from aqt.browser import Browser
 from aqt.utils import showInfo
 
-from .ajt_common.checkable_combobox import CheckableComboBox
+from .ajt_common.addon_config import MgrPropMixIn
 from .ajt_common.anki_field_selector import AnkiFieldSelector
+from .ajt_common.checkable_combobox import CheckableComboBox
 from .ajt_common.multiple_choice_selector import MultipleChoiceSelector
 from .common import *
-from .config import config, addon_name
+from .config import config
 from .consts import *
 from .utils.converter_interfaces import FileNamePatterns
 from .utils.show_options import ShowOptions
@@ -158,7 +159,7 @@ class PasteDialog(SettingsDialog):
         return grid
 
 
-class SettingsMenuDialog(SettingsDialog):
+class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
     """Settings dialog available from the main menu."""
 
     _checkboxes = {
@@ -186,14 +187,9 @@ class SettingsMenuDialog(SettingsDialog):
             "Does not apply to the native Add dialog."
         )
 
-    @property
-    def mgr(self) -> mw.addonManager:
-        """Anki's ConfigEditor requires this property."""
-        return mw.addonManager
-
     def add_advanced_button(self):
         def advanced_clicked():
-            d = ConfigEditor(self, addon_name(), config.dict_copy())  # type: ignore
+            d = ConfigEditor(cast(AddonsDialog, self), THIS_ADDON_MODULE, config.dict_copy())
             qconnect(d.accepted, self.set_initial_values)
 
         b = self._button_box.addButton("Advanced", QDialogButtonBox.ButtonRole.HelpRole)
