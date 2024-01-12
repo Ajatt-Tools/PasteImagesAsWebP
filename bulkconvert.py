@@ -18,10 +18,11 @@
 
 import functools
 import threading
-from typing import Optional, Sequence
+from typing import Optional, Sequence, cast
 
 from anki.collection import Collection
-from anki.notes import Note
+from anki.notes import Note, NoteId
+from anki.utils import join_fields
 from aqt import mw, gui_hooks
 from aqt.browser import Browser
 from aqt.operations import CollectionOp, ResultWithChanges
@@ -154,8 +155,8 @@ class ConvertTask:
 
 
 class ProgressBar(QDialog):
-    task_done = pyqtSignal()  # type: ignore
-    update_progress = pyqtSignal(int)  # type: ignore
+    task_done = pyqtSignal()
+    update_progress = pyqtSignal(int)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -164,7 +165,7 @@ class ProgressBar(QDialog):
         self.setLayout(self.setup_layout())
         self.canceled = False
         self.task: Optional[ConvertTask] = None
-        self.setWindowTitle("Converting...")
+        cast(QDialog, self).setWindowTitle("Converting...")
         self.setMinimumSize(320, 24)
         self.move(100, 100)
         qconnect(self.cancel_button.clicked, self.set_canceled)

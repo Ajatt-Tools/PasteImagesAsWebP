@@ -3,9 +3,10 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import re
-from typing import Iterable, Optional
+from typing import Iterable, Optional, cast
 
 from anki.notes import Note
+from anki.utils import join_fields
 from aqt import gui_hooks, mw
 from aqt.editor import Editor
 from aqt.operations import CollectionOp
@@ -15,7 +16,6 @@ from aqt.utils import tooltip, showCritical
 from .ajt_common.about_menu import tweak_window
 from .ajt_common.media import find_all_media
 from .ajt_common.monospace_line_edit import MonoSpaceLineEdit
-from .common import join_fields
 from .consts import *
 
 
@@ -42,9 +42,9 @@ class FileNameEdit(MonoSpaceLineEdit):
                 and re.fullmatch(r'^[^\[\]<>:\'"/|?*\\]+\.\w{,5}$', self.text())
         )
         if self._valid:
-            self.setStyleSheet("")
+            cast(QWidget, self).setStyleSheet("")
         else:
-            self.setStyleSheet("background-color: #eb6b60;")
+            cast(QWidget, self).setStyleSheet("background-color: #eb6b60;")
 
 
 class MediaRenameDialog(QDialog):
@@ -55,7 +55,7 @@ class MediaRenameDialog(QDialog):
         self.note = note
         self.edits_layout = QVBoxLayout()
         self.bottom_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        self.setWindowTitle(f"{ADDON_NAME}: rename files")
+        cast(QDialog, self).setWindowTitle(f"{ADDON_NAME}: rename files")
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
         self.setLayout(self.make_layout())
         self.connect_ui_elements()
@@ -64,7 +64,7 @@ class MediaRenameDialog(QDialog):
     def show(self) -> None:
         for widget in self.edits.values():
             self.edits_layout.addWidget(widget)
-        return super().show()
+        return cast(QDialog, super()).show()
 
     def make_layout(self) -> QLayout:
         layout = QVBoxLayout()

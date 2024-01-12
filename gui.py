@@ -41,7 +41,7 @@ from .widgets.presets_editor import PresetsEditor
 class SettingsDialog(QDialog):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setWindowTitle(ADDON_NAME)
+        cast(QDialog, self).setWindowTitle(ADDON_NAME)
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
         self._sliders = ImageSliderBox("Image parameters")
         self._presets_editor = PresetsEditor("Presets", sliders=self._sliders)

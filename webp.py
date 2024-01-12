@@ -226,7 +226,7 @@ class InternalFileConverter(WebPConverter):
 
     def load_internal(self, filename: str) -> None:
         with open(os.path.join(self.dest_dir, filename), 'rb') as f:
-            image = QImage.fromData(f.read())  # type: ignore
+            image = QImage.fromData(f.read())
         self._dimensions = ImageDimensions(image.width(), image.height())
         self._original_filename = filename
 

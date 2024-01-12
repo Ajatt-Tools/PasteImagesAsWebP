@@ -25,18 +25,6 @@ from aqt.qt import *
 
 from .config import config
 
-try:
-    from anki.notes import NoteId
-except ImportError:
-    from typing import NewType
-
-    NoteId = NewType("NoteId", int)
-
-try:
-    from anki.utils import join_fields
-except ImportError:
-    from anki.utils import joinFields as join_fields  # type: ignore
-
 RE_IMAGE_HTML_TAG = re.compile(r'<img[^<>]*src="([^"]+)"[^<>]*>', flags=re.IGNORECASE)
 
 
