@@ -18,20 +18,14 @@
 
 from typing import Iterable
 
-from aqt import mw
-from aqt.utils import showCritical
-
-from .ajt_common.addon_config import AddonConfigManager
+from .ajt_common.addon_config import AddonConfigManager, set_config_update_action
 from .utils.show_options import ShowOptions
 
 
-def addon_name():
-    return __name__.split(".")[0]
-
-
 class PasteImagesAsWebPConfig(AddonConfigManager):
-    def dict_copy(self):
-        return self._config.copy()
+    def __init__(self):
+        super().__init__()
+        set_config_update_action(self.update_from_addon_manager)
 
     def show_settings(self) -> list[ShowOptions]:
         instances = []
@@ -45,15 +39,5 @@ class PasteImagesAsWebPConfig(AddonConfigManager):
     def set_show_options(self, options: Iterable[ShowOptions]):
         self['show_settings'] = ','.join(option.name for option in options)
 
-    def update_from_addon_manager(self, new_conf: dict):
-        try:
-            # Config has been already written to disk by aqt.addons.ConfigEditor
-            self.update(new_conf, clear_old=True)
-        except RuntimeError as ex:
-            showCritical(str(ex), parent=mw, help=None)  # type: ignore
-            # Restore previous config.
-            self.write_config()
-
 
 config = PasteImagesAsWebPConfig()
-mw.addonManager.setConfigUpdatedAction(addon_name(), config.update_from_addon_manager)
