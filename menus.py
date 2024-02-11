@@ -57,9 +57,9 @@ def insert_webp(editor: Editor):
     try:
         w.convert_mime(mime)
         insert_image_html(editor, w.filename)
-        result_tooltip(w.filepath, parent=editor.parentWindow)
+        w.result_tooltip(w.filepath)
     except Exception as ex:
-        tooltip(str(ex), parent=editor.parentWindow)
+        w.tooltip(ex)
 
 
 def on_editor_will_show_context_menu(webview: EditorWebView, menu: QMenu):

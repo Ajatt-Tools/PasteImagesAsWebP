@@ -33,22 +33,23 @@ def should_paste_raw():
 
 
 def convert_mime(mime: QMimeData, editor: Editor, action: ShowOptions):
+    w = OnPasteConverter(editor, editor.note, action)
+
     try:
-        w = OnPasteConverter(editor, editor.note, action)
         w.convert_mime(mime)
     except InvalidInput:
         pass
     except CanceledPaste as ex:
-        tooltip(str(ex), parent=editor.parentWindow)
+        w.tooltip(ex)
         mime = QMimeData()
     except FileNotFoundError:
-        tooltip("File not found.", parent=editor.parentWindow)
+        w.tooltip("File not found.")
     except (RuntimeError, AttributeError) as ex:
-        tooltip(str(ex), parent=editor.parentWindow)
+        w.tooltip(ex)
     else:
         mime = QMimeData()
         mime.setHtml(image_html(w.filename))
-        result_tooltip(w.filepath, parent=editor.parentWindow)
+        w.result_tooltip(w.filepath)
 
     return mime
 

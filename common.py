@@ -54,13 +54,6 @@ def filesize_kib(filepath: str) -> float:
     return os.stat(filepath).st_size / 1024.0
 
 
-def result_tooltip(filepath: str, parent: Optional[QWidget] = None) -> None:
-    tooltip(
-        f"<strong>{os.path.basename(filepath)}</strong> added.<br>File size: {filesize_kib(filepath):.3f} KiB.",
-        parent=parent,
-    )
-
-
 def image_html(image_filename: str) -> str:
     return f'<img alt="webp image" src="{image_filename}">'
 

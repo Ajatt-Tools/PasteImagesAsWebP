@@ -18,7 +18,7 @@
 
 import subprocess
 from typing import Any
-from typing import AnyStr, Optional
+from typing import AnyStr
 
 from anki.notes import Note
 from aqt import mw
@@ -97,6 +97,14 @@ class WebPConverter:
     @property
     def dest_dir(self) -> str:
         return mw.col.media.dir()
+
+    @property
+    def parent_window(self) -> QWidget:
+        if isinstance(self._parent, QWidget):
+            return self._parent
+        if isinstance(self._parent, Editor):
+            return self._parent.parentWindow
+        raise RuntimeError("Invalid parent type.")
 
     @property
     def widget(self) -> Optional[QWidget]:
@@ -217,6 +225,15 @@ class OnPasteConverter(WebPConverter):
             raise InvalidInput("Not an image file.")
 
         return self._dimensions is not None
+
+    def tooltip(self, msg: Union[Exception, str]) -> None:
+        return tooltip(str(msg), parent=self.parent_window)
+
+    def result_tooltip(self, filepath: str) -> None:
+        return self.tooltip(
+            f"<strong>{os.path.basename(filepath)}</strong> added.<br>"
+            f"File size: {filesize_kib(filepath):.3f} KiB.",
+        )
 
 
 class InternalFileConverter(WebPConverter):
