@@ -238,7 +238,7 @@ def on_bulk_convert(browser: Browser):
                 browser.table.clear_selection()
             bulk_convert(browser, selected_nids, dialog.selected_fields())
     else:
-        tooltip("No cards selected.")
+        tooltip("No cards selected.", parent=browser)
 
 
 def setup_menu(browser: Browser):

@@ -17,7 +17,7 @@
 # Any modifications to this file must keep this entire header intact.
 
 import re
-from typing import Iterable
+from typing import Iterable, Optional
 from typing import NamedTuple
 
 from aqt.editor import Editor
@@ -40,12 +40,13 @@ def find_convertible_images(html: str, include_webp: bool = False) -> Iterable[s
             yield filename
 
 
-def tooltip(msg: str) -> None:
+def tooltip(msg: str, parent: Optional[QWidget] = None) -> None:
     from aqt.utils import tooltip as _tooltip
 
     return _tooltip(
         msg=msg,
-        period=int(config.get('tooltip_duration_seconds', 5)) * 1000
+        period=int(config.get('tooltip_duration_seconds', 5)) * 1000,
+        parent=parent
     )
 
 
@@ -53,8 +54,11 @@ def filesize_kib(filepath: str) -> float:
     return os.stat(filepath).st_size / 1024.0
 
 
-def result_tooltip(filepath: str) -> None:
-    tooltip(f"<strong>{os.path.basename(filepath)}</strong> added.<br>File size: {filesize_kib(filepath):.3f} KiB.")
+def result_tooltip(filepath: str, parent: Optional[QWidget] = None) -> None:
+    tooltip(
+        f"<strong>{os.path.basename(filepath)}</strong> added.<br>File size: {filesize_kib(filepath):.3f} KiB.",
+        parent=parent,
+    )
 
 
 def image_html(image_filename: str) -> str:

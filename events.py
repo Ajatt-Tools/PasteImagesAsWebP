@@ -39,16 +39,16 @@ def convert_mime(mime: QMimeData, editor: Editor, action: ShowOptions):
     except InvalidInput:
         pass
     except CanceledPaste as ex:
-        tooltip(str(ex))
+        tooltip(str(ex), parent=editor.parentWindow)
         mime = QMimeData()
     except FileNotFoundError:
-        tooltip("File not found.")
+        tooltip("File not found.", parent=editor.parentWindow)
     except (RuntimeError, AttributeError) as ex:
-        tooltip(str(ex))
+        tooltip(str(ex), parent=editor.parentWindow)
     else:
         mime = QMimeData()
         mime.setHtml(image_html(w.filename))
-        result_tooltip(w.filepath)
+        result_tooltip(w.filepath, parent=editor.parentWindow)
 
     return mime
 
@@ -89,7 +89,7 @@ def on_add_note(_self: anki.collection.Collection, note: anki.notes.Note, _deck_
         try:
             converter.convert_note()
         except CanceledPaste as ex:
-            tooltip(str(ex))
+            tooltip(str(ex), parent=mw)
         except (OSError, RuntimeError, FileNotFoundError):
             pass
 
