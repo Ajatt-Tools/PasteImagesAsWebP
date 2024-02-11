@@ -18,7 +18,7 @@
 
 import functools
 import threading
-from typing import Optional, Sequence, cast
+from typing import Sequence, cast
 
 from anki.collection import Collection
 from anki.notes import Note, NoteId
@@ -141,7 +141,7 @@ class ConvertTask:
                     note[key] = note[key].replace(initial_filename, converted_filename)
                 to_update[note.id] = note
 
-        col.update_notes(tuple(to_update.values()))
+        col.update_notes(list(to_update.values()))
         return col.merge_undo_entries(pos)
 
     def _form_report_message(self) -> str:
