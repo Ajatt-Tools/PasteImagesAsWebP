@@ -53,7 +53,7 @@ def action_tooltip():
 
 def insert_webp(editor: Editor):
     mime: QMimeData = editor.mw.app.clipboard().mimeData()
-    w = OnPasteConverter(editor, editor.note, ShowOptions.menus)
+    w = OnPasteConverter(editor, editor.note, ShowOptions.toolbar)
     try:
         w.convert_mime(mime)
         insert_image_html(editor, w.filename)
