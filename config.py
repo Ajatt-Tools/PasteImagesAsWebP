@@ -31,7 +31,7 @@ class PasteImagesAsWebPConfig(AddonConfigManager):
         instances = []
         for name in self['show_settings'].split(','):
             try:
-                instances.append(ShowOptions[name])
+                instances.append(ShowOptions.parse_variant(name))
             except KeyError:
                 continue
         return instances
