@@ -16,7 +16,7 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
-from typing import Iterable
+from typing import Iterable, Sequence
 
 from .ajt_common.addon_config import AddonConfigManager, set_config_update_action
 from .utils.show_options import ShowOptions
@@ -27,7 +27,7 @@ class PasteImagesAsWebPConfig(AddonConfigManager):
         super().__init__()
         set_config_update_action(self.update_from_addon_manager)
 
-    def show_settings(self) -> list[ShowOptions]:
+    def show_settings(self) -> Sequence[ShowOptions]:
         instances = []
         for name in self['show_settings'].split(','):
             try:
