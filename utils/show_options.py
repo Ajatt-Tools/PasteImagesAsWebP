@@ -2,7 +2,7 @@ import enum
 
 
 class ShowOptions(enum.Enum):
-    menus = "Toolbar and menus"
+    toolbar = "Toolbar"
     drag_and_drop = "On drag and drop"
     add_note = "Note added"
     paste = "On paste"
@@ -12,7 +12,7 @@ class ShowOptions(enum.Enum):
 
 
 def main():
-    print(ShowOptions['menus'])
+    print(ShowOptions['toolbar'])
 
 
 if __name__ == '__main__':
