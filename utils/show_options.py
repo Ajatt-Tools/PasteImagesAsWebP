@@ -10,13 +10,6 @@ class ShowOptions(enum.Enum):
     def __eq__(self, other: str):
         return self.name == other
 
-    @classmethod
-    def index_of(cls, name):
-        for index, item in enumerate(cls):
-            if name == item.name:
-                return index
-        return 0
-
 
 def main():
     print(ShowOptions['menus'])
