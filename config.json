@@ -9,7 +9,7 @@
     "max_image_width": 800,
     "max_image_height": 600,
     "image_quality": 20,
-    "show_settings": "menus",
+    "show_settings": "toolbar",
     "drag_and_drop": true,
     "copy_paste": false,
     "cwebp_args": [

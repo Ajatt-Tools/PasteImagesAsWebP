@@ -16,8 +16,9 @@
 * `show_context_menu_entry` - Add an entry to the editor context menu.
 * `show_editor_button` - Add a button to the editor toolbar.
 * `show_settings` - When to show the settings dialog.
-    * `always` - Every time you paste a new image.
-    * `menus` - When the toolbar button or the context menu is activated.
+    * `always` - Every time you try to insert a webp image.
+    * `toolbar` - When the toolbar button is clicked.
+    * `paste` - When you paste an image.
     * `drag_and_drop` - On drag-and-drop (if enabled).
     * `never` - Only when you press `Tools > WebP settings`.
 * `filename_pattern_num` - Used internally.

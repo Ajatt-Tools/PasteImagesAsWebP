@@ -9,7 +9,7 @@ class ShowOptions(enum.Enum):
 
 
 def main():
-    print(ShowOptions['toolbar'])
+    print(ShowOptions["toolbar"])
 
 
 if __name__ == '__main__':
