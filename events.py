@@ -67,7 +67,7 @@ def on_process_mime(
         return convert_mime(mime, editor_web_view.editor, action=ShowOptions.drag_and_drop)
 
     if config["copy_paste"] and not drop_event and (mime.hasImage() or has_local_file(mime)):
-        return convert_mime(mime, editor_web_view.editor, action=ShowOptions.menus)
+        return convert_mime(mime, editor_web_view.editor, action=ShowOptions.paste)
 
     return mime
 
