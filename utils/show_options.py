@@ -7,9 +7,6 @@ class ShowOptions(enum.Enum):
     add_note = "Note added"
     paste = "On paste"
 
-    def __eq__(self, other: str):
-        return self.name == other
-
 
 def main():
     print(ShowOptions['toolbar'])
