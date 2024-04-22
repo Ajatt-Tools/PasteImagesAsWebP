@@ -1,6 +1,7 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+import functools
 import subprocess
 from typing import Any
 from typing import AnyStr
@@ -32,8 +33,6 @@ class ImageNotLoaded(Exception):
     pass
 
 
-def find_executable(name: str):
-    from distutils.spawn import find_executable as _find
 @functools.cache
 def startup_info():
     if IS_WIN:
@@ -46,6 +45,8 @@ def startup_info():
 
 
 
+@functools.cache
+def find_cwebp_exe() -> str:
     if (exe := _find(name)) is None:
         # https://developers.google.com/speed/webp/download
         exe = os.path.join(ADDON_PATH, "support", name)
@@ -169,7 +170,7 @@ class WebPConverter:
         return ['-resize', config['image_width'], config['image_height']]
 
     def _to_webp(self, source_path: AnyStr, destination_path: AnyStr) -> bool:
-        args = [cwebp, source_path, '-o', destination_path, '-q', config.get('image_quality')]
+        args = [find_cwebp_exe(), source_path, '-o', destination_path, '-q', config.get('image_quality')]
         args.extend(config.get('cwebp_args', []))
         args.extend(self._get_resize_args())
 
@@ -282,7 +283,4 @@ class OnAddNoteConverter(InternalFileConverter):
                 if mw.col.media.have(filename):
                     print(f"Converting file: {filename}")
                     self._convert_and_replace_stored_image(filename)
-
-
-cwebp = find_executable('cwebp')
 
