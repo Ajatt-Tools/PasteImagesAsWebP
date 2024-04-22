@@ -9,9 +9,10 @@ from typing import AnyStr
 from anki.notes import Note
 from aqt import mw
 
+from .ajt_common.utils import find_executable as find_executable_ajt
 from .common import *
 from .config import config
-from .consts import ADDON_PATH
+from .consts import SUPPORT_DIR
 from .utils.file_paths_factory import FilePathFactory
 from .utils.mime_helper import iter_files, image_candidates
 from .utils.show_options import ShowOptions
@@ -44,22 +45,35 @@ def startup_info():
     return si
 
 
+@functools.cache
+def support_exe_suffix() -> str:
+    """
+    The mecab executable file in the "support" dir has a different suffix depending on the platform.
+    """
+    if IS_WIN:
+        return ".exe"
+    elif IS_MAC:
+        return ".mac"
+    else:
+        return ".lin"
+
+
+def get_bundled_executable(name: str) -> str:
+    """
+    Get path to executable in the bundled "support" folder.
+    Used to provide 'cwebp' on computers where it is not installed system-wide or can't be found.
+    """
+    path_to_exe = os.path.join(SUPPORT_DIR, name) + support_exe_suffix()
+    assert os.path.isfile(path_to_exe), f"{path_to_exe} doesn't exist. Can't recover."
+    if not IS_WIN:
+        os.chmod(path_to_exe, 0o755)
+    return path_to_exe
+
 
 @functools.cache
 def find_cwebp_exe() -> str:
-    if (exe := _find(name)) is None:
-        # https://developers.google.com/speed/webp/download
-        exe = os.path.join(ADDON_PATH, "support", name)
-        if is_win:
-            exe += ".exe"
-        else:
-            if is_mac:
-                exe += '_macos'
-            if os.path.isfile(exe):
-                os.chmod(exe, 0o755)
-            else:
-                raise RuntimeError(f"{name} executable is not found.")
-    return exe
+    # https://developers.google.com/speed/webp/download
+    return find_executable_ajt("cwebp") or get_bundled_executable("cwebp")
 
 
 def stringify_args(args: list[Any]) -> list[str]:

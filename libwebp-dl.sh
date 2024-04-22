@@ -24,8 +24,8 @@ if ! [[ -f $support_dir/cwebp && -f $support_dir/cwebp.exe && -f $support_dir/cw
 		get_libwebp "$url" &
 	done
 	wait
-	find "$tmp_dir"/*windows* -type f  -name 'cwebp.exe' -exec mv -- {} "$support_dir/" \;
-	find "$tmp_dir"/*linux*   -type f  -name 'cwebp'     -exec mv -- {} "$support_dir/" \;
-	find "$tmp_dir"/*mac*     -type f  -name 'cwebp'     -exec mv -- {} "$support_dir/cwebp_macos" \;
+	find "$tmp_dir"/*windows* -type f  -name 'cwebp.exe' -exec mv -- {} "$support_dir/cwebp.exe" \;
+	find "$tmp_dir"/*linux*   -type f  -name 'cwebp'     -exec mv -- {} "$support_dir/cwebp.lin" \;
+	find "$tmp_dir"/*mac*     -type f  -name 'cwebp'     -exec mv -- {} "$support_dir/cwebp.mac" \;
 	rm -rf -- "$tmp_dir"
 fi
