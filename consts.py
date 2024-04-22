@@ -18,11 +18,14 @@
 
 import os
 
-ADDON_PATH = os.path.dirname(__file__)
+ADDON_PATH = os.path.dirname(os.path.abspath(__file__))
 ADDON_NAME = "Paste Images As WebP"
 THIS_ADDON_MODULE = __name__.split(".")[0]
+SUPPORT_DIR = os.path.join(ADDON_PATH, "support")
 
 WINDOW_MIN_WIDTH = 400
 
 REQUEST_HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; Anki)'}
 REQUEST_TIMEOUTS = (3.05, 12.05)
+
+assert os.path.isdir(SUPPORT_DIR), "support dir must exist."
