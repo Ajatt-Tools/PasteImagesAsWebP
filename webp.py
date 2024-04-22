@@ -31,8 +31,8 @@ from .utils.mime_helper import iter_files, image_candidates
 from .utils.show_options import ShowOptions
 from .utils.temp_file import TempFile
 
-is_mac = sys.platform.startswith("darwin")
-is_win = sys.platform.startswith("win32")
+IS_MAC = sys.platform.startswith("darwin")
+IS_WIN = sys.platform.startswith("win32")
 
 
 class CanceledPaste(Warning):
@@ -49,6 +49,17 @@ class ImageNotLoaded(Exception):
 
 def find_executable(name: str):
     from distutils.spawn import find_executable as _find
+@functools.cache
+def startup_info():
+    if IS_WIN:
+        # Prevents a console window from popping up on Windows
+        si = subprocess.STARTUPINFO()
+        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    else:
+        si = None
+    return si
+
+
 
     if (exe := _find(name)) is None:
         # https://developers.google.com/speed/webp/download
@@ -183,7 +194,7 @@ class WebPConverter:
             bufsize=-1,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            startupinfo=si,
+            startupinfo=startup_info(),
             universal_newlines=True,
             encoding="utf8"
         )
@@ -290,9 +301,3 @@ class OnAddNoteConverter(InternalFileConverter):
 
 cwebp = find_executable('cwebp')
 
-if is_win:
-    # Prevents a console window from popping up on Windows
-    si = subprocess.STARTUPINFO()
-    si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-else:
-    si = None
