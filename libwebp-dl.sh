@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 # https://developers.google.com/speed/webp/download
-readonly version=1.3.2
+
+readonly version=1.4.0
 readonly webp_windows="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${version}-windows-x64.zip"
 readonly webp_linux="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${version}-linux-x86-64.tar.gz"
 readonly webp_mac="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${version}-mac-x86-64.tar.gz"
