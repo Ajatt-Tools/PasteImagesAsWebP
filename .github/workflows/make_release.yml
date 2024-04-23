@@ -23,6 +23,10 @@ jobs:
         run: |
           sudo apt-get install -y zipmerge
 
+      - name: Install atool
+        run: |
+          sudo apt-get install -y atool
+
       - name: "Create zip"
         run: |
           ./package.sh --target github
