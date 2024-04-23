@@ -19,11 +19,11 @@ jobs:
           fetch-depth: 1
           submodules: "recursive"
 
-      - name: Install zipmerge
+      - name: "Install zipmerge"
         run: |
           sudo apt-get install -y zipmerge
 
-      - name: Install atool
+      - name: "Install atool"
         run: |
           sudo apt-get install -y atool
 
