@@ -2,6 +2,8 @@
 
 # https://developers.google.com/speed/webp/download
 
+set -euo pipefail
+
 readonly NC='\033[0m'
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
