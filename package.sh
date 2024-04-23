@@ -13,6 +13,7 @@ readonly zip_name=${package,,}.ankiaddon
 ./ajt_common/package.sh \
 	--package "$package" \
 	--name "AJT Paste Images As WebP" \
+	--zip_name "$zip_name" \
 	"$@"
 
 if ! [[ -f "$zip_name" ]]; then
