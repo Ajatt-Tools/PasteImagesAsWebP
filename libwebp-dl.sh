@@ -44,4 +44,4 @@ find "$tmp_dir"/*windows* -type f  -name 'cwebp.exe' -exec mv -- {} "$support_di
 find "$tmp_dir"/*linux*   -type f  -name 'cwebp'     -exec mv -- {} "$support_dir/cwebp.lin" \;
 find "$tmp_dir"/*mac*     -type f  -name 'cwebp'     -exec mv -- {} "$support_dir/cwebp.mac" \;
 rm -rf -- "$tmp_dir"
-echo "downloaded cwebp."
+echo -e "${GREEN}downloaded cwebp.${NC}"
