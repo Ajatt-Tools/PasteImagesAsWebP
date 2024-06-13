@@ -23,8 +23,8 @@ from .utils.show_options import ShowOptions
 
 
 class PasteImagesAsWebPConfig(AddonConfigManager):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, default: bool = False) -> None:
+        super().__init__(default)
         set_config_update_action(self.update_from_addon_manager)
 
     def show_settings(self) -> Sequence[ShowOptions]:

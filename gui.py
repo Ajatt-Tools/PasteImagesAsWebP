@@ -187,8 +187,8 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
             "Does not apply to the native Add dialog."
         )
 
-    def add_advanced_button(self):
-        def advanced_clicked():
+    def add_advanced_button(self) -> None:
+        def advanced_clicked() -> None:
             d = ConfigEditor(cast(AddonsDialog, self), THIS_ADDON_MODULE, config.dict_copy())
             qconnect(d.accepted, self.set_initial_values)
 
