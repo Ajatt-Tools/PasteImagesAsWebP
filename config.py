@@ -39,5 +39,13 @@ class PasteImagesAsWebPConfig(AddonConfigManager):
     def set_show_options(self, options: Iterable[ShowOptions]):
         self['show_settings'] = ','.join(option.name for option in options)
 
+    @property
+    def image_format(self) -> str:
+        return self["image_format"]
+
+    @property
+    def image_extension(self) -> str:
+        return f'.{self.image_format}'
+
 
 config = PasteImagesAsWebPConfig()

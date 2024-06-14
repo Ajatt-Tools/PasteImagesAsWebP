@@ -34,10 +34,9 @@ class ImageDimensions(NamedTuple):
 
 
 def find_convertible_images(html: str, include_converted: bool = False) -> Iterable[str]:
-    image_format = config.get('image_format', 'avif')
-    ext = f'.{image_format}'
+    filename: str
     for filename in re.findall(RE_IMAGE_HTML_TAG, html):
-        if include_converted or not filename.endswith(ext):
+        if include_converted or not filename.endswith(config.image_extension):
             yield filename
 
 
