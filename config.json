@@ -19,7 +19,7 @@
     "tooltip_duration_seconds": 5,
     "preserve_original_filenames": true,
     "bulk_convert_fields": [],
-    "bulk_reconvert_webp": false,
+    "bulk_reconvert": false,
     "custom_name_field": "VocabKanji",
     "saved_presets": []
 }

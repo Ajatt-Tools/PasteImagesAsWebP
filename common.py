@@ -33,10 +33,11 @@ class ImageDimensions(NamedTuple):
     height: int
 
 
-def find_convertible_images(html: str, include_webp: bool = False) -> Iterable[str]:
+def find_convertible_images(html: str, include_converted: bool = False) -> Iterable[str]:
+    image_format = config.get('image_format', 'avif')
+    ext = f'.{image_format}'
     for filename in re.findall(RE_IMAGE_HTML_TAG, html):
-        filename: str
-        if include_webp or not filename.endswith('.webp'):
+        if include_converted or not filename.endswith(ext):
             yield filename
 
 
@@ -55,8 +56,8 @@ def filesize_kib(filepath: str) -> float:
 
 
 def image_html(image_filename: str) -> str:
-    return f'<img alt="webp image" src="{image_filename}">'
-
+    image_format = config.get('image_format')
+    return f'<img alt="{image_format} image" src="{image_filename}">'
 
 def insert_image_html(editor: Editor, image_filename: str):
     editor.doPaste(html=image_html(image_filename), internal=True)

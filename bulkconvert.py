@@ -116,7 +116,7 @@ class ConvertTask:
             note_content = join_fields([note[field] for field in self._keys_to_update(note)])
             if '<img' not in note_content:
                 continue
-            for filename in find_convertible_images(note_content, include_webp=config['bulk_reconvert_webp']):
+            for filename in find_convertible_images(note_content, include_converted=config['bulk_reconvert']):
                 to_convert.setdefault(filename, dict())[note.id] = note
 
         return to_convert
