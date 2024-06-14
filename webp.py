@@ -61,7 +61,7 @@ def support_exe_suffix() -> str:
 def get_bundled_executable(name: str) -> str:
     """
     Get path to executable in the bundled "support" folder.
-    Used to provide 'cwebp' on computers where it is not installed system-wide or can't be found.
+    Used to provide 'ffmpeg' on computers where it is not installed system-wide or can't be found.
     """
     path_to_exe = os.path.join(SUPPORT_DIR, name) + support_exe_suffix()
     assert os.path.isfile(path_to_exe), f"{path_to_exe} doesn't exist. Can't recover."
@@ -71,9 +71,9 @@ def get_bundled_executable(name: str) -> str:
 
 
 @functools.cache
-def find_cwebp_exe() -> str:
-    # https://developers.google.com/speed/webp/download
-    return find_executable_ajt("cwebp") or get_bundled_executable("cwebp")
+def find_ffmpeg_exe() -> str:
+    # https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-essentials.7z
+    return find_executable_ajt("ffmpeg") or get_bundled_executable("ffmpeg")
 
 
 def stringify_args(args: list[Any]) -> list[str]:
@@ -184,7 +184,7 @@ class WebPConverter:
         return ['-resize', config['image_width'], config['image_height']]
 
     def _to_webp(self, source_path: AnyStr, destination_path: AnyStr) -> bool:
-        args = [find_cwebp_exe(), source_path, '-o', destination_path, '-q', config.get('image_quality')]
+        args = [find_ffmpeg_exe(), source_path, '-o', destination_path, '-q', config.get('image_quality')]
         args.extend(config.get('cwebp_args', []))
         args.extend(self._get_resize_args())
 
@@ -202,7 +202,7 @@ class WebPConverter:
         stdout, stderr = p.communicate()
 
         if p.wait() != 0:
-            print(f"cwebp failed.")
+            print("ffmpeg failed.")
             print(f"exit code = {p.returncode}")
             print(stdout)
             return False
@@ -224,7 +224,7 @@ class OnPasteConverter(WebPConverter):
                 raise CanceledPaste("Cancelled.")
 
             if self._to_webp(tmp_file, self._set_output_filepath()) is False:
-                raise RuntimeError("cwebp failed")
+                raise RuntimeError("ffmpeg failed")
 
     def _save_image(self, tmp_path: str, mime: QMimeData) -> bool:
         for image in image_candidates(mime):
@@ -262,7 +262,7 @@ class InternalFileConverter(WebPConverter):
         if not self._original_filename:
             raise ImageNotLoaded("file wasn't loaded before converting")
         if self._to_webp(os.path.join(self.dest_dir, self._original_filename), self._set_output_filepath()) is False:
-            raise RuntimeError("cwebp failed")
+            raise RuntimeError("ffmpeg failed")
 
 
 class OnAddNoteConverter(InternalFileConverter):
