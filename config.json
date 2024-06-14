@@ -9,13 +9,26 @@
     "max_image_width": 800,
     "max_image_height": 600,
     "image_format": "avif",
-    "image_quality": 65,
+    "image_quality": 20,
     "show_settings": "toolbar",
     "drag_and_drop": true,
     "copy_paste": false,
+    "cwebp_args": [
+        "-short",
+        "-mt",
+        "-pass",
+        "10",
+        "-af",
+        "-blend_alpha",
+        "0xffffff",
+        "-m",
+        "6"
+    ],
     "ffmpeg_args": [
-        "-threads", "0",
-        "-still-picture", "1"
+        "-threads",
+        "0",
+        "-still-picture",
+        "1"
     ],
     "filename_pattern_num": 0,
     "tooltip_duration_seconds": 5,
