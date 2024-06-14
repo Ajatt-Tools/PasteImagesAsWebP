@@ -34,6 +34,8 @@ class ImageDimensions(NamedTuple):
 
 
 def find_convertible_images(html: str, include_converted: bool = False) -> Iterable[str]:
+    if not (html and '<img' in html):
+        return
     filename: str
     for filename in re.findall(RE_IMAGE_HTML_TAG, html):
         if include_converted or not filename.endswith(config.image_extension):

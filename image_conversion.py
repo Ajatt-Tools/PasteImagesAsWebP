@@ -294,10 +294,8 @@ class OnAddNoteConverter(InternalFileConverter):
                 self._note[field_name] = field_value.replace(f'src="{filename}"', f'src="{self.filename}"')
 
     def convert_note(self):
-        if (joined_fields := self._note.joined_fields()) and '<img' in joined_fields:
-            print("Paste Images As WebP: detected an attempt to create a new note with images.")
-            for filename in find_convertible_images(joined_fields):
-                if mw.col.media.have(filename):
-                    print(f"Converting file: {filename}")
-                    self._convert_and_replace_stored_image(filename)
+        for filename in find_convertible_images(self._note.joined_fields()):
+            if mw.col.media.have(filename):
+                print(f"Converting file: {filename}")
+                self._convert_and_replace_stored_image(filename)
 
