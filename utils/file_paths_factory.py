@@ -68,7 +68,8 @@ def note_sort_field_content(note: Note) -> str:
 
 
 class FilePathFactory(FileNamePatterns):
-    ext = '.webp'
+    image_format = config.get('image_format', 'avif') 
+    ext = f'.{image_format}'
 
     def __init__(self, converter: Optional[ImageConverter] = None):
         super().__init__()
