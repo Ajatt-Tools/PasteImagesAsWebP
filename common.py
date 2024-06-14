@@ -57,8 +57,7 @@ def filesize_kib(filepath: str) -> float:
 
 
 def image_html(image_filename: str) -> str:
-    image_format = config.get('image_format')
-    return f'<img alt="{image_format} image" src="{image_filename}">'
+    return f'<img alt="{config.image_format} image" src="{image_filename}">'
 
 
 def insert_image_html(editor: Editor, image_filename: str):
