@@ -8,7 +8,7 @@
     "image_height": 200,
     "max_image_width": 800,
     "max_image_height": 600,
-    "image_quality": 20,
+    "image_quality": 65,
     "show_settings": "toolbar",
     "drag_and_drop": true,
     "copy_paste": false,
