@@ -90,7 +90,7 @@ def fetch_filename(mime: QMimeData) -> Optional[str]:
             return base
 
 
-class WebPConverter:
+class ImageConverter:
     def __init__(
             self,
             parent: Union[QWidget, Editor],
@@ -183,7 +183,7 @@ class WebPConverter:
 
         return ['-resize', config['image_width'], config['image_height']]
 
-    def _to_webp(self, source_path: AnyStr, destination_path: AnyStr) -> bool:
+    def _convert_image(self, source_path: AnyStr, destination_path: AnyStr) -> bool:
         args = [find_ffmpeg_exe(), source_path, '-o', destination_path, '-q', config.get('image_quality')]
         args.extend(config.get('cwebp_args', []))
         args.extend(self._get_resize_args())
@@ -210,7 +210,7 @@ class WebPConverter:
         return True
 
 
-class OnPasteConverter(WebPConverter):
+class OnPasteConverter(ImageConverter):
     """
     Converter used when an image is pasted or dragged from outside.
     """
@@ -223,7 +223,7 @@ class OnPasteConverter(WebPConverter):
             if self._maybe_show_settings() == QDialog.DialogCode.Rejected:
                 raise CanceledPaste("Cancelled.")
 
-            if self._to_webp(tmp_file, self._set_output_filepath()) is False:
+            if self._convert_image(tmp_file, self._set_output_filepath()) is False:
                 raise RuntimeError("ffmpeg failed")
 
     def _save_image(self, tmp_path: str, mime: QMimeData) -> bool:
@@ -247,7 +247,7 @@ class OnPasteConverter(WebPConverter):
         )
 
 
-class InternalFileConverter(WebPConverter):
+class InternalFileConverter(ImageConverter):
     """
     Converter used when converting an image already stored in the collection (e.g. bulk-convert).
     """
@@ -261,7 +261,7 @@ class InternalFileConverter(WebPConverter):
     def convert_internal(self) -> None:
         if not self._original_filename:
             raise ImageNotLoaded("file wasn't loaded before converting")
-        if self._to_webp(os.path.join(self.dest_dir, self._original_filename), self._set_output_filepath()) is False:
+        if self._convert_image(os.path.join(self.dest_dir, self._original_filename), self._set_output_filepath()) is False:
             raise RuntimeError("ffmpeg failed")
 
 
