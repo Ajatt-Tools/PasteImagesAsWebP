@@ -25,7 +25,7 @@ from aqt.utils import KeyboardModifiersPressed
 
 from .common import *
 from .config import config
-from .webp import ShowOptions, CanceledPaste, InvalidInput, OnAddNoteConverter, OnPasteConverter
+from .image_conversion import ShowOptions, CanceledPaste, InvalidInput, OnAddNoteConverter, OnPasteConverter
 
 
 def should_paste_raw():

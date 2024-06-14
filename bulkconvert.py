@@ -31,7 +31,7 @@ from aqt.utils import showInfo
 from .common import *
 from .config import config
 from .gui import BulkConvertDialog
-from .webp import InternalFileConverter
+from .image_conversion import InternalFileConverter
 
 
 class ConvertResult:
