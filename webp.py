@@ -184,12 +184,15 @@ class ImageConverter:
         return ['-resize', config['image_width'], config['image_height']]
 
     def _convert_image(self, source_path: AnyStr, destination_path: AnyStr) -> bool:
-        args = [find_ffmpeg_exe(), source_path, '-o', destination_path, '-q', config.get('image_quality')]
-        args.extend(config.get('cwebp_args', []))
-        args.extend(self._get_resize_args())
+        resize_arg = (
+            f"scale={config['image_width']}:-1"
+            if config["image_width"] > 0
+            else f"scale=-1:{config['image_height']}"
+        )
+        args = ["ffmpeg", "-i", source_path, "-vf", resize_arg, destination_path]
 
         p = subprocess.Popen(
-            stringify_args(args),
+            args,
             shell=False,
             bufsize=-1,
             stdout=subprocess.PIPE,
