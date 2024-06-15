@@ -15,7 +15,6 @@
     "copy_paste": false,
     "ffmpeg_args": [
         "-threads", "0",
-        "-still-picture", "1"
     ],
     "filename_pattern_num": 0,
     "tooltip_duration_seconds": 5,

@@ -201,7 +201,7 @@ class ImageConverter:
         if is_webp:
             args += ["-compression_level", "6", "-quality", quality_value]
         else:
-            args += ["-crf", str(crf)]
+            args += ["-crf", str(crf), "-still-picture", "1"]
 
         args.append(destination_path)
         
