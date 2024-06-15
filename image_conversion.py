@@ -184,13 +184,27 @@ class ImageConverter:
         return ['-resize', config['image_width'], config['image_height']]
 
     def _convert_image(self, source_path: AnyStr, destination_path: AnyStr) -> bool:
+        is_webp = destination_path.lower().endswith('.webp')
+        
+        quality_value = str(max(0, min(100, config['image_quality'])))
+        
+        crf = ((100 - config['image_quality']) * 63 + 50) // 100
+        
         resize_arg = (
             f"scale={config['image_width']}:-1"
             if config["image_width"] > 0
             else f"scale=-1:{config['image_height']}"
         )
-        args = ["ffmpeg", "-i", source_path, "-vf", resize_arg, destination_path]
 
+        args = ["ffmpeg", "-i", source_path, "-vf", resize_arg]
+        
+        if is_webp:
+            args += ["-compression_level", "6", "-quality", quality_value]
+        else:
+            args += ["-crf", str(crf)]
+
+        args.append(destination_path)
+        
         p = subprocess.Popen(
             args,
             shell=False,
