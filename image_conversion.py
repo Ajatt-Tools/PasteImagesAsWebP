@@ -209,8 +209,10 @@ class ImageConverter:
             )
             args = ["ffmpeg", "-i", source_path, "-vf", resize_arg]
 
+            args += config.get('ffmpeg_args')
+
             args += ["-crf", str(crf)]
-            
+
             animated_or_video_formats = ['.apng', '.gif', '.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg']
             if not any(source_path.lower().endswith(ext) for ext in animated_or_video_formats):
                 
