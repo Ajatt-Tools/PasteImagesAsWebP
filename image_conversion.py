@@ -230,7 +230,7 @@ class ImageConverter:
             args += ["-crf", str(crf)]
 
             animated_or_video_formats = ['.apng', '.gif', '.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg']
-            if not any(source_path.lower().endswith(ext) for ext in animated_or_video_formats):
+            if not any(os.path.splitext(source_path)[1].lower().endswith(ext) for ext in animated_or_video_formats):
                 args += ["-still-picture", "1"]
 
             args.append(destination_path)
