@@ -186,7 +186,12 @@ class ImageConverter:
             # skip resizing if both width and height are set to 0
             return []
 
-        return ['-resize', config['image_width'], config['image_height']]
+        width = config['image_width']
+        height = config['image_height']
+        # For cwebp, the resize arguments are directly "-resize width height"
+        # For ffmpeg, the resize argument is part of the filtergraph: "scale=width:height"
+        # The distinction will be made in the respective conversion functions
+        return [width, height]
 
     def _convert_image(self, source_path: AnyStr, destination_path: AnyStr) -> bool:
         image_format = config.get('image_format')
@@ -196,26 +201,36 @@ class ImageConverter:
             quality_value = str(config.get('image_quality'))
             args = [find_cwebp_exe(), source_path, '-o', destination_path, '-q', quality_value]
             args.extend(config.get('cwebp_args', []))
-            args.extend(self._get_resize_args())
+            args.extend(['-resize', str(resize_args[0]), str(resize_args[1])])
+
         else:
             # Use ffmpeg for non-webp formats, dynamically using the format from config
             quality_value = str(max(0, min(100, config['image_quality'])))
             crf = ((100 - config['image_quality']) * 63 + 50) // 100
 
-            resize_arg = (
-                f"scale={config['image_width']}:-1"
-                if config["image_width"] > 0
-                else f"scale=-1:{config['image_height']}"
-            )
+            resize_args = self._get_resize_args()
+            # Check if either width or height is 0 and adjust accordingly
+            if resize_args:
+                width, height = resize_args
+                if width == 0 and height > 0:
+                    resize_arg = f"scale=-1:{height}"
+                elif height == 0 and width > 0:
+                    resize_arg = f"scale={width}:-1"
+                elif width > 0 and height > 0:
+                    resize_arg = f"scale={width}:{height}"
+                else:
+                    resize_arg = "scale=-1:-1"
+            else:
+                resize_arg = "scale=-1:-1"
+
             args = ["ffmpeg", "-i", source_path, "-vf", resize_arg]
 
-            args += config.get('ffmpeg_args')
+            args += config.get('ffmpeg_args', [])
 
             args += ["-crf", str(crf)]
 
             animated_or_video_formats = ['.apng', '.gif', '.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg']
             if not any(source_path.lower().endswith(ext) for ext in animated_or_video_formats):
-                
                 args += ["-still-picture", "1"]
 
             args.append(destination_path)
