@@ -194,6 +194,7 @@ class ImageConverter:
         return [width, height]
 
     def _convert_image(self, source_path: AnyStr, destination_path: AnyStr) -> bool:
+        resize_args = self._get_resize_args()
         image_format = config.get('image_format')
         is_webp = image_format.lower() == 'webp'
         
@@ -207,8 +208,7 @@ class ImageConverter:
             # Use ffmpeg for non-webp formats, dynamically using the format from config
             quality_value = str(max(0, min(100, config['image_quality'])))
             crf = ((100 - config['image_quality']) * 63 + 50) // 100
-
-            resize_args = self._get_resize_args()
+    
             # Check if either width or height is 0 and adjust accordingly
             if resize_args:
                 width, height = resize_args
