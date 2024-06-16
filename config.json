@@ -22,7 +22,7 @@
         "-m", "6"
     ],
     "ffmpeg_args": [
-        "-threads", "0",
+        "-threads", "0"
     ],
     "filename_pattern_num": 0,
     "tooltip_duration_seconds": 5,
