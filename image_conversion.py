@@ -201,10 +201,13 @@ class ImageConverter:
         if is_webp:
             args += ["-compression_level", "6", "-quality", quality_value]
         else:
-            args += ["-crf", str(crf), "-still-picture", "1"]
+            args += ["-crf", str(crf)]
+            animated_or_video_formats = ['.apng', '.gif', '.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg']
+            if not any(source_path.lower().endswith(ext) for ext in animated_or_video_formats):
+                args += ["-still-picture", "1"]
 
         args.append(destination_path)
-        
+
         p = subprocess.Popen(
             args,
             shell=False,
