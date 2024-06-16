@@ -13,6 +13,14 @@
     "show_settings": "toolbar",
     "drag_and_drop": true,
     "copy_paste": false,
+    "cwebp_args": [
+        "-short",
+        "-mt",
+        "-pass", "10",
+        "-af",
+        "-blend_alpha", "0xffffff",
+        "-m", "6"
+    ],
     "ffmpeg_args": [
         "-threads", "0",
     ],

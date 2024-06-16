@@ -61,7 +61,7 @@ def support_exe_suffix() -> str:
 def get_bundled_executable(name: str) -> str:
     """
     Get path to executable in the bundled "support" folder.
-    Used to provide 'ffmpeg' on computers where it is not installed system-wide or can't be found.
+    Used to provide "cwebp' and 'ffmpeg' on computers where it is not installed system-wide or can't be found.
     """
     path_to_exe = os.path.join(SUPPORT_DIR, name) + support_exe_suffix()
     assert os.path.isfile(path_to_exe), f"{path_to_exe} doesn't exist. Can't recover."
@@ -74,6 +74,11 @@ def get_bundled_executable(name: str) -> str:
 def find_ffmpeg_exe() -> str:
     # https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-essentials.7z
     return find_executable_ajt("ffmpeg") or get_bundled_executable("ffmpeg")
+
+
+def find_cwebp_exe() -> str:
+    # https://developers.google.com/speed/webp/download
+    return find_executable_ajt("cwebp") or get_bundled_executable("cwebp")
 
 
 def stringify_args(args: list[Any]) -> list[str]:
@@ -184,29 +189,34 @@ class ImageConverter:
         return ['-resize', config['image_width'], config['image_height']]
 
     def _convert_image(self, source_path: AnyStr, destination_path: AnyStr) -> bool:
-        is_webp = destination_path.lower().endswith('.webp')
-        
-        quality_value = str(max(0, min(100, config['image_quality'])))
-        
-        crf = ((100 - config['image_quality']) * 63 + 50) // 100
-        
-        resize_arg = (
-            f"scale={config['image_width']}:-1"
-            if config["image_width"] > 0
-            else f"scale=-1:{config['image_height']}"
-        )
-
-        args = ["ffmpeg", "-i", source_path, "-vf", resize_arg]
+        image_format = config.get('image_format')
+        is_webp = image_format.lower() == 'webp'
         
         if is_webp:
-            args += ["-compression_level", "6", "-quality", quality_value]
+            quality_value = str(config.get('image_quality'))
+            args = [find_cwebp_exe(), source_path, '-o', destination_path, '-q', quality_value]
+            args.extend(config.get('cwebp_args', []))
+            args.extend(self._get_resize_args())
         else:
+            # Use ffmpeg for non-webp formats, dynamically using the format from config
+            quality_value = str(max(0, min(100, config['image_quality'])))
+            crf = ((100 - config['image_quality']) * 63 + 50) // 100
+
+            resize_arg = (
+                f"scale={config['image_width']}:-1"
+                if config["image_width"] > 0
+                else f"scale=-1:{config['image_height']}"
+            )
+            args = ["ffmpeg", "-i", source_path, "-vf", resize_arg]
+
             args += ["-crf", str(crf)]
+            
             animated_or_video_formats = ['.apng', '.gif', '.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg']
             if not any(source_path.lower().endswith(ext) for ext in animated_or_video_formats):
+                
                 args += ["-still-picture", "1"]
 
-        args.append(destination_path)
+            args.append(destination_path)
 
         p = subprocess.Popen(
             args,
@@ -222,7 +232,7 @@ class ImageConverter:
         stdout, stderr = p.communicate()
 
         if p.wait() != 0:
-            print("ffmpeg failed.")
+            print("Conversion failed.")
             print(f"exit code = {p.returncode}")
             print(stdout)
             return False
