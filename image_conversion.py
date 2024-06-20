@@ -190,57 +190,47 @@ class ImageConverter:
             return dlg.exec()
         return QDialog.DialogCode.Accepted
 
-    def _get_resize_args(self) -> list[Union[str, int]]:
+    def _get_resize_args(self) -> Optional[ImageDimensions]:
         if config['avoid_upscaling'] and smaller_than_requested(self._dimensions):
             # skip resizing if the image is already smaller than the requested size
-            return []
+            return None
 
         if config['image_width'] == 0 and config['image_height'] == 0:
             # skip resizing if both width and height are set to 0
-            return []
+            return None
 
-        width = config['image_width']
-        height = config['image_height']
         # For cwebp, the resize arguments are directly "-resize width height"
         # For ffmpeg, the resize argument is part of the filtergraph: "scale=width:height"
         # The distinction will be made in the respective conversion functions
-        return [width, height]
+        return ImageDimensions(config['image_width'], config['image_height'])
 
-    def _convert_image(self, source_path: AnyStr, destination_path: AnyStr) -> bool:
-        resize_args = self._get_resize_args()
-        image_format = config.get('image_format')
-        is_webp = image_format.lower() == 'webp'
-
-        if is_webp:
-            quality_value = str(config.get('image_quality'))
-            args = [find_cwebp_exe(), source_path, '-o', destination_path, '-q', quality_value]
+    def _convert_image(self, source_path: str, destination_path: str) -> bool:
+        if config.image_format == "webp":
+            args = [find_cwebp_exe(), source_path, '-o', destination_path, '-q', config.image_quality]
             args.extend(config.get('cwebp_args', []))
-            args.extend(['-resize', str(resize_args[0]), str(resize_args[1])])
-
+            if resize_args := self._get_resize_args():
+                args.extend(['-resize', resize_args.width, resize_args.height])
         else:
             # Use ffmpeg for non-webp formats, dynamically using the format from config
-            quality_value = str(max(0, min(100, config['image_quality'])))
-            crf = ((100 - config['image_quality']) * 63 + 50) // 100
 
             # Check if either width or height is 0 and adjust accordingly
-            if resize_args:
-                width, height = resize_args
-                if width == 0 and height > 0:
-                    resize_arg = f"scale=-1:{height}"
-                elif height == 0 and width > 0:
-                    resize_arg = f"scale={width}:-1"
-                elif width > 0 and height > 0:
-                    resize_arg = f"scale={width}:{height}"
+            if resize_args := self._get_resize_args():
+                if resize_args.width < 1 and resize_args.height > 0:
+                    resize_arg = f"scale=-2:{resize_args.height}"
+                elif resize_args.height < 1 and resize_args.width > 0:
+                    resize_arg = f"scale={resize_args.width}:-2"
+                elif resize_args.width > 0 and resize_args.height > 0:
+                    resize_arg = f"scale={resize_args.width}:{resize_args.height}"
                 else:
                     resize_arg = "scale=-1:-1"
             else:
                 resize_arg = "scale=-1:-1"
 
-            args = ["ffmpeg", "-i", source_path, "-vf", resize_arg]
+            args = [find_ffmpeg_exe(), "-i", source_path, "-vf", resize_arg]
 
             args += config.get('ffmpeg_args', [])
 
-            args += ["-crf", str(crf)]
+            args += ["-crf", quality_percent_to_avif_crf(config.image_quality)]
 
             if not is_animation(source_path):
                 args += ["-still-picture", "1"]
@@ -248,7 +238,7 @@ class ImageConverter:
             args.append(destination_path)
 
         p = subprocess.Popen(
-            args,
+            stringify_args(args),
             shell=False,
             bufsize=-1,
             stdout=subprocess.PIPE,
@@ -320,8 +310,10 @@ class InternalFileConverter(ImageConverter):
     def convert_internal(self) -> None:
         if not self._original_filename:
             raise ImageNotLoaded("file wasn't loaded before converting")
-        if self._convert_image(os.path.join(self.dest_dir, self._original_filename),
-                               self._set_output_filepath()) is False:
+        if self._convert_image(
+                os.path.join(self.dest_dir, self._original_filename),
+                self._set_output_filepath()
+        ) is False:
             raise RuntimeError("ffmpeg failed")
 
 
