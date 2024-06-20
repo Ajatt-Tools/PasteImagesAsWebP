@@ -51,5 +51,9 @@ class PasteImagesAsWebPConfig(AddonConfigManager):
     def bulk_reconvert(self) -> bool:
         return self["bulk_reconvert"]
 
+    @bulk_reconvert.setter
+    def bulk_reconvert(self, value: bool) -> None:
+        self["bulk_reconvert"] = value
+
 
 config = PasteImagesAsWebPConfig()
