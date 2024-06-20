@@ -22,6 +22,7 @@ IS_MAC = sys.platform.startswith("darwin")
 IS_WIN = sys.platform.startswith("win32")
 ANIMATED_OR_VIDEO_FORMATS = frozenset(['.apng', '.gif', '.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm',
                                        '.m4v', '.mpg', '.mpeg'])
+AVIF_WORST_CRF = 63
 
 
 class CanceledPaste(Warning):
@@ -96,6 +97,11 @@ def fetch_filename(mime: QMimeData) -> Optional[str]:
     for file in iter_files(mime):
         if base := os.path.basename(file):
             return base
+
+
+def quality_percent_to_avif_crf(q: int) -> int:
+    # https://github.com/strukturag/libheif/commit/7caa01dd150b6c96f33d35bff2eab8a32b8edf2b
+    return (100 - q) * AVIF_WORST_CRF // 100
 
 
 def is_animation(source_path: str) -> bool:
