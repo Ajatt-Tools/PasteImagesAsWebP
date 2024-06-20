@@ -19,6 +19,7 @@
 from typing import Iterable, Sequence
 
 from .ajt_common.addon_config import AddonConfigManager, set_config_update_action
+from .ajt_common.utils import clamp
 from .utils.show_options import ShowOptions
 
 
@@ -54,6 +55,10 @@ class PasteImagesAsWebPConfig(AddonConfigManager):
     @bulk_reconvert.setter
     def bulk_reconvert(self, value: bool) -> None:
         self["bulk_reconvert"] = value
+
+    @property
+    def image_quality(self) -> int:
+        return clamp(min_val=0, val=self["image_quality"], max_val=100)
 
 
 config = PasteImagesAsWebPConfig()
