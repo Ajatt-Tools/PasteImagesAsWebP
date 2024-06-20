@@ -197,7 +197,7 @@ class ImageConverter:
         resize_args = self._get_resize_args()
         image_format = config.get('image_format')
         is_webp = image_format.lower() == 'webp'
-        
+
         if is_webp:
             quality_value = str(config.get('image_quality'))
             args = [find_cwebp_exe(), source_path, '-o', destination_path, '-q', quality_value]
@@ -208,7 +208,7 @@ class ImageConverter:
             # Use ffmpeg for non-webp formats, dynamically using the format from config
             quality_value = str(max(0, min(100, config['image_quality'])))
             crf = ((100 - config['image_quality']) * 63 + 50) // 100
-    
+
             # Check if either width or height is 0 and adjust accordingly
             if resize_args:
                 width, height = resize_args
@@ -229,7 +229,8 @@ class ImageConverter:
 
             args += ["-crf", str(crf)]
 
-            animated_or_video_formats = ['.apng', '.gif', '.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg']
+            animated_or_video_formats = ['.apng', '.gif', '.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm',
+                                         '.m4v', '.mpg', '.mpeg']
             if not any(os.path.splitext(source_path)[1].lower().endswith(ext) for ext in animated_or_video_formats):
                 args += ["-still-picture", "1"]
 
@@ -308,7 +309,8 @@ class InternalFileConverter(ImageConverter):
     def convert_internal(self) -> None:
         if not self._original_filename:
             raise ImageNotLoaded("file wasn't loaded before converting")
-        if self._convert_image(os.path.join(self.dest_dir, self._original_filename), self._set_output_filepath()) is False:
+        if self._convert_image(os.path.join(self.dest_dir, self._original_filename),
+                               self._set_output_filepath()) is False:
             raise RuntimeError("ffmpeg failed")
 
 
@@ -342,4 +344,3 @@ class OnAddNoteConverter(InternalFileConverter):
             if mw.col.media.have(filename):
                 print(f"Converting file: {filename}")
                 self._convert_and_replace_stored_image(filename)
-
