@@ -20,6 +20,8 @@ from .utils.temp_file import TempFile
 
 IS_MAC = sys.platform.startswith("darwin")
 IS_WIN = sys.platform.startswith("win32")
+ANIMATED_OR_VIDEO_FORMATS = frozenset(['.apng', '.gif', '.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm',
+                                       '.m4v', '.mpg', '.mpeg'])
 
 
 class CanceledPaste(Warning):
@@ -93,6 +95,10 @@ def fetch_filename(mime: QMimeData) -> Optional[str]:
     for file in iter_files(mime):
         if base := os.path.basename(file):
             return base
+
+
+def is_animation(source_path: str) -> bool:
+    return os.path.splitext(source_path)[1].lower() in ANIMATED_OR_VIDEO_FORMATS
 
 
 class ImageConverter:
@@ -229,9 +235,7 @@ class ImageConverter:
 
             args += ["-crf", str(crf)]
 
-            animated_or_video_formats = ['.apng', '.gif', '.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm',
-                                         '.m4v', '.mpg', '.mpeg']
-            if not any(os.path.splitext(source_path)[1].lower().endswith(ext) for ext in animated_or_video_formats):
+            if not is_animation(source_path):
                 args += ["-still-picture", "1"]
 
             args.append(destination_path)
