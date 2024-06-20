@@ -71,9 +71,9 @@ def get_bundled_executable(name: str) -> str:
 
 
 @functools.cache
-def find_ffmpeg_exe() -> str:
+def find_ffmpeg_exe() -> Optional[str]:
     # https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-essentials.7z
-    return find_executable_ajt("ffmpeg") or get_bundled_executable("ffmpeg")
+    return find_executable_ajt("ffmpeg")
 
 
 def find_cwebp_exe() -> str:
