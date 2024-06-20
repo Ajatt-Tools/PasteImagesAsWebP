@@ -78,6 +78,7 @@ def find_ffmpeg_exe() -> Optional[str]:
     return find_executable_ajt("ffmpeg")
 
 
+@functools.cache
 def find_cwebp_exe() -> str:
     # https://developers.google.com/speed/webp/download
     return find_executable_ajt("cwebp") or get_bundled_executable("cwebp")
