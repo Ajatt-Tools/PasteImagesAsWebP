@@ -112,7 +112,7 @@ class BulkConvertDialog(SettingsDialog):
     def set_initial_values(self):
         self._field_selector.set_texts(get_all_keys(self.selected_notes()))
         self._field_selector.set_checked_texts(config["bulk_convert_fields"])
-        self._reconvert_checkbox.setChecked(config["bulk_reconvert_webp"])
+        self._reconvert_checkbox.setChecked(config.bulk_reconvert)
         super().set_initial_values()
 
     def accept(self):
@@ -120,7 +120,7 @@ class BulkConvertDialog(SettingsDialog):
             showInfo(title="Can't accept settings", text="No fields selected. Nothing to convert.")
         else:
             config["bulk_convert_fields"] = self._field_selector.checked_texts()
-            config["bulk_reconvert_webp"] = self._reconvert_checkbox.isChecked()
+            config.bulk_reconvert = self._reconvert_checkbox.isChecked()
             return super().accept()
 
 
@@ -187,8 +187,8 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
             "Does not apply to the native Add dialog."
         )
 
-    def add_advanced_button(self):
-        def advanced_clicked():
+    def add_advanced_button(self) -> None:
+        def advanced_clicked() -> None:
             d = ConfigEditor(cast(AddonsDialog, self), THIS_ADDON_MODULE, config.dict_copy())
             qconnect(d.accepted, self.set_initial_values)
 

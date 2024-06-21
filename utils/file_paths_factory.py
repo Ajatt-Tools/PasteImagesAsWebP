@@ -22,7 +22,7 @@ import random
 import time
 import unicodedata
 from time import gmtime, strftime
-from typing import AnyStr, Optional
+from typing import AnyStr
 
 from anki.notes import Note
 from anki.utils import html_to_text_line
@@ -68,8 +68,6 @@ def note_sort_field_content(note: Note) -> str:
 
 
 class FilePathFactory(FileNamePatterns):
-    ext = '.webp'
-
     def __init__(self, converter: Optional[ImageConverter] = None):
         super().__init__()
         self._converter = converter
@@ -77,7 +75,7 @@ class FilePathFactory(FileNamePatterns):
     def make_unique_filepath(self, original_filename: Optional[str]) -> AnyStr:
         return ensure_unique(os.path.join(
             self._converter.dest_dir,
-            self._make_filename_no_ext(original_filename) + self.ext,
+            self._make_filename_no_ext(original_filename) + config.image_extension,
         ))
 
     @compatible_filename

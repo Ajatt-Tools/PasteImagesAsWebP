@@ -25,7 +25,7 @@ from .config import config
 from .consts import ADDON_PATH
 from .gui import SettingsMenuDialog
 from .utils.show_options import ShowOptions
-from .webp import OnPasteConverter
+from .image_conversion import OnPasteConverter
 
 
 def setup_mainwindow_menu():

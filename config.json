@@ -8,6 +8,7 @@
     "image_height": 200,
     "max_image_width": 800,
     "max_image_height": 600,
+    "image_format": "avif",
     "image_quality": 20,
     "show_settings": "toolbar",
     "drag_and_drop": true,
@@ -15,16 +16,27 @@
     "cwebp_args": [
         "-short",
         "-mt",
-        "-pass", "10",
+        "-pass",
+        "10",
         "-af",
-        "-blend_alpha", "0xffffff",
-        "-m", "6"
+        "-blend_alpha",
+        "0xffffff",
+        "-m",
+        "6"
+    ],
+    "ffmpeg_args": [
+        "-threads",
+        "0",
+        "-map_metadata",
+        "-1",
+        "-cpu-used",
+        "6"
     ],
     "filename_pattern_num": 0,
     "tooltip_duration_seconds": 5,
     "preserve_original_filenames": true,
     "bulk_convert_fields": [],
-    "bulk_reconvert_webp": false,
+    "bulk_reconvert": false,
     "custom_name_field": "VocabKanji",
     "saved_presets": []
 }

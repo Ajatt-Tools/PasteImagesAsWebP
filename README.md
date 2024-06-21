@@ -2,7 +2,8 @@
 <img src="https://user-images.githubusercontent.com/69171671/103569451-35025f00-4ebf-11eb-9ff2-e44aba4183a1.png">
 </p>
 
-# Paste Images As WebP
+# AJT Media Converter
+
 [![Rate on AnkiWeb](https://glutanimate.com/logos/ankiweb-rate.svg)](https://ankiweb.net/shared/info/1151815987)
 ![GitHub](https://img.shields.io/github/license/Ajatt-Tools/PasteImagesAsWebP)
 [![Patreon](https://img.shields.io/badge/support-patreon-orange)](https://www.patreon.com/tatsumoto_ren)
@@ -12,9 +13,10 @@
 
 We all know that people who don't store their images in
 [WebP](https://developers.google.com/speed/webp)
+or [AVIF](https://aomediacodec.github.io/av1-avif/)
 are wasting a lot of disk space.
 Not only on their hard drives, but on AnkiWeb as well.
-Unfortunately Anki doesn't convert images to WebP when you paste them from elsewhere,
+Unfortunately, Anki doesn't convert images to WebP when you paste them from elsewhere,
 and it takes time to convert and resize images manually.
 
 For the longest time I used a bash script
@@ -26,6 +28,7 @@ until I decided that we simply need an add-on for this.
 Storing images in WebP is a great way to reduce the size of your Anki collection.
 
 ## Installation
+
 Install from [AnkiWeb](https://ankiweb.net/shared/info/1151815987), or manually with `git`:
 
 ```
@@ -34,8 +37,11 @@ $ git clone 'https://github.com/Ajatt-Tools/PasteImagesAsWebP.git' ~/.local/shar
 
 Don't forget to initialize `git` submodules.
 
+### WebP images
+
 The add-on expects `cwebp` executable to be added to PATH.
 On Arch Linux, `cwebp` is a part of `libwebp`.
+
 ```
 $ sudo pacman -S libwebp
 ```
@@ -54,6 +60,16 @@ $ brew install webp
 Or download it from [google.com](https://developers.google.com/speed/webp/download)
 and save the `cwebp` executable in `~/.local/share/Anki2/addons21/PasteImagesAsWebP/support/`.
 `cwebp` comes included in the AnkiWeb package.
+
+### AVIF images
+
+To convert images to [AVIF](https://aomediacodec.github.io/av1-avif/),
+The add-on expects [FFmpeg](https://wiki.archlinux.org/title/FFmpeg) executable to be added to PATH.
+On Arch Linux, Install the `ffmpeg` package.
+
+```
+sudo pacman -S ffmpeg
+```
 
 ## Configuration
 

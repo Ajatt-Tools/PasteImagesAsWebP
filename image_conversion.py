@@ -4,7 +4,6 @@
 import functools
 import subprocess
 from typing import Any
-from typing import AnyStr
 
 from anki.notes import Note
 from aqt import mw
@@ -20,6 +19,9 @@ from .utils.temp_file import TempFile
 
 IS_MAC = sys.platform.startswith("darwin")
 IS_WIN = sys.platform.startswith("win32")
+ANIMATED_OR_VIDEO_FORMATS = frozenset(['.apng', '.gif', '.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm',
+                                       '.m4v', '.mpg', '.mpeg'])
+AVIF_WORST_CRF = 63
 
 
 class CanceledPaste(Warning):
@@ -31,6 +33,10 @@ class InvalidInput(Warning):
 
 
 class ImageNotLoaded(Exception):
+    pass
+
+
+class FFmpegNotFoundError(FileNotFoundError):
     pass
 
 
@@ -61,13 +67,19 @@ def support_exe_suffix() -> str:
 def get_bundled_executable(name: str) -> str:
     """
     Get path to executable in the bundled "support" folder.
-    Used to provide 'cwebp' on computers where it is not installed system-wide or can't be found.
+    Used to provide "cwebp' and 'ffmpeg' on computers where it is not installed system-wide or can't be found.
     """
     path_to_exe = os.path.join(SUPPORT_DIR, name) + support_exe_suffix()
     assert os.path.isfile(path_to_exe), f"{path_to_exe} doesn't exist. Can't recover."
     if not IS_WIN:
         os.chmod(path_to_exe, 0o755)
     return path_to_exe
+
+
+@functools.cache
+def find_ffmpeg_exe() -> Optional[str]:
+    # https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-essentials.7z
+    return find_executable_ajt("ffmpeg")
 
 
 @functools.cache
@@ -90,7 +102,22 @@ def fetch_filename(mime: QMimeData) -> Optional[str]:
             return base
 
 
-class WebPConverter:
+def quality_percent_to_avif_crf(q: int) -> int:
+    # https://github.com/strukturag/libheif/commit/7caa01dd150b6c96f33d35bff2eab8a32b8edf2b
+    return (100 - q) * AVIF_WORST_CRF // 100
+
+
+def is_animation(source_path: str) -> bool:
+    return os.path.splitext(source_path)[1].lower() in ANIMATED_OR_VIDEO_FORMATS
+
+
+class ImageConverter:
+    _original_filename: Optional[str]
+    _filepath: Optional[str]
+    _dimensions: Optional[ImageDimensions]
+    _filepath_factory: FilePathFactory
+    _note: Note
+
     def __init__(
             self,
             parent: Union[QWidget, Editor],
@@ -100,9 +127,9 @@ class WebPConverter:
         self._parent = parent
         self._note = note
         self._action = action
-        self._original_filename: Optional[str] = None
-        self._filepath: Optional[AnyStr] = None
-        self._dimensions: Optional[ImageDimensions] = None
+        self._original_filename = None
+        self._filepath = None
+        self._dimensions = None
         self._filepath_factory = FilePathFactory(self)
 
     @property
@@ -172,22 +199,57 @@ class WebPConverter:
             return dlg.exec()
         return QDialog.DialogCode.Accepted
 
-    def _get_resize_args(self) -> list[Union[str, int]]:
+    def _get_resize_dimensions(self) -> Optional[ImageDimensions]:
         if config['avoid_upscaling'] and smaller_than_requested(self._dimensions):
             # skip resizing if the image is already smaller than the requested size
-            return []
+            return None
 
         if config['image_width'] == 0 and config['image_height'] == 0:
             # skip resizing if both width and height are set to 0
-            return []
+            return None
 
-        return ['-resize', config['image_width'], config['image_height']]
+        # For cwebp, the resize arguments are directly "-resize width height"
+        # For ffmpeg, the resize argument is part of the filtergraph: "scale=width:height"
+        # The distinction will be made in the respective conversion functions
+        return ImageDimensions(config['image_width'], config['image_height'])
 
-    def _to_webp(self, source_path: AnyStr, destination_path: AnyStr) -> bool:
-        args = [find_cwebp_exe(), source_path, '-o', destination_path, '-q', config.get('image_quality')]
-        args.extend(config.get('cwebp_args', []))
-        args.extend(self._get_resize_args())
+    def _get_ffmpeg_scale_arg(self) -> str:
+        # Check if either width or height is 0 and adjust accordingly
+        if resize_args := self._get_resize_dimensions():
+            if resize_args.width < 1 and resize_args.height > 0:
+                return f"scale=-2:{resize_args.height}"
+            elif resize_args.height < 1 and resize_args.width > 0:
+                return f"scale={resize_args.width}:-2"
+            elif resize_args.width > 0 and resize_args.height > 0:
+                return f"scale={resize_args.width}:{resize_args.height}"
+        return "scale=-1:-1"
 
+    def _convert_image(self, source_path: str, destination_path: str) -> bool:
+        if config.image_format == "webp":
+            args = [
+                find_cwebp_exe(), source_path, '-o', destination_path, '-q', config.image_quality,
+                *config["cwebp_args"],
+            ]
+            if resize_args := self._get_resize_dimensions():
+                args.extend(['-resize', resize_args.width, resize_args.height])
+        else:
+            if not find_ffmpeg_exe():
+                raise FFmpegNotFoundError("ffmpeg executable is not in PATH")
+            # Use ffmpeg for non-webp formats, dynamically using the format from config
+            args = [
+                find_ffmpeg_exe(),
+                "-hide_banner", "-nostdin", "-y", "-loglevel", "quiet", "-sn", "-an",
+                "-i", source_path,
+                '-c:v', 'libaom-av1',
+                "-vf", self._get_ffmpeg_scale_arg() + ":flags=sinc+accurate_rnd",
+                "-crf", quality_percent_to_avif_crf(config.image_quality),
+                *config["ffmpeg_args"],
+            ]
+            if not is_animation(source_path):
+                args += ["-still-picture", "1", '-frames:v', '1', ]
+            args.append(destination_path)
+
+        print(f"executing args: {args}")
         p = subprocess.Popen(
             stringify_args(args),
             shell=False,
@@ -202,7 +264,7 @@ class WebPConverter:
         stdout, stderr = p.communicate()
 
         if p.wait() != 0:
-            print(f"cwebp failed.")
+            print("Conversion failed.")
             print(f"exit code = {p.returncode}")
             print(stdout)
             return False
@@ -210,7 +272,7 @@ class WebPConverter:
         return True
 
 
-class OnPasteConverter(WebPConverter):
+class OnPasteConverter(ImageConverter):
     """
     Converter used when an image is pasted or dragged from outside.
     """
@@ -223,8 +285,8 @@ class OnPasteConverter(WebPConverter):
             if self._maybe_show_settings() == QDialog.DialogCode.Rejected:
                 raise CanceledPaste("Cancelled.")
 
-            if self._to_webp(tmp_file, self._set_output_filepath()) is False:
-                raise RuntimeError("cwebp failed")
+            if self._convert_image(tmp_file, self._set_output_filepath()) is False:
+                raise RuntimeError("Conversion failed.")
 
     def _save_image(self, tmp_path: str, mime: QMimeData) -> bool:
         for image in image_candidates(mime):
@@ -247,7 +309,7 @@ class OnPasteConverter(WebPConverter):
         )
 
 
-class InternalFileConverter(WebPConverter):
+class InternalFileConverter(ImageConverter):
     """
     Converter used when converting an image already stored in the collection (e.g. bulk-convert).
     """
@@ -261,8 +323,11 @@ class InternalFileConverter(WebPConverter):
     def convert_internal(self) -> None:
         if not self._original_filename:
             raise ImageNotLoaded("file wasn't loaded before converting")
-        if self._to_webp(os.path.join(self.dest_dir, self._original_filename), self._set_output_filepath()) is False:
-            raise RuntimeError("cwebp failed")
+        if self._convert_image(
+                os.path.join(self.dest_dir, self._original_filename),
+                self._set_output_filepath()
+        ) is False:
+            raise RuntimeError("Conversion failed.")
 
 
 class OnAddNoteConverter(InternalFileConverter):
@@ -291,10 +356,7 @@ class OnAddNoteConverter(InternalFileConverter):
                 self._note[field_name] = field_value.replace(f'src="{filename}"', f'src="{self.filename}"')
 
     def convert_note(self):
-        if (joined_fields := self._note.joined_fields()) and '<img' in joined_fields:
-            print("Paste Images As WebP: detected an attempt to create a new note with images.")
-            for filename in find_convertible_images(joined_fields):
-                if mw.col.media.have(filename):
-                    print(f"Converting file: {filename}")
-                    self._convert_and_replace_stored_image(filename)
-
+        for filename in find_convertible_images(self._note.joined_fields()):
+            if mw.col.media.have(filename):
+                print(f"Converting file: {filename}")
+                self._convert_and_replace_stored_image(filename)

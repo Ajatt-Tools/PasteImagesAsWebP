@@ -2,21 +2,24 @@
 
 * `avoid_upscaling` - Don't resize an image when its original size is less than requested.
 * `bulk_convert_fields` - List of fields where the add-on looks for images when bulk-converting.
-* `bulk_reconvert_webp` - Reconvert existing WebP images when bulk-converting.
-* `copy_paste` - Convert images to webp when you copy-paste them.
+* `bulk_reconvert` - When bulk-converting, reconvert images that are already in the desired format.
+* `copy_paste` - Convert images when you copy-paste them.
 * `cwebp_args` - Extra [cwebp arguments](https://www.unix.com/man-page/debian/1/cwebp/).
   They are applied on each call to `cwebp`.
-* `drag_and_drop` - Convert images to webp on drag and drop.
+* `ffmpeg_args` - Extra [ffmpeg arguments](https://ffmpeg.org/ffmpeg.html).
+  They are applied on each call to `ffmpeg`.
+* `drag_and_drop` - Convert images on drag and drop.
 * `image_height` - Desired height.
 * `image_width` - Desired width.
-* `image_quality` - Compression factor between `0` and `100`. `0` produces the worst quality.
+* `image_format` - Desired format.
+* `image_quality` - Compression factor between `0` and `100`. `0` produces the worst quality but the smallest file size.
 * `max_image_height` - Limit for the height slider.
 * `max_image_width` - Limit for the width slider.
-* `shortcut` - Define a keyboard shortcut for pasting images as webp.
+* `shortcut` - Define a keyboard shortcut for pasting images in the configured `image_format`.
 * `show_context_menu_entry` - Add an entry to the editor context menu.
 * `show_editor_button` - Add a button to the editor toolbar.
 * `show_settings` - When to show the settings dialog.
-    * `always` - Every time you try to insert a webp image.
+    * `always` - Every time you try to insert a converted image.
     * `toolbar` - When the toolbar button is clicked.
     * `paste` - When you paste an image.
     * `drag_and_drop` - On drag-and-drop (if enabled).
