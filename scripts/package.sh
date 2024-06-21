@@ -25,5 +25,5 @@ if ! [[ -f "$zip_name" ]]; then
 fi
 
 "$root_dir/scripts/libwebp-dl.sh"
-zip -ur "$zip_name" "$support_dir/cwebp"*
+( cd -- "$root_dir/$package" && zip -ur "$root_dir/$zip_name" "${support_dir##*/}/cwebp"* )
 echo -e "${GREEN}Added cwebp binaries.${NC}"
