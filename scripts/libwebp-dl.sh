@@ -13,8 +13,10 @@ readonly webp_windows="https://storage.googleapis.com/downloads.webmproject.org/
 readonly webp_linux="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${version}-linux-x86-64.tar.gz"
 readonly webp_mac="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${version}-mac-x86-64.tar.gz"
 
-readonly support_dir=support
-readonly tmp_dir=download_temp
+readonly root_dir=$(git rev-parse --show-toplevel)
+readonly package="media_converter"
+readonly support_dir=$root_dir/$package/support
+readonly tmp_dir=/tmp/ajt__download_temp
 
 get_libwebp() {
 	local -r url=${1:?} file_path=$tmp_dir/${1##*/}
@@ -32,6 +34,11 @@ check_dependencies() {
 }
 
 main() {
+	if ! [[ -d $support_dir ]]; then
+		echo "can't find support dir"
+		exit 1
+	fi
+
 	check_dependencies
 
 	if [[ -f $support_dir/cwebp.lin && -f $support_dir/cwebp.exe && -f $support_dir/cwebp.mac ]]; then
@@ -41,14 +48,17 @@ main() {
 
 	rm -rf -- "$tmp_dir" || true
 	mkdir -p -- "$tmp_dir"
+
 	echo "downloading cwebp..."
 	for url in "$webp_windows" "$webp_linux" "$webp_mac"; do
 		get_libwebp "$url" &
 	done
 	wait
+
 	find "$tmp_dir"/*windows* -type f -name 'cwebp.exe' -exec mv -- {} "$support_dir/cwebp.exe" \;
 	find "$tmp_dir"/*linux* -type f -name 'cwebp' -exec mv -- {} "$support_dir/cwebp.lin" \;
 	find "$tmp_dir"/*mac* -type f -name 'cwebp' -exec mv -- {} "$support_dir/cwebp.mac" \;
+
 	rm -rf -- "$tmp_dir"
 	echo -e "${GREEN}downloaded cwebp.${NC}"
 }

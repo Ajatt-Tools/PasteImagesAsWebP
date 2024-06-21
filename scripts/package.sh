@@ -6,13 +6,15 @@ readonly NC='\033[0m'
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
 
-readonly support_dir=support
+readonly root_dir=$(git rev-parse --show-toplevel)
 readonly package="media_converter"
 readonly name="AJT Media Converter"
+readonly support_dir=$root_dir/$package/support
 readonly zip_name=${package,,}.ankiaddon
 
-./ajt_common/package.sh \
+"$root_dir/$package/ajt_common/package.sh" \
 	--package "$package" \
+	--root "$package" \
 	--name "$name" \
 	--zip_name "$zip_name" \
 	"$@"
@@ -22,6 +24,6 @@ if ! [[ -f "$zip_name" ]]; then
 	exit 1
 fi
 
-./libwebp-dl.sh
-zip -ur "$zip_name" ./$support_dir/cwebp*
+"$root_dir/scripts/libwebp-dl.sh"
+zip -ur "$zip_name" "$support_dir/cwebp"*
 echo -e "${GREEN}Added cwebp binaries.${NC}"
