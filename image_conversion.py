@@ -109,6 +109,12 @@ def is_animation(source_path: str) -> bool:
 
 
 class ImageConverter:
+    _original_filename: Optional[str]
+    _filepath: Optional[str]
+    _dimensions: Optional[ImageDimensions]
+    _filepath_factory: FilePathFactory
+    _note: Note
+
     def __init__(
             self,
             parent: Union[QWidget, Editor],
@@ -118,9 +124,9 @@ class ImageConverter:
         self._parent = parent
         self._note = note
         self._action = action
-        self._original_filename: Optional[str] = None
-        self._filepath: Optional[AnyStr] = None
-        self._dimensions: Optional[ImageDimensions] = None
+        self._original_filename = None
+        self._filepath = None
+        self._dimensions = None
         self._filepath_factory = FilePathFactory(self)
 
     @property
@@ -190,7 +196,7 @@ class ImageConverter:
             return dlg.exec()
         return QDialog.DialogCode.Accepted
 
-    def _get_resize_args(self) -> Optional[ImageDimensions]:
+    def _get_resize_dimensions(self) -> Optional[ImageDimensions]:
         if config['avoid_upscaling'] and smaller_than_requested(self._dimensions):
             # skip resizing if the image is already smaller than the requested size
             return None
@@ -204,37 +210,34 @@ class ImageConverter:
         # The distinction will be made in the respective conversion functions
         return ImageDimensions(config['image_width'], config['image_height'])
 
+    def _get_ffmpeg_scale_arg(self) -> str:
+        # Check if either width or height is 0 and adjust accordingly
+        if resize_args := self._get_resize_dimensions():
+            if resize_args.width < 1 and resize_args.height > 0:
+                return f"scale=-2:{resize_args.height}"
+            elif resize_args.height < 1 and resize_args.width > 0:
+                return f"scale={resize_args.width}:-2"
+            elif resize_args.width > 0 and resize_args.height > 0:
+                return f"scale={resize_args.width}:{resize_args.height}"
+        return "scale=-1:-1"
+
     def _convert_image(self, source_path: str, destination_path: str) -> bool:
         if config.image_format == "webp":
-            args = [find_cwebp_exe(), source_path, '-o', destination_path, '-q', config.image_quality]
-            args.extend(config.get('cwebp_args', []))
-            if resize_args := self._get_resize_args():
+            args = [
+                find_cwebp_exe(), source_path, '-o', destination_path, '-q', config.image_quality,
+                *config["cwebp_args"],
+            ]
+            if resize_args := self._get_resize_dimensions():
                 args.extend(['-resize', resize_args.width, resize_args.height])
         else:
             # Use ffmpeg for non-webp formats, dynamically using the format from config
-
-            # Check if either width or height is 0 and adjust accordingly
-            if resize_args := self._get_resize_args():
-                if resize_args.width < 1 and resize_args.height > 0:
-                    resize_arg = f"scale=-2:{resize_args.height}"
-                elif resize_args.height < 1 and resize_args.width > 0:
-                    resize_arg = f"scale={resize_args.width}:-2"
-                elif resize_args.width > 0 and resize_args.height > 0:
-                    resize_arg = f"scale={resize_args.width}:{resize_args.height}"
-                else:
-                    resize_arg = "scale=-1:-1"
-            else:
-                resize_arg = "scale=-1:-1"
-
-            args = [find_ffmpeg_exe(), "-i", source_path, "-vf", resize_arg]
-
-            args += config.get('ffmpeg_args', [])
-
-            args += ["-crf", quality_percent_to_avif_crf(config.image_quality)]
-
+            args = [
+                find_ffmpeg_exe(), "-i", source_path, "-vf", self._get_ffmpeg_scale_arg(),
+                *config["ffmpeg_args"],
+                "-crf", quality_percent_to_avif_crf(config.image_quality),
+            ]
             if not is_animation(source_path):
                 args += ["-still-picture", "1"]
-
             args.append(destination_path)
 
         p = subprocess.Popen(
