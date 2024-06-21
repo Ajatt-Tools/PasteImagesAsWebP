@@ -2,21 +2,23 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import itertools
-from typing import cast
+from typing import cast, Iterable
 
 from anki.notes import Note
 from aqt import mw
 from aqt.addons import ConfigEditor, AddonsDialog
 from aqt.browser import Browser
-from aqt.utils import showInfo
+from aqt.utils import showInfo, restoreGeom, saveGeom
+from aqt.qt import *
 
+from .common import ImageDimensions
+from .consts import ADDON_NAME, WINDOW_MIN_WIDTH, THIS_ADDON_MODULE
+from .ajt_common.enum_select_combo import EnumSelectCombo
 from .ajt_common.addon_config import MgrPropMixIn
 from .ajt_common.anki_field_selector import AnkiFieldSelector
 from .ajt_common.checkable_combobox import CheckableComboBox
 from .ajt_common.multiple_choice_selector import MultipleChoiceSelector
-from .common import *
-from .config import config
-from .consts import *
+from .config import config, ImageFormat
 from .utils.converter_interfaces import FileNamePatterns
 from .utils.show_options import ShowOptions
 from .widgets.image_slider_box import ImageSliderBox
@@ -24,7 +26,9 @@ from .widgets.presets_editor import PresetsEditor
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, parent=None):
+    name = f"ajt__{ADDON_NAME.lower().replace(' ', '_')}_options_dialog"
+
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         cast(QDialog, self).setWindowTitle(ADDON_NAME)
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
@@ -33,38 +37,38 @@ class SettingsDialog(QDialog):
         self._main_vbox = QVBoxLayout()
         self._button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         self.setLayout(self.create_main_layout())
         self.populate_main_vbox()
         self.setup_logic()
         self.set_initial_values()
 
-    def exec(self):
+    def exec(self) -> int:
         self.setup_ui()
         return super().exec()
 
-    def create_main_layout(self):
+    def create_main_layout(self) -> QLayout:
         layout = QVBoxLayout()
         layout.addLayout(self._main_vbox)
         layout.addStretch()
         layout.addWidget(self._button_box)
         return layout
 
-    def populate_main_vbox(self):
+    def populate_main_vbox(self) -> None:
         self._main_vbox.addWidget(self._sliders)
         self._main_vbox.addWidget(self._presets_editor)
 
-    def setup_logic(self):
+    def setup_logic(self) -> None:
         qconnect(self._button_box.accepted, self.accept)
         qconnect(self._button_box.rejected, self.reject)
         self._button_box.button(QDialogButtonBox.StandardButton.Ok).setFocus()
 
-    def set_initial_values(self):
+    def set_initial_values(self) -> None:
         self._sliders.set_limits(config["max_image_width"], config["max_image_height"])
         self._sliders.populate(config)
         self._presets_editor.set_items(config["saved_presets"])
 
-    def accept(self):
+    def accept(self) -> None:
         config.update(self._sliders.as_dict())
         config["saved_presets"] = self._presets_editor.as_list()
         config.write_config()
@@ -78,7 +82,7 @@ def get_all_keys(notes: Iterable[Note]) -> list[str]:
 class BulkConvertDialog(SettingsDialog):
     """Dialog shown on bulk-convert."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         self._field_selector = MultipleChoiceSelector()
         self._reconvert_checkbox = QCheckBox("Reconvert existing WebP images")
         super().__init__(parent)
@@ -89,18 +93,18 @@ class BulkConvertDialog(SettingsDialog):
     def selected_notes(self) -> Iterable[Note]:
         return (mw.col.get_note(nid) for nid in cast(Browser, self.parent()).selectedNotes())
 
-    def populate_main_vbox(self):
+    def populate_main_vbox(self) -> None:
         super().populate_main_vbox()
         self._main_vbox.addWidget(self._field_selector)
         self._main_vbox.addWidget(self._reconvert_checkbox)
 
-    def set_initial_values(self):
+    def set_initial_values(self) -> None:
         self._field_selector.set_texts(get_all_keys(self.selected_notes()))
         self._field_selector.set_checked_texts(config["bulk_convert_fields"])
         self._reconvert_checkbox.setChecked(config.bulk_reconvert)
         super().set_initial_values()
 
-    def accept(self):
+    def accept(self) -> None:
         if self._field_selector.isChecked() and not self._field_selector.checked_texts():
             showInfo(title="Can't accept settings", text="No fields selected. Nothing to convert.")
         else:
@@ -112,26 +116,26 @@ class BulkConvertDialog(SettingsDialog):
 class PasteDialog(SettingsDialog):
     """Dialog shown on paste."""
 
-    def __init__(self, image: ImageDimensions, parent=None):
+    def __init__(self, image: ImageDimensions, parent=None) -> None:
         self.image = image
         super().__init__(parent)
 
-    def populate_main_vbox(self):
+    def populate_main_vbox(self) -> None:
         super().populate_main_vbox()
         self._main_vbox.addWidget(self.create_scale_settings_group_box())
 
-    def create_scale_settings_group_box(self):
+    def create_scale_settings_group_box(self) -> QGroupBox:
         gbox = QGroupBox(f"Original size: {self.image.width} x {self.image.height} px")
         gbox.setLayout(self.create_scale_options_grid())
         return gbox
 
-    def adjust_sliders(self, factor: float):
+    def adjust_sliders(self, factor: float) -> None:
         if self._sliders.width > 0:
             self._sliders.width = int(self.image.width * factor)
         if self._sliders.height > 0:
             self._sliders.height = int(self.image.height * factor)
 
-    def create_scale_options_grid(self):
+    def create_scale_options_grid(self) -> QGridLayout:
         grid = QGridLayout()
         factors = (1 / 8, 1 / 4, 1 / 2, 1, 1.5, 2)
         columns = 3
@@ -157,7 +161,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         'show_context_menu_entry': 'Show a separate context menu item',
     }
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.when_show_dialog_combo_box = self.create_when_show_dialog_combo_box()
         self.filename_pattern_combo_box = self.create_filename_pattern_combo_box()
@@ -166,7 +170,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         self.add_advanced_button()
         self.add_tooltips()
 
-    def add_tooltips(self):
+    def add_tooltips(self) -> None:
         self.checkboxes['convert_on_note_add'].setToolTip(
             "Convert images when a new note is added by an external tool, such as AnkiConnect.\n"
             "Does not apply to the native Add dialog."
@@ -194,21 +198,21 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
             combobox.addItem(option)
         return combobox
 
-    def populate_main_vbox(self):
+    def populate_main_vbox(self) -> None:
         super().populate_main_vbox()
         self._main_vbox.addWidget(self.create_additional_settings_group_box())
 
     def create_additional_settings_group_box(self) -> QGroupBox:
         """Creates the "Behavior" groupbox showing additional settings and checkboxes."""
 
-        def create_combo_boxes_layout():
+        def create_combo_boxes_layout() -> QLayout:
             layout = QFormLayout()
             layout.addRow("Show this dialog", self.when_show_dialog_combo_box)
             layout.addRow("Filename pattern", self.filename_pattern_combo_box)
             layout.addRow("Custom name field", self.custom_name_field_combo_box)
             return layout
 
-        def create_inner_layout():
+        def create_inner_layout() -> QLayout:
             vbox = QVBoxLayout()
             vbox.addLayout(create_combo_boxes_layout())
             for widget in self.checkboxes.values():
@@ -219,7 +223,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         gbox.setLayout(create_inner_layout())
         return gbox
 
-    def set_initial_values(self):
+    def set_initial_values(self) -> None:
         super().set_initial_values()
         self.when_show_dialog_combo_box.setCheckedData(config.show_settings())
         self.filename_pattern_combo_box.setCurrentIndex(config["filename_pattern_num"])
@@ -228,11 +232,10 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         for key, widget in self.checkboxes.items():
             widget.setChecked(config[key])
 
-    def accept(self):
+    def accept(self) -> None:
         config.set_show_options(self.when_show_dialog_combo_box.checkedData())
         config["filename_pattern_num"] = self.filename_pattern_combo_box.currentIndex()
         config["custom_name_field"] = self.custom_name_field_combo_box.currentText()
         for key, widget in self.checkboxes.items():
             config[key] = widget.isChecked()
-
         return super().accept()
