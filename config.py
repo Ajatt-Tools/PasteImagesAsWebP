@@ -1,11 +1,17 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-
+import enum
 from typing import Iterable, Sequence
 
 from .ajt_common.addon_config import AddonConfigManager, set_config_update_action
 from .ajt_common.utils import clamp
 from .utils.show_options import ShowOptions
+
+
+@enum.unique
+class ImageFormat(enum.Enum):
+    webp = enum.auto()
+    avif = enum.auto()
 
 
 class MediaConverterConfig(AddonConfigManager):
@@ -26,12 +32,12 @@ class MediaConverterConfig(AddonConfigManager):
         self['show_settings'] = ','.join(option.name for option in options)
 
     @property
-    def image_format(self) -> str:
-        return self["image_format"].lower()
+    def image_format(self) -> ImageFormat:
+        return ImageFormat[self["image_format"].lower()]
 
     @property
     def image_extension(self) -> str:
-        return f'.{self.image_format}'
+        return f'.{self.image_format.name}'
 
     @property
     def bulk_reconvert(self) -> bool:

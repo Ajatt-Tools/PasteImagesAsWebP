@@ -12,7 +12,7 @@ from aqt.qt import *
 
 from .ajt_common.utils import find_executable as find_executable_ajt
 from .common import ImageDimensions, tooltip, filesize_kib, find_convertible_images
-from .config import config
+from .config import config, ImageFormat
 from .consts import SUPPORT_DIR
 from .gui import PasteDialog
 from .utils.file_paths_factory import FilePathFactory
@@ -226,7 +226,7 @@ class ImageConverter:
         return "scale=-1:-1"
 
     def _convert_image(self, source_path: str, destination_path: str) -> bool:
-        if config.image_format == "webp":
+        if config.image_format == ImageFormat.webp:
             args = [
                 find_cwebp_exe(), source_path, '-o', destination_path, '-q', config.image_quality,
                 *config["cwebp_args"],
