@@ -59,7 +59,7 @@ def on_process_mime(
 
 def should_convert_images_in_new_note(note: anki.notes.Note) -> bool:
     """
-    Convert images to WebP when a new note is added by AnkiConnect.
+    Convert media files when a new note is added by AnkiConnect.
     Skip notes added using the Add dialog.
     """
     return (

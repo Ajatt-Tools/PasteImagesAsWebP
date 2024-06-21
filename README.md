@@ -75,7 +75,7 @@ sudo pacman -S ffmpeg
 
 To configure the add-on select "AJT" > "WebP settings" from the top menu bar.
 To view hidden settings open the Anki Add-on Menu
-via "Tools" > "Add-ons" and select "PasteImagesAsWebP".
+via "Tools" > "Add-ons" and select "AJT Media Converter".
 Then click the Config button on the right-side of the screen.
 
 ## Usage

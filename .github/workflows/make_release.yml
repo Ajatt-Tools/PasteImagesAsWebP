@@ -37,6 +37,6 @@ jobs:
           prerelease: false
           make_latest: true
           generate_release_notes: true
-          name: "PasteImagesAsWebP ${{github.ref_name}}"
+          name: "Media Converter ${{github.ref_name}}"
           files: |
             *.ankiaddon

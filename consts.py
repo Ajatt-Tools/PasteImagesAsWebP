@@ -2,9 +2,10 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import os
+from .ajt_common.consts import ADDON_SERIES
 
 ADDON_PATH = os.path.dirname(os.path.abspath(__file__))
-ADDON_NAME = "Paste Images As WebP"
+ADDON_NAME = f"{ADDON_SERIES} Media Converter"
 THIS_ADDON_MODULE = __name__.split(".")[0]
 SUPPORT_DIR = os.path.join(ADDON_PATH, "support")
 

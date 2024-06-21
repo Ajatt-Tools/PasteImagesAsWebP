@@ -7,12 +7,13 @@ readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
 
 readonly support_dir=support
-readonly package=PasteImagesAsWebP
+readonly package="media_converter"
+readonly name="AJT Media Converter"
 readonly zip_name=${package,,}.ankiaddon
 
 ./ajt_common/package.sh \
 	--package "$package" \
-	--name "AJT Paste Images As WebP" \
+	--name "$name" \
 	--zip_name "$zip_name" \
 	"$@"
 

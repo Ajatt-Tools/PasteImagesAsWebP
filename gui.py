@@ -153,7 +153,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         'convert_on_note_add': 'Convert when AnkiConnect creates new notes',
         'preserve_original_filenames': 'Preserve original filenames, if available',
         'avoid_upscaling': 'Avoid upscaling',
-        'show_editor_button': 'Show a WebP button on the Editor Toolbar',
+        'show_editor_button': 'Show a Converter button on the Editor Toolbar',
         'show_context_menu_entry': 'Show a separate context menu item',
     }
 

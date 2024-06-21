@@ -8,7 +8,7 @@ from .ajt_common.utils import clamp
 from .utils.show_options import ShowOptions
 
 
-class PasteImagesAsWebPConfig(AddonConfigManager):
+class MediaConverterConfig(AddonConfigManager):
     def __init__(self, default: bool = False) -> None:
         super().__init__(default)
         set_config_update_action(self.update_from_addon_manager)
@@ -27,7 +27,7 @@ class PasteImagesAsWebPConfig(AddonConfigManager):
 
     @property
     def image_format(self) -> str:
-        return self["image_format"]
+        return self["image_format"].lower()
 
     @property
     def image_extension(self) -> str:
@@ -46,4 +46,4 @@ class PasteImagesAsWebPConfig(AddonConfigManager):
         return clamp(min_val=0, val=self["image_quality"], max_val=100)
 
 
-config = PasteImagesAsWebPConfig()
+config = MediaConverterConfig()

@@ -17,8 +17,11 @@ from aqt.utils import showInfo, restoreGeom, saveGeom
 
 from .common import find_convertible_images, tooltip
 from .config import config
+from .consts import ADDON_NAME
 from .gui import BulkConvertDialog
 from .image_conversion import InternalFileConverter
+
+ACTION_NAME = f"{ADDON_NAME}: Bulk-convert"
 
 
 class ConvertResult:
@@ -245,6 +248,7 @@ def reload_note(func: Callable[[Browser, Sequence[NoteId]], None]):
         func(browser, note_ids, selected_fields)
         if note:
             browser.editor.set_note(note)
+
     return decorator
 
 
@@ -268,7 +272,7 @@ def on_bulk_convert(browser: Browser):
 
 
 def setup_menu(browser: Browser):
-    a = QAction("Bulk-convert to WebP", browser)
+    a = QAction(ACTION_NAME, browser)
     qconnect(a.triggered, lambda: on_bulk_convert(browser))
     browser.form.menuEdit.addSeparator()
     browser.form.menuEdit.addAction(a)

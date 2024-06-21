@@ -1,4 +1,4 @@
-## Paste Images As WebP - configuration
+## AJT Media Converter - configuration
 
 * `avoid_upscaling` - Don't resize an image when its original size is less than requested.
 * `bulk_convert_fields` - List of fields where the add-on looks for images when bulk-converting.
@@ -11,8 +11,9 @@
 * `drag_and_drop` - Convert images on drag and drop.
 * `image_height` - Desired height.
 * `image_width` - Desired width.
-* `image_format` - Desired format.
-* `image_quality` - Compression factor between `0` and `100`. `0` produces the worst quality but the smallest file size.
+* `image_format` - Desired format ("avif" or "webp").
+* `image_quality` - Compression factor between `0` and `100`.
+  `0` produces the worst quality but the smallest file size.
 * `max_image_height` - Limit for the height slider.
 * `max_image_width` - Limit for the width slider.
 * `shortcut` - Define a keyboard shortcut for pasting images in the configured `image_format`.
