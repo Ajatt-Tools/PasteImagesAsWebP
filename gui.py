@@ -42,6 +42,7 @@ class SettingsDialog(QDialog):
         self.populate_main_vbox()
         self.setup_logic()
         self.set_initial_values()
+        restoreGeom(self, self.name, adjustSize=True)
 
     def exec(self) -> int:
         self.setup_ui()
@@ -72,7 +73,12 @@ class SettingsDialog(QDialog):
         config.update(self._sliders.as_dict())
         config["saved_presets"] = self._presets_editor.as_list()
         config.write_config()
+        saveGeom(self, self.name)
         return super().accept()
+
+    def reject(self) -> None:
+        saveGeom(self, self.name)
+        return super().reject()
 
 
 def get_all_keys(notes: Iterable[Note]) -> list[str]:
