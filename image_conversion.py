@@ -3,20 +3,22 @@
 
 import functools
 import subprocess
-from typing import Any
+from typing import Any, Optional
 
 from anki.notes import Note
 from aqt import mw
+from aqt.editor import Editor
+from aqt.qt import *
 
 from .ajt_common.utils import find_executable as find_executable_ajt
-from .common import *
+from .common import ImageDimensions, tooltip, filesize_kib, find_convertible_images
 from .config import config
 from .consts import SUPPORT_DIR
+from .gui import PasteDialog
 from .utils.file_paths_factory import FilePathFactory
 from .utils.mime_helper import iter_files, image_candidates
 from .utils.show_options import ShowOptions
 from .utils.temp_file import TempFile
-from .gui import PasteDialog
 
 IS_MAC = sys.platform.startswith("darwin")
 IS_WIN = sys.platform.startswith("win32")
@@ -101,7 +103,7 @@ def fetch_filename(mime: QMimeData) -> Optional[str]:
     for file in iter_files(mime):
         if base := os.path.basename(file):
             return base
-
+    return None
 
 def quality_percent_to_avif_crf(q: int) -> int:
     # https://github.com/strukturag/libheif/commit/7caa01dd150b6c96f33d35bff2eab8a32b8edf2b
@@ -190,7 +192,6 @@ class ImageConverter:
         return bool(self._action in config.show_settings())
 
     def _maybe_show_settings(self) -> int:
-
         if not self._dimensions:
             raise ImageNotLoaded("file wasn't loaded before converting")
 
