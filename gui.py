@@ -169,6 +169,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
+        self.image_format_combo_box = EnumSelectCombo(ImageFormat)
         self.when_show_dialog_combo_box = self.create_when_show_dialog_combo_box()
         self.filename_pattern_combo_box = self.create_filename_pattern_combo_box()
         self.custom_name_field_combo_box = AnkiFieldSelector(self)
@@ -213,6 +214,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
 
         def create_combo_boxes_layout() -> QLayout:
             layout = QFormLayout()
+            layout.addRow("Image format", self.image_format_combo_box)
             layout.addRow("Show this dialog", self.when_show_dialog_combo_box)
             layout.addRow("Filename pattern", self.filename_pattern_combo_box)
             layout.addRow("Custom name field", self.custom_name_field_combo_box)
@@ -231,6 +233,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
 
     def set_initial_values(self) -> None:
         super().set_initial_values()
+        self.image_format_combo_box.setCurrentName(config.image_format)
         self.when_show_dialog_combo_box.setCheckedData(config.show_settings())
         self.filename_pattern_combo_box.setCurrentIndex(config["filename_pattern_num"])
         self.custom_name_field_combo_box.setCurrentText(config["custom_name_field"])
@@ -240,6 +243,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
 
     def accept(self) -> None:
         config.set_show_options(self.when_show_dialog_combo_box.checkedData())
+        config["image_format"] = self.image_format_combo_box.currentName()
         config["filename_pattern_num"] = self.filename_pattern_combo_box.currentIndex()
         config["custom_name_field"] = self.custom_name_field_combo_box.currentText()
         for key, widget in self.checkboxes.items():
