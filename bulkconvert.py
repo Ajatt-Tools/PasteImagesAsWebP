@@ -137,8 +137,8 @@ class ConvertTask:
 
         for initial_filename, converted_filename in self._result.converted.items():
             for note in self._to_convert[initial_filename].values():
-                for key in self._keys_to_update(note):
-                    note[key] = note[key].replace(initial_filename, converted_filename)
+                for field_name in self._keys_to_update(note):
+                    note[field_name] = note[field_name].replace(initial_filename, converted_filename)
                 to_update[note.id] = note
 
         col.update_notes(list(to_update.values()))
