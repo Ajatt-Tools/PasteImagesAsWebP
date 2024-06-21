@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Any modifications to this file must keep this entire header intact.
-
+import collections
 import functools
 import threading
 from typing import Sequence, cast
@@ -110,14 +110,14 @@ class ConvertTask:
         """
         Maps each filename to a set of note ids that reference the filename.
         """
-        to_convert: dict[str, dict[NoteId, Note]] = {}
+        to_convert: dict[str, dict[NoteId, Note]] = collections.defaultdict(dict)
 
         for note in map(mw.col.get_note, note_ids):
             note_content = join_fields([note[field] for field in self._keys_to_update(note)])
             if '<img' not in note_content:
                 continue
             for filename in find_convertible_images(note_content, include_converted=config.bulk_reconvert):
-                to_convert.setdefault(filename, dict())[note.id] = note
+                to_convert[filename][note.id] = note
 
         return to_convert
 
