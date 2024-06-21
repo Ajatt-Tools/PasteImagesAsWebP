@@ -36,6 +36,10 @@ class ImageNotLoaded(Exception):
     pass
 
 
+class FFmpegNotFoundError(FileNotFoundError):
+    pass
+
+
 @functools.cache
 def startup_info():
     if IS_WIN:
@@ -229,6 +233,8 @@ class ImageConverter:
             if resize_args := self._get_resize_dimensions():
                 args.extend(['-resize', resize_args.width, resize_args.height])
         else:
+            if not find_ffmpeg_exe():
+                raise FFmpegNotFoundError("ffmpeg executable is not in PATH")
             # Use ffmpeg for non-webp formats, dynamically using the format from config
             args = [
                 find_ffmpeg_exe(),
