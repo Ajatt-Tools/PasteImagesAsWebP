@@ -276,7 +276,7 @@ class OnPasteConverter(ImageConverter):
                 raise CanceledPaste("Cancelled.")
 
             if self._convert_image(tmp_file, self._set_output_filepath()) is False:
-                raise RuntimeError("ffmpeg failed")
+                raise RuntimeError("Conversion failed.")
 
     def _save_image(self, tmp_path: str, mime: QMimeData) -> bool:
         for image in image_candidates(mime):
@@ -317,7 +317,7 @@ class InternalFileConverter(ImageConverter):
                 os.path.join(self.dest_dir, self._original_filename),
                 self._set_output_filepath()
         ) is False:
-            raise RuntimeError("ffmpeg failed")
+            raise RuntimeError("Conversion failed.")
 
 
 class OnAddNoteConverter(InternalFileConverter):
