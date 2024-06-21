@@ -17,8 +17,8 @@
 # Any modifications to this file must keep this entire header intact.
 import collections
 import functools
-import threading
-from typing import Sequence, cast
+import io
+from typing import Sequence, cast, Iterable, Optional
 
 from anki.collection import Collection
 from anki.notes import Note, NoteId
@@ -26,9 +26,10 @@ from anki.utils import join_fields
 from aqt import mw, gui_hooks
 from aqt.browser import Browser
 from aqt.operations import CollectionOp, ResultWithChanges
-from aqt.utils import showInfo
+from aqt.qt import *
+from aqt.utils import showInfo, restoreGeom, saveGeom
 
-from .common import *
+from .common import find_convertible_images, tooltip
 from .config import config
 from .gui import BulkConvertDialog
 from .image_conversion import InternalFileConverter
@@ -37,20 +38,20 @@ from .image_conversion import InternalFileConverter
 class ConvertResult:
     def __init__(self):
         self._converted: dict[str, str] = {}
-        self._failed: dict[str, None] = {}
+        self._failed: dict[str, Optional[Exception]] = {}
 
     def add_converted(self, old_filename: str, new_filename: str):
         self._converted[old_filename] = new_filename
 
-    def add_failed(self, filename: str):
-        self._failed[filename] = None
+    def add_failed(self, filename: str, exception: Optional[Exception] = None):
+        self._failed[filename] = exception
 
     @property
     def converted(self):
         return self._converted
 
     @property
-    def failed(self) -> Sequence[str]:
+    def failed(self) -> dict[str, Optional[Exception]]:
         return self._failed
 
     def is_dirty(self) -> bool:
@@ -58,10 +59,15 @@ class ConvertResult:
 
 
 class ConvertTask:
+    _browser: Browser
+    _selected_fields: list[str]
+    _result: ConvertResult
+    to_convert: dict[str, dict[NoteId, Note]]
+
     def __init__(self, browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str]):
-        self._browser: Browser = browser
-        self._selected_fields: list[str] = selected_fields
-        self._to_convert: dict[str, dict[NoteId, Note]] = self._find_images_to_convert_and_notes(note_ids)
+        self._browser = browser
+        self._selected_fields = selected_fields
+        self._to_convert = self._find_images_to_convert_and_notes(note_ids)
         self._result = ConvertResult()
 
     @property
@@ -74,13 +80,16 @@ class ConvertTask:
 
         for progress_idx, filename in enumerate(self._to_convert):
             yield progress_idx
-            if converted_filename := self._convert_stored_image(filename, self._first_referenced(filename)):
-                self._result.add_converted(filename, converted_filename)
+            try:
+                converted_filename = self._convert_stored_image(filename, self._first_referenced(filename))
+            except (OSError, RuntimeError, FileNotFoundError) as ex:
+                self._result.add_failed(filename, exception=ex)
             else:
-                self._result.add_failed(filename)
+                assert converted_filename, "after successful conversion new filename must be set."
+                self._result.add_converted(filename, converted_filename)
 
     def update_notes(self):
-        def show_report_message():
+        def show_report_message() -> None:
             showInfo(
                 parent=self._browser,
                 title="Task done",
@@ -88,13 +97,17 @@ class ConvertTask:
                 text=self._form_report_message()
             )
 
+        def on_finish() -> None:
+            show_report_message()
+            self._browser.editor.loadNoteKeepingFocus()
+
         if self._result.is_dirty():
             if not self._result.converted:
                 return show_report_message()
             CollectionOp(
                 parent=self._browser, op=lambda col: self._update_notes_op(col)
             ).success(
-                lambda out: show_report_message()
+                lambda out: on_finish()
             ).run_in_background()
 
     def _first_referenced(self, filename: str) -> Note:
@@ -121,15 +134,14 @@ class ConvertTask:
 
         return to_convert
 
-    def _convert_stored_image(self, filename: str, note: Note) -> Optional[str]:
+    def _convert_stored_image(self, filename: str, note: Note) -> str:
         try:
             w = InternalFileConverter(self._browser.editor, note)
             w.load_internal(filename)
             w.convert_internal()
         except (OSError, RuntimeError, FileNotFoundError):
-            pass
-        else:
-            return w.filename
+            raise
+        return w.filename
 
     def _update_notes_op(self, col: Collection) -> ResultWithChanges:
         pos = col.add_custom_undo_entry(f"Convert {len(self._result.converted)} images to WebP")
@@ -145,42 +157,80 @@ class ConvertTask:
         return col.merge_undo_entries(pos)
 
     def _form_report_message(self) -> str:
-        text = f"<p>Converted <b>{len(self._result.converted)}</b> files.</p>"
+        buffer = io.StringIO()
+        buffer.write(f"<p>Converted <code>{len(self._result.converted)}</code> files.</p>")
         if self._result.failed:
-            text += f"<p>Failed <b>{len(self._result.failed)}</b> files:</p>"
-            text += "<ol>"
-            text += ''.join(f"<li>{filename}</li>" for filename in self._result.failed)
-            text += "</ol>"
-        return text
+            buffer.write(f"<p>Failed <code>{len(self._result.failed)}</code> files:</p>")
+            buffer.write("<ol>")
+            for filename, reason in self._result.failed.items():
+                buffer.write(f"<li><code>{filename}</code>: {reason}</li>")
+            buffer.write("</ol>")
+        return buffer.getvalue()
 
 
-class ProgressBar(QDialog):
+class ConvertSignals(QObject):
+    canceled = pyqtSignal()
     task_done = pyqtSignal()
     update_progress = pyqtSignal(int)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.bar = QProgressBar()
-        self.cancel_button = QPushButton('Cancel')
-        self.setLayout(self.setup_layout())
-        self.canceled = False
-        self.task: Optional[ConvertTask] = None
-        cast(QDialog, self).setWindowTitle("Converting...")
-        self.setMinimumSize(320, 24)
-        self.move(100, 100)
-        qconnect(self.cancel_button.clicked, self.set_canceled)
-        qconnect(self.task_done, self.accept)
-        qconnect(self.update_progress, self.bar.setValue)
 
-    def run(self):
-        for progress_value in self.task():
-            if self.canceled is True:
-                break
-            self.update_progress.emit(progress_value)  # type: ignore
-        self.task_done.emit()  # type: ignore
+class ConvertRunnable(QRunnable):
+    canceled: bool
+
+    def __init__(self, task: ConvertTask, signals: ConvertSignals):
+        super().__init__()
+        self.canceled = False
+        self.task = task
+        self.signals = signals
+        qconnect(self.signals.canceled, self.set_canceled)
 
     def set_canceled(self):
         self.canceled = True
+
+    def run(self):
+        for progress_value in self.task():
+            if self.canceled:
+                break
+            self.signals.update_progress.emit(progress_value)  # type: ignore
+        self.signals.task_done.emit()  # type: ignore
+
+
+class ProgressBar(QDialog):
+    name = "ajt__convert_progress_bar"
+    task: ConvertTask
+
+    def __init__(self, task: ConvertTask, parent=None) -> None:
+        super().__init__(parent)
+        self.bar = QProgressBar()
+        self.cancel_button = QPushButton('Cancel')
+        self.setLayout(self.setup_layout())
+        self.task = task
+        self.signals = ConvertSignals()
+        self.pool = QThreadPool.globalInstance()
+        cast(QDialog, self).setWindowTitle("Converting...")
+        self.setMinimumSize(320, 24)
+        self.move(100, 100)
+        self.set_range(0, task.size)
+        qconnect(self.cancel_button.clicked, self.set_canceled)
+        qconnect(self.signals.task_done, self.accept)
+        qconnect(self.signals.update_progress, self.bar.setValue)
+        restoreGeom(self, self.name, adjustSize=True)
+
+    def start_task(self) -> int:
+        runnable = ConvertRunnable(self.task, self.signals)
+        self.pool.start(runnable)
+        return self.exec()
+
+    def accept(self) -> None:
+        saveGeom(self, self.name)
+        super().accept()
+
+    def reject(self) -> None:
+        saveGeom(self, self.name)
+        super().reject()
+
+    def set_canceled(self):
+        self.signals.canceled.emit()  # type: ignore
 
     def setup_layout(self) -> QLayout:
         layout = QVBoxLayout()
@@ -198,35 +248,25 @@ class ProgressBar(QDialog):
         return self.bar.setRange(min_val, max_val)
 
 
-def reload_note(f: Callable[[Browser, Sequence[NoteId]], None]):
-    @functools.wraps(f)
-    def decorator(browser: Browser, *args, **kwargs):
+def reload_note(func: Callable[[Browser, Sequence[NoteId]], None]):
+    @functools.wraps(func)
+    def decorator(browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str]) -> None:
+        assert browser.editor
         note = browser.editor.note
         if note:
             browser.editor.currentField = None
             browser.editor.set_note(None)
-        f(browser, *args, **kwargs)
+        func(browser, note_ids, selected_fields)
         if note:
             browser.editor.set_note(note)
-
     return decorator
 
 
 @reload_note
-def bulk_convert(browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str]):
-    progress_bar = ProgressBar()
-    convert_task = ConvertTask(browser, note_ids, selected_fields)
-
-    progress_bar.set_range(0, convert_task.size)
-    progress_bar.task = convert_task
-
-    t = threading.Thread(target=progress_bar.run)
-    t.start()
-
-    progress_bar.exec()
-    convert_task.update_notes()
-    browser.editor.loadNoteKeepingFocus()
-    t.join()
+def bulk_convert(browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str]) -> None:
+    progress_bar = ProgressBar(task=ConvertTask(browser, note_ids, selected_fields))
+    progress_bar.start_task()  # blocks
+    progress_bar.task.update_notes()
 
 
 def on_bulk_convert(browser: Browser):
