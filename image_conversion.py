@@ -16,6 +16,7 @@ from .utils.file_paths_factory import FilePathFactory
 from .utils.mime_helper import iter_files, image_candidates
 from .utils.show_options import ShowOptions
 from .utils.temp_file import TempFile
+from .gui import PasteDialog
 
 IS_MAC = sys.platform.startswith("darwin")
 IS_WIN = sys.platform.startswith("win32")
@@ -189,13 +190,12 @@ class ImageConverter:
         return bool(self._action in config.show_settings())
 
     def _maybe_show_settings(self) -> int:
-        from .gui import PasteDialog
 
         if not self._dimensions:
             raise ImageNotLoaded("file wasn't loaded before converting")
 
         if self._should_show_settings() is True:
-            dlg = PasteDialog(self.widget, image=self._dimensions)
+            dlg = PasteDialog(image=self._dimensions, parent=self.widget)
             return dlg.exec()
         return QDialog.DialogCode.Accepted
 

@@ -24,8 +24,8 @@ from .widgets.presets_editor import PresetsEditor
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         cast(QDialog, self).setWindowTitle(ADDON_NAME)
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
         self._sliders = ImageSliderBox("Image parameters")
@@ -78,10 +78,10 @@ def get_all_keys(notes: Iterable[Note]) -> list[str]:
 class BulkConvertDialog(SettingsDialog):
     """Dialog shown on bulk-convert."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, parent=None):
         self._field_selector = MultipleChoiceSelector()
         self._reconvert_checkbox = QCheckBox("Reconvert existing WebP images")
-        super().__init__(*args, **kwargs)
+        super().__init__(parent)
 
     def selected_fields(self) -> list[str]:
         return self._field_selector.checked_texts()
@@ -112,9 +112,9 @@ class BulkConvertDialog(SettingsDialog):
 class PasteDialog(SettingsDialog):
     """Dialog shown on paste."""
 
-    def __init__(self, *args, image: ImageDimensions, **kwargs):
+    def __init__(self, image: ImageDimensions, parent=None):
         self.image = image
-        super().__init__(*args, **kwargs)
+        super().__init__(parent)
 
     def populate_main_vbox(self):
         super().populate_main_vbox()
@@ -157,8 +157,8 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         'show_context_menu_entry': 'Show a separate context menu item',
     }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.when_show_dialog_combo_box = self.create_when_show_dialog_combo_box()
         self.filename_pattern_combo_box = self.create_filename_pattern_combo_box()
         self.custom_name_field_combo_box = AnkiFieldSelector(self)
