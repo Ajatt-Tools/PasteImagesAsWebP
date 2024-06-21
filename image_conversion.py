@@ -4,7 +4,6 @@
 import functools
 import subprocess
 from typing import Any
-from typing import AnyStr
 
 from anki.notes import Note
 from aqt import mw
@@ -232,14 +231,19 @@ class ImageConverter:
         else:
             # Use ffmpeg for non-webp formats, dynamically using the format from config
             args = [
-                find_ffmpeg_exe(), "-i", source_path, "-vf", self._get_ffmpeg_scale_arg(),
-                *config["ffmpeg_args"],
+                find_ffmpeg_exe(),
+                "-hide_banner", "-nostdin", "-y", "-loglevel", "quiet", "-sn", "-an",
+                "-i", source_path,
+                '-c:v', 'libaom-av1',
+                "-vf", self._get_ffmpeg_scale_arg() + ":flags=sinc+accurate_rnd",
                 "-crf", quality_percent_to_avif_crf(config.image_quality),
+                *config["ffmpeg_args"],
             ]
             if not is_animation(source_path):
-                args += ["-still-picture", "1"]
+                args += ["-still-picture", "1", '-frames:v', '1', ]
             args.append(destination_path)
 
+        print(f"executing args: {args}")
         p = subprocess.Popen(
             stringify_args(args),
             shell=False,

@@ -26,7 +26,11 @@
     ],
     "ffmpeg_args": [
         "-threads",
-        "0"
+        "0",
+        "-map_metadata",
+        "-1",
+        "-cpu-used",
+        "6"
     ],
     "filename_pattern_num": 0,
     "tooltip_duration_seconds": 5,
