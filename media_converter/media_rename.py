@@ -2,7 +2,8 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import re
-from typing import Iterable, Optional, cast
+from collections.abc import Iterable
+from typing import Optional, cast
 
 from anki.notes import Note
 from anki.utils import join_fields
@@ -10,7 +11,7 @@ from aqt import gui_hooks, mw
 from aqt.editor import Editor
 from aqt.operations import CollectionOp
 from aqt.qt import *
-from aqt.utils import tooltip, showCritical
+from aqt.utils import showCritical, tooltip
 
 from .ajt_common.about_menu import tweak_window
 from .ajt_common.media import find_all_media
@@ -33,12 +34,11 @@ class FileNameEdit(MonoSpaceLineEdit):
         return self._valid
 
     def text(self):
-        return super().text().strip('-_ ')
+        return super().text().strip("-_ ")
 
     def validate(self):
-        self._valid = (
-                len(self.text().encode('utf-8')) <= self._edit_max_len
-                and re.fullmatch(r'^[^\[\]<>:\'"/|?*\\]+\.\w{,5}$', self.text())
+        self._valid = len(self.text().encode("utf-8")) <= self._edit_max_len and re.fullmatch(
+            r'^[^\[\]<>:\'"/|?*\\]+\.\w{,5}$', self.text()
         )
         if self._valid:
             cast(QWidget, self).setStyleSheet("")
@@ -89,7 +89,7 @@ class MediaRenameDialog(QDialog):
 
 def rename_file(old_filename: str, new_filename: str) -> str:
     print(f"{old_filename} => {new_filename}")
-    with open(os.path.join(mw.col.media.dir(), old_filename), 'rb') as f:
+    with open(os.path.join(mw.col.media.dir(), old_filename), "rb") as f:
         return mw.col.media.write_data(new_filename, f.read())
 
 
@@ -102,16 +102,14 @@ def rename_media_files(to_rename: list[tuple[str, str]], note: Note, parent: Edi
             continue
         for field_name, field_value in note.items():
             note[field_name] = field_value.replace(old_filename, new_filename)
-    CollectionOp(
-        parent=parent.widget,
-        op=lambda col: col.update_note(note)
-    ).success(
+    CollectionOp(parent=parent.widget, op=lambda col: col.update_note(note)).success(
         lambda out: tooltip(f"Renamed {len(to_rename)} files", parent=parent.parentWindow)
     ).run_in_background()
 
 
 class Menus:
     """Holds a reference to MediaRenameDialog to avoid spawning the same window multiple times."""
+
     file_rename_dialog: Optional[MediaRenameDialog] = None
 
     @classmethod

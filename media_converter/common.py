@@ -2,8 +2,8 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import re
-from typing import Iterable, Optional
-from typing import NamedTuple
+from collections.abc import Iterable
+from typing import NamedTuple, Optional
 
 from aqt.editor import Editor
 from aqt.qt import *
@@ -19,7 +19,7 @@ class ImageDimensions(NamedTuple):
 
 
 def find_convertible_images(html: str, include_converted: bool = False) -> Iterable[str]:
-    if not (html and '<img' in html):
+    if not (html and "<img" in html):
         return
     filename: str
     for filename in re.findall(RE_IMAGE_HTML_TAG, html):
@@ -30,11 +30,7 @@ def find_convertible_images(html: str, include_converted: bool = False) -> Itera
 def tooltip(msg: str, parent: Optional[QWidget] = None) -> None:
     from aqt.utils import tooltip as _tooltip
 
-    return _tooltip(
-        msg=msg,
-        period=int(config.get('tooltip_duration_seconds', 5)) * 1000,
-        parent=parent
-    )
+    return _tooltip(msg=msg, period=int(config.get("tooltip_duration_seconds", 5)) * 1000, parent=parent)
 
 
 def filesize_kib(filepath: str) -> float:

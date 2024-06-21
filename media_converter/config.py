@@ -1,7 +1,7 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import enum
-from typing import Iterable, Sequence
+from collections.abc import Iterable, Sequence
 
 from .ajt_common.addon_config import AddonConfigManager, set_config_update_action
 from .ajt_common.utils import clamp
@@ -21,7 +21,7 @@ class MediaConverterConfig(AddonConfigManager):
 
     def show_settings(self) -> Sequence[ShowOptions]:
         instances = []
-        for name in self['show_settings'].split(','):
+        for name in self["show_settings"].split(","):
             try:
                 instances.append(ShowOptions[name])
             except KeyError:
@@ -29,7 +29,7 @@ class MediaConverterConfig(AddonConfigManager):
         return instances
 
     def set_show_options(self, options: Iterable[ShowOptions]):
-        self['show_settings'] = ','.join(option.name for option in options)
+        self["show_settings"] = ",".join(option.name for option in options)
 
     @property
     def image_format(self) -> ImageFormat:
@@ -37,7 +37,7 @@ class MediaConverterConfig(AddonConfigManager):
 
     @property
     def image_extension(self) -> str:
-        return f'.{self.image_format.name}'
+        return f".{self.image_format.name}"
 
     @property
     def bulk_reconvert(self) -> bool:

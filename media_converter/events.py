@@ -4,13 +4,12 @@
 import anki
 import aqt.editor
 from anki import hooks
-from aqt import gui_hooks
-from aqt import mw
+from aqt import gui_hooks, mw
 from aqt.utils import KeyboardModifiersPressed
 
 from .common import *
 from .config import config
-from .image_conversion import ShowOptions, CanceledPaste, InvalidInput, OnAddNoteConverter, OnPasteConverter
+from .image_conversion import CanceledPaste, InvalidInput, OnAddNoteConverter, OnPasteConverter, ShowOptions
 
 
 def should_paste_raw():
@@ -40,11 +39,8 @@ def convert_mime(mime: QMimeData, editor: Editor, action: ShowOptions):
 
 
 def on_process_mime(
-        mime: QMimeData,
-        editor_web_view: aqt.editor.EditorWebView,
-        internal: bool,
-        _extended: bool,
-        drop_event: bool) -> QMimeData:
+    mime: QMimeData, editor_web_view: aqt.editor.EditorWebView, internal: bool, _extended: bool, drop_event: bool
+) -> QMimeData:
     if internal or should_paste_raw():
         return mime
 
@@ -62,11 +58,7 @@ def should_convert_images_in_new_note(note: anki.notes.Note) -> bool:
     Convert media files when a new note is added by AnkiConnect.
     Skip notes added using the Add dialog.
     """
-    return (
-            config['convert_on_note_add'] is True
-            and mw.app.activeWindow() is None
-            and note.id == 0
-    )
+    return config["convert_on_note_add"] is True and mw.app.activeWindow() is None and note.id == 0
 
 
 def on_add_note(_self: anki.collection.Collection, note: anki.notes.Note, _deck_id: anki.decks.DeckId) -> None:

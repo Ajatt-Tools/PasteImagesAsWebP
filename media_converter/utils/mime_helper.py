@@ -2,13 +2,14 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import re
-from typing import Optional, Iterable
+from collections.abc import Iterable
+from typing import Optional
 
 import requests
 from aqt.qt import *
-from requests.exceptions import Timeout, InvalidSchema
+from requests.exceptions import InvalidSchema, Timeout
 
-from ..consts import REQUEST_TIMEOUTS, REQUEST_HEADERS
+from ..consts import REQUEST_HEADERS, REQUEST_TIMEOUTS
 
 
 def urls_from_html(html: str) -> list:
@@ -16,7 +17,7 @@ def urls_from_html(html: str) -> list:
 
 
 def data_from_html(html: str) -> list[QByteArray]:
-    return [QByteArray.fromBase64(data.encode('ascii')) for data in re.findall('(?<=;base64,)[^"]+(?=")', html)]
+    return [QByteArray.fromBase64(data.encode("ascii")) for data in re.findall('(?<=;base64,)[^"]+(?=")', html)]
 
 
 def iter_urls(mime: QMimeData) -> Iterable[str]:
@@ -38,7 +39,7 @@ def image_from_url(src_url: str) -> Optional[QImage]:
 
 
 def image_from_file(filepath: str):
-    with open(filepath, 'rb') as f:
+    with open(filepath, "rb") as f:
         return QImage.fromData(f.read())
 
 

@@ -1,7 +1,7 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from typing import List, Dict
+from typing import Dict, List
 
 from aqt.qt import *
 
@@ -32,10 +32,7 @@ class PresetsEditor(QGroupBox):
         return layout
 
     def as_list(self) -> list[dict[str, int]]:
-        return [
-            self.combo.itemData(index)
-            for index in range(self.combo.count())
-        ]
+        return [self.combo.itemData(index) for index in range(self.combo.count())]
 
     def add_items(self, items: list[dict[str, int]]):
         for item in items:

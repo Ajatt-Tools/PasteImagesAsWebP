@@ -65,6 +65,6 @@ class ImageSliderBox(QGroupBox):
             "A small factor produces a smaller file with lower quality.\n"
             "Best quality is achieved by using a value of 100."
         )
-        self._sliders.image_width.set_tooltip(side_tooltip % 'width')
-        self._sliders.image_height.set_tooltip(side_tooltip % 'height')
+        self._sliders.image_width.set_tooltip(side_tooltip % "width")
+        self._sliders.image_height.set_tooltip(side_tooltip % "height")
         self._sliders.image_quality.set_tooltip(quality_tooltip)

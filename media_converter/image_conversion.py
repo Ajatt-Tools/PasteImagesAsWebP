@@ -11,19 +11,20 @@ from aqt.editor import Editor
 from aqt.qt import *
 
 from .ajt_common.utils import find_executable as find_executable_ajt
-from .common import ImageDimensions, tooltip, filesize_kib, find_convertible_images
-from .config import config, ImageFormat
+from .common import ImageDimensions, filesize_kib, find_convertible_images, tooltip
+from .config import ImageFormat, config
 from .consts import SUPPORT_DIR
 from .gui import PasteDialog
 from .utils.file_paths_factory import FilePathFactory
-from .utils.mime_helper import iter_files, image_candidates
+from .utils.mime_helper import image_candidates, iter_files
 from .utils.show_options import ShowOptions
 from .utils.temp_file import TempFile
 
 IS_MAC = sys.platform.startswith("darwin")
 IS_WIN = sys.platform.startswith("win32")
-ANIMATED_OR_VIDEO_FORMATS = frozenset(['.apng', '.gif', '.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm',
-                                       '.m4v', '.mpg', '.mpeg'])
+ANIMATED_OR_VIDEO_FORMATS = frozenset(
+    [".apng", ".gif", ".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv", ".webm", ".m4v", ".mpg", ".mpeg"]
+)
 AVIF_WORST_CRF = 63
 
 
@@ -96,7 +97,7 @@ def stringify_args(args: list[Any]) -> list[str]:
 
 
 def smaller_than_requested(image: ImageDimensions) -> bool:
-    return 0 < image.width < config['image_width'] or 0 < image.height < config['image_height']
+    return 0 < image.width < config["image_width"] or 0 < image.height < config["image_height"]
 
 
 def fetch_filename(mime: QMimeData) -> Optional[str]:
@@ -104,6 +105,7 @@ def fetch_filename(mime: QMimeData) -> Optional[str]:
         if base := os.path.basename(file):
             return base
     return None
+
 
 def quality_percent_to_avif_crf(q: int) -> int:
     # https://github.com/strukturag/libheif/commit/7caa01dd150b6c96f33d35bff2eab8a32b8edf2b
@@ -122,10 +124,10 @@ class ImageConverter:
     _note: Note
 
     def __init__(
-            self,
-            parent: Union[QWidget, Editor],
-            note: Note,
-            action: Optional[ShowOptions] = None,
+        self,
+        parent: Union[QWidget, Editor],
+        note: Note,
+        action: Optional[ShowOptions] = None,
     ):
         self._parent = parent
         self._note = note
@@ -149,11 +151,7 @@ class ImageConverter:
 
     @property
     def widget(self) -> Optional[QWidget]:
-        return (
-            self._parent.widget
-            if isinstance(self._parent, Editor)
-            else self._parent
-        )
+        return self._parent.widget if isinstance(self._parent, Editor) else self._parent
 
     @property
     def editor(self) -> Optional[Editor]:
@@ -184,7 +182,7 @@ class ImageConverter:
         If a file with this name exists in the collection, will append digits at the end of the new name.
         """
         self._filepath = self._filepath_factory.make_unique_filepath(
-            self._original_filename if config['preserve_original_filenames'] else None
+            self._original_filename if config["preserve_original_filenames"] else None
         )
         return self._filepath
 
@@ -201,18 +199,18 @@ class ImageConverter:
         return QDialog.DialogCode.Accepted
 
     def _get_resize_dimensions(self) -> Optional[ImageDimensions]:
-        if config['avoid_upscaling'] and smaller_than_requested(self._dimensions):
+        if config["avoid_upscaling"] and smaller_than_requested(self._dimensions):
             # skip resizing if the image is already smaller than the requested size
             return None
 
-        if config['image_width'] == 0 and config['image_height'] == 0:
+        if config["image_width"] == 0 and config["image_height"] == 0:
             # skip resizing if both width and height are set to 0
             return None
 
         # For cwebp, the resize arguments are directly "-resize width height"
         # For ffmpeg, the resize argument is part of the filtergraph: "scale=width:height"
         # The distinction will be made in the respective conversion functions
-        return ImageDimensions(config['image_width'], config['image_height'])
+        return ImageDimensions(config["image_width"], config["image_height"])
 
     def _get_ffmpeg_scale_arg(self) -> str:
         # Check if either width or height is 0 and adjust accordingly
@@ -228,26 +226,46 @@ class ImageConverter:
     def _convert_image(self, source_path: str, destination_path: str) -> bool:
         if config.image_format == ImageFormat.webp:
             args = [
-                find_cwebp_exe(), source_path, '-o', destination_path, '-q', config.image_quality,
+                find_cwebp_exe(),
+                source_path,
+                "-o",
+                destination_path,
+                "-q",
+                config.image_quality,
                 *config["cwebp_args"],
             ]
             if resize_args := self._get_resize_dimensions():
-                args.extend(['-resize', resize_args.width, resize_args.height])
+                args.extend(["-resize", resize_args.width, resize_args.height])
         else:
             if not find_ffmpeg_exe():
                 raise FFmpegNotFoundError("ffmpeg executable is not in PATH")
             # Use ffmpeg for non-webp formats, dynamically using the format from config
             args = [
                 find_ffmpeg_exe(),
-                "-hide_banner", "-nostdin", "-y", "-loglevel", "quiet", "-sn", "-an",
-                "-i", source_path,
-                '-c:v', 'libaom-av1',
-                "-vf", self._get_ffmpeg_scale_arg() + ":flags=sinc+accurate_rnd",
-                "-crf", quality_percent_to_avif_crf(config.image_quality),
+                "-hide_banner",
+                "-nostdin",
+                "-y",
+                "-loglevel",
+                "quiet",
+                "-sn",
+                "-an",
+                "-i",
+                source_path,
+                "-c:v",
+                "libaom-av1",
+                "-vf",
+                self._get_ffmpeg_scale_arg() + ":flags=sinc+accurate_rnd",
+                "-crf",
+                quality_percent_to_avif_crf(config.image_quality),
                 *config["ffmpeg_args"],
             ]
             if not is_animation(source_path):
-                args += ["-still-picture", "1", '-frames:v', '1', ]
+                args += [
+                    "-still-picture",
+                    "1",
+                    "-frames:v",
+                    "1",
+                ]
             args.append(destination_path)
 
         print(f"executing args: {args}")
@@ -259,7 +277,7 @@ class ImageConverter:
             stderr=subprocess.STDOUT,
             startupinfo=startup_info(),
             universal_newlines=True,
-            encoding="utf8"
+            encoding="utf8",
         )
 
         stdout, stderr = p.communicate()
@@ -291,7 +309,7 @@ class OnPasteConverter(ImageConverter):
 
     def _save_image(self, tmp_path: str, mime: QMimeData) -> bool:
         for image in image_candidates(mime):
-            if image and image.save(tmp_path, 'png') is True:
+            if image and image.save(tmp_path, "png") is True:
                 self._dimensions = ImageDimensions(image.width(), image.height())
                 self._original_filename = fetch_filename(mime)
                 break
@@ -305,8 +323,7 @@ class OnPasteConverter(ImageConverter):
 
     def result_tooltip(self, filepath: str) -> None:
         return self.tooltip(
-            f"<strong>{os.path.basename(filepath)}</strong> added.<br>"
-            f"File size: {filesize_kib(filepath):.3f} KiB.",
+            f"<strong>{os.path.basename(filepath)}</strong> added.<br>" f"File size: {filesize_kib(filepath):.3f} KiB.",
         )
 
 
@@ -316,7 +333,7 @@ class InternalFileConverter(ImageConverter):
     """
 
     def load_internal(self, filename: str) -> None:
-        with open(os.path.join(self.dest_dir, filename), 'rb') as f:
+        with open(os.path.join(self.dest_dir, filename), "rb") as f:
             image = QImage.fromData(f.read())
         self._dimensions = ImageDimensions(image.width(), image.height())
         self._original_filename = filename
@@ -324,10 +341,10 @@ class InternalFileConverter(ImageConverter):
     def convert_internal(self) -> None:
         if not self._original_filename:
             raise ImageNotLoaded("file wasn't loaded before converting")
-        if self._convert_image(
-                os.path.join(self.dest_dir, self._original_filename),
-                self._set_output_filepath()
-        ) is False:
+        if (
+            self._convert_image(os.path.join(self.dest_dir, self._original_filename), self._set_output_filepath())
+            is False
+        ):
             raise RuntimeError("Conversion failed.")
 
 
@@ -341,7 +358,7 @@ class OnAddNoteConverter(InternalFileConverter):
         self._settings_shown = False
 
     def _should_show_settings(self) -> bool:
-        """ If a note contains multiple images, show settings only once per note. """
+        """If a note contains multiple images, show settings only once per note."""
         if self._settings_shown is False:
             self._settings_shown = True
             return super()._should_show_settings()

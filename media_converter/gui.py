@@ -2,23 +2,24 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import itertools
-from typing import cast, Iterable
+from collections.abc import Iterable
+from typing import cast
 
 from anki.notes import Note
 from aqt import mw
-from aqt.addons import ConfigEditor, AddonsDialog
+from aqt.addons import AddonsDialog, ConfigEditor
 from aqt.browser import Browser
-from aqt.utils import showInfo, restoreGeom, saveGeom
 from aqt.qt import *
+from aqt.utils import restoreGeom, saveGeom, showInfo
 
-from .common import ImageDimensions
-from .consts import ADDON_NAME, WINDOW_MIN_WIDTH, THIS_ADDON_MODULE
-from .ajt_common.enum_select_combo import EnumSelectCombo
 from .ajt_common.addon_config import MgrPropMixIn
 from .ajt_common.anki_field_selector import AnkiFieldSelector
 from .ajt_common.checkable_combobox import CheckableComboBox
+from .ajt_common.enum_select_combo import EnumSelectCombo
 from .ajt_common.multiple_choice_selector import MultipleChoiceSelector
-from .config import config, ImageFormat
+from .common import ImageDimensions
+from .config import ImageFormat, config
+from .consts import ADDON_NAME, THIS_ADDON_MODULE, WINDOW_MIN_WIDTH
 from .utils.converter_interfaces import FileNamePatterns
 from .utils.show_options import ShowOptions
 from .widgets.image_slider_box import ImageSliderBox
@@ -158,13 +159,13 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
     """Settings dialog available from the main menu."""
 
     _checkboxes = {
-        'drag_and_drop': 'Convert images on drag and drop',
-        'copy_paste': 'Convert images on copy-paste',
-        'convert_on_note_add': 'Convert when AnkiConnect creates new notes',
-        'preserve_original_filenames': 'Preserve original filenames, if available',
-        'avoid_upscaling': 'Avoid upscaling',
-        'show_editor_button': 'Show a Converter button on the Editor Toolbar',
-        'show_context_menu_entry': 'Show a separate context menu item',
+        "drag_and_drop": "Convert images on drag and drop",
+        "copy_paste": "Convert images on copy-paste",
+        "convert_on_note_add": "Convert when AnkiConnect creates new notes",
+        "preserve_original_filenames": "Preserve original filenames, if available",
+        "avoid_upscaling": "Avoid upscaling",
+        "show_editor_button": "Show a Converter button on the Editor Toolbar",
+        "show_context_menu_entry": "Show a separate context menu item",
     }
 
     def __init__(self, parent=None) -> None:
@@ -178,7 +179,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         self.add_tooltips()
 
     def add_tooltips(self) -> None:
-        self.checkboxes['convert_on_note_add'].setToolTip(
+        self.checkboxes["convert_on_note_add"].setToolTip(
             "Convert images when a new note is added by an external tool, such as AnkiConnect.\n"
             "Does not apply to the native Add dialog."
         )

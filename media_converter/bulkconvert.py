@@ -4,16 +4,17 @@
 import collections
 import functools
 import io
-from typing import Sequence, cast, Iterable, Optional
+from collections.abc import Iterable, Sequence
+from typing import Optional, cast
 
 from anki.collection import Collection
 from anki.notes import Note, NoteId
 from anki.utils import join_fields
-from aqt import mw, gui_hooks
+from aqt import gui_hooks, mw
 from aqt.browser import Browser
 from aqt.operations import CollectionOp, ResultWithChanges
 from aqt.qt import *
-from aqt.utils import showInfo, restoreGeom, saveGeom
+from aqt.utils import restoreGeom, saveGeom, showInfo
 
 from .common import find_convertible_images, tooltip
 from .config import config
@@ -79,12 +80,7 @@ class ConvertTask:
 
     def update_notes(self):
         def show_report_message() -> None:
-            showInfo(
-                parent=self._browser,
-                title="Task done",
-                textFormat="rich",
-                text=self._form_report_message()
-            )
+            showInfo(parent=self._browser, title="Task done", textFormat="rich", text=self._form_report_message())
 
         def on_finish() -> None:
             show_report_message()
@@ -93,9 +89,7 @@ class ConvertTask:
         if self._result.is_dirty():
             if not self._result.converted:
                 return show_report_message()
-            CollectionOp(
-                parent=self._browser, op=lambda col: self._update_notes_op(col)
-            ).success(
+            CollectionOp(parent=self._browser, op=lambda col: self._update_notes_op(col)).success(
                 lambda out: on_finish()
             ).run_in_background()
 
@@ -116,7 +110,7 @@ class ConvertTask:
 
         for note in map(mw.col.get_note, note_ids):
             note_content = join_fields([note[field] for field in self._keys_to_update(note)])
-            if '<img' not in note_content:
+            if "<img" not in note_content:
                 continue
             for filename in find_convertible_images(note_content, include_converted=config.bulk_reconvert):
                 to_convert[filename][note.id] = note
@@ -191,7 +185,7 @@ class ProgressBar(QDialog):
     def __init__(self, task: ConvertTask, parent=None) -> None:
         super().__init__(parent)
         self.bar = QProgressBar()
-        self.cancel_button = QPushButton('Cancel')
+        self.cancel_button = QPushButton("Cancel")
         self.setLayout(self.setup_layout())
         self.task = task
         self.signals = ConvertSignals()
