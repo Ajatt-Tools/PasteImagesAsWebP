@@ -6,10 +6,11 @@ import subprocess
 from typing import Any, Optional
 
 from aqt.qt import *
+from aqt.utils import showWarning
 
 from ..ajt_common.utils import find_executable as find_executable_ajt
 from ..config import ImageFormat, config
-from ..consts import SUPPORT_DIR
+from ..consts import ADDON_NAME, SUPPORT_DIR
 from ..utils.mime_helper import iter_files
 from .common import ImageDimensions
 
@@ -107,6 +108,26 @@ def quality_percent_to_avif_crf(q: int) -> int:
 
 def is_animation(source_path: str) -> bool:
     return os.path.splitext(source_path)[1].lower() in ANIMATED_OR_VIDEO_FORMATS
+
+
+def ffmpeg_not_found_dialog(parent=None):
+    return showWarning(
+        title=ADDON_NAME,
+        parent=parent,
+        text="""
+        <h2>FFmpeg is not found in PATH.</h2>
+
+        Install ffmpeg if it is not installed yet.
+        Follow <a href="https://wiki.archlinux.org/title/FFmpeg">Arch Wiki</a>
+        or the <a href="https://www.ffmpeg.org/">project home page</a> for details.
+
+        Make sure that ffmpeg is added to the PATH.
+        To learn how, read
+        <a href="https://wiki.archlinux.org/title/Environment_variables#Per_user">this section</a>
+        in Arch Wiki or follow your operating system's instructions.
+        """,
+        textFormat="rich",
+    )
 
 
 class ImageConverter:

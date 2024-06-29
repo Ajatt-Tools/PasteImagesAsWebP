@@ -10,6 +10,7 @@ from .common import *
 from .config import config
 from .consts import ADDON_NAME, ADDON_PATH
 from .gui import SettingsMenuDialog
+from .image_converters.image_converter import FFmpegNotFoundError, ffmpeg_not_found_dialog
 from .image_converters.on_paste_converter import OnPasteConverter
 from .utils.show_options import ShowOptions
 
@@ -40,6 +41,8 @@ def convert_and_insert(editor: Editor, source: ShowOptions):
     conv = OnPasteConverter(editor, source)
     try:
         new_file_path = conv.convert_mime(mime)
+    except FFmpegNotFoundError:
+        ffmpeg_not_found_dialog()
     except Exception as ex:
         conv.tooltip(ex)
     else:

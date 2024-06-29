@@ -11,9 +11,10 @@ from aqt.utils import KeyboardModifiersPressed
 
 from .common import has_local_file, image_html, tooltip
 from .config import config
-from .image_converters.image_converter import CanceledPaste, InvalidInput, ShowOptions
+from .image_converters.image_converter import CanceledPaste, FFmpegNotFoundError, InvalidInput, ffmpeg_not_found_dialog
 from .image_converters.on_add_note_converter import OnAddNoteConverter
 from .image_converters.on_paste_converter import OnPasteConverter
+from .utils.show_options import ShowOptions
 
 
 def should_paste_raw() -> bool:
@@ -25,6 +26,8 @@ def convert_mime(mime: QMimeData, editor: aqt.editor.Editor, action: ShowOptions
 
     try:
         new_file_path = conv.convert_mime(mime)
+    except FFmpegNotFoundError:
+        ffmpeg_not_found_dialog()
     except InvalidInput:
         pass
     except CanceledPaste as ex:
@@ -70,6 +73,8 @@ def on_add_note(_self: anki.collection.Collection, note: anki.notes.Note, _deck_
         converter = OnAddNoteConverter(note, action=ShowOptions.add_note, parent=mw)
         try:
             converter.convert_note()
+        except FFmpegNotFoundError:
+            ffmpeg_not_found_dialog()
         except CanceledPaste as ex:
             tooltip(str(ex), parent=mw)
         except (OSError, RuntimeError, FileNotFoundError):
