@@ -1,7 +1,3 @@
-<p align="center">
-<img src="https://user-images.githubusercontent.com/69171671/103569451-35025f00-4ebf-11eb-9ff2-e44aba4183a1.png">
-</p>
-
 # AJT Media Converter
 
 [![Rate on AnkiWeb](https://glutanimate.com/logos/ankiweb-rate.svg)](https://ankiweb.net/shared/info/1151815987)
@@ -10,6 +6,10 @@
 [![Matrix](https://img.shields.io/badge/chat-join-green.svg)](https://tatsumoto-ren.github.io/blog/join-our-community.html)
 
 > An Anki add-on that makes your images small.
+
+<p align="center">
+<img src="https://github.com/Ajatt-Tools/PasteImagesAsWebP/assets/69171671/c5b421c4-88e3-46e9-a6a2-0d33ec49c6c8">
+</p>
 
 We all know that people who don't store their images in
 [WebP](https://developers.google.com/speed/webp)
