@@ -18,7 +18,7 @@ from .ajt_common.checkable_combobox import CheckableComboBox
 from .ajt_common.enum_select_combo import EnumSelectCombo
 from .ajt_common.multiple_choice_selector import MultipleChoiceSelector
 from .config import ImageFormat, config
-from .consts import ADDON_NAME, THIS_ADDON_MODULE, WINDOW_MIN_WIDTH
+from .consts import ADDON_FULL_NAME, THIS_ADDON_MODULE, WINDOW_MIN_WIDTH, ADDON_NAME
 from .image_converters.common import ImageDimensions, should_show_settings
 from .utils.converter_interfaces import FileNamePatterns
 from .utils.show_options import ShowOptions
@@ -31,7 +31,7 @@ class SettingsDialog(QDialog):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        cast(QDialog, self).setWindowTitle(ADDON_NAME)
+        cast(QDialog, self).setWindowTitle(ADDON_FULL_NAME)
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
         self._sliders = ImageSliderBox("Image parameters")
         self._presets_editor = PresetsEditor("Presets", sliders=self._sliders)

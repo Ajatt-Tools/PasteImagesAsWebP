@@ -18,11 +18,11 @@ from aqt.utils import restoreGeom, saveGeom, showInfo
 
 from .common import find_convertible_images, tooltip
 from .config import config
-from .consts import ADDON_NAME
+from .consts import ADDON_FULL_NAME
 from .gui import BulkConvertDialog
 from .image_converters.internal_file_converter import InternalFileConverter
 
-ACTION_NAME = f"{ADDON_NAME}: Bulk-convert"
+ACTION_NAME = f"{ADDON_FULL_NAME}: Bulk-convert"
 
 
 class ConvertResult:

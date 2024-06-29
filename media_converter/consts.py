@@ -6,7 +6,8 @@ import os
 from .ajt_common.consts import ADDON_SERIES
 
 ADDON_PATH = os.path.dirname(os.path.abspath(__file__))
-ADDON_NAME = f"{ADDON_SERIES} Media Converter"
+ADDON_NAME = "Media Converter"
+ADDON_FULL_NAME = f"{ADDON_SERIES} {ADDON_NAME}"
 THIS_ADDON_MODULE = __name__.split(".")[0]
 SUPPORT_DIR = os.path.join(ADDON_PATH, "support")
 

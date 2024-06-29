@@ -8,7 +8,7 @@ from aqt.editor import EditorWebView
 from .ajt_common.about_menu import menu_root_entry
 from .common import *
 from .config import config
-from .consts import ADDON_NAME, ADDON_PATH
+from .consts import ADDON_FULL_NAME, ADDON_NAME, ADDON_PATH
 from .gui import SettingsMenuDialog
 from .image_converters.image_converter import FFmpegNotFoundError, ffmpeg_not_found_dialog
 from .image_converters.on_paste_converter import OnPasteConverter
@@ -32,7 +32,9 @@ def setup_mainwindow_menu():
 
 def action_tooltip():
     return (
-        f"{ADDON_NAME}: Paste" if not config["shortcut"] else f"{ADDON_NAME}: Paste ({key_to_str(config['shortcut'])})"
+        f"{ADDON_FULL_NAME}: Paste"
+        if not config["shortcut"]
+        else f"{ADDON_FULL_NAME}: Paste ({key_to_str(config['shortcut'])})"
     )
 
 
@@ -64,7 +66,7 @@ def on_editor_did_init_buttons(buttons: list[str], editor: Editor):
         buttons.append(
             editor.addButton(
                 icon=os.path.join(ADDON_PATH, "icons", "webp.png"),
-                cmd=f"ajt__{ADDON_NAME.lower().replace(' ', '_')}_button",
+                cmd=f"ajt__{ADDON_FULL_NAME.lower().replace(' ', '_')}_button",
                 func=lambda e=editor: convert_and_insert(e, source=ShowOptions.toolbar),
                 tip=action_tooltip(),
                 keys=config["shortcut"] or None,

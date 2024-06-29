@@ -10,7 +10,7 @@ from aqt.utils import showWarning
 
 from ..ajt_common.utils import find_executable as find_executable_ajt
 from ..config import ImageFormat, config
-from ..consts import ADDON_NAME, SUPPORT_DIR
+from ..consts import ADDON_FULL_NAME, SUPPORT_DIR
 from ..utils.mime_helper import iter_files
 from .common import ImageDimensions
 
@@ -112,7 +112,7 @@ def is_animation(source_path: str) -> bool:
 
 def ffmpeg_not_found_dialog(parent=None):
     return showWarning(
-        title=ADDON_NAME,
+        title=ADDON_FULL_NAME,
         parent=parent,
         text="""
         <h2>FFmpeg is not found in PATH.</h2>

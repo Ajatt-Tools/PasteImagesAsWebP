@@ -54,7 +54,7 @@ class MediaRenameDialog(QDialog):
         self.note = note
         self.edits_layout = QVBoxLayout()
         self.bottom_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        cast(QDialog, self).setWindowTitle(f"{ADDON_NAME}: rename files")
+        cast(QDialog, self).setWindowTitle(f"{ADDON_FULL_NAME}: rename files")
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
         self.setLayout(self.make_layout())
         self.connect_ui_elements()
