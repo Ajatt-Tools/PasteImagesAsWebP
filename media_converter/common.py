@@ -3,7 +3,7 @@
 
 import re
 from collections.abc import Iterable
-from typing import NamedTuple, Optional
+from typing import Optional
 
 from aqt.editor import Editor
 from aqt.qt import *
@@ -11,11 +11,6 @@ from aqt.qt import *
 from .config import config
 
 RE_IMAGE_HTML_TAG = re.compile(r'<img[^<>]*src="([^"]+)"[^<>]*>', flags=re.IGNORECASE)
-
-
-class ImageDimensions(NamedTuple):
-    width: int
-    height: int
 
 
 def find_convertible_images(html: str, include_converted: bool = False) -> Iterable[str]:

@@ -3,7 +3,7 @@
 
 import itertools
 from collections.abc import Iterable
-from typing import cast
+from typing import Optional, cast
 
 from anki.notes import Note
 from aqt import mw
@@ -17,9 +17,9 @@ from .ajt_common.anki_field_selector import AnkiFieldSelector
 from .ajt_common.checkable_combobox import CheckableComboBox
 from .ajt_common.enum_select_combo import EnumSelectCombo
 from .ajt_common.multiple_choice_selector import MultipleChoiceSelector
-from .common import ImageDimensions
 from .config import ImageFormat, config
 from .consts import ADDON_NAME, THIS_ADDON_MODULE, WINDOW_MIN_WIDTH
+from .image_converters.common import ImageDimensions, should_show_settings
 from .utils.converter_interfaces import FileNamePatterns
 from .utils.show_options import ShowOptions
 from .widgets.image_slider_box import ImageSliderBox
@@ -153,6 +153,13 @@ class PasteDialog(SettingsDialog):
             qconnect(button.clicked, lambda _, f=factor: self.adjust_sliders(f))
             grid.addWidget(button, i, j)
         return grid
+
+
+def maybe_show_settings(dimensions: ImageDimensions, parent: Optional[QWidget], action: ShowOptions) -> int:
+    if should_show_settings(action):
+        dlg = PasteDialog(image=dimensions, parent=parent)
+        return dlg.exec()
+    return QDialog.DialogCode.Accepted
 
 
 class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):

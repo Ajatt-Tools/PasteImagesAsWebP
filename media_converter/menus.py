@@ -1,5 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+import os.path
 
 from aqt import gui_hooks, mw
 from aqt.editor import EditorWebView
@@ -9,7 +10,7 @@ from .common import *
 from .config import config
 from .consts import ADDON_NAME, ADDON_PATH
 from .gui import SettingsMenuDialog
-from .image_conversion import OnPasteConverter
+from .image_converters.on_paste_converter import OnPasteConverter
 from .utils.show_options import ShowOptions
 
 
@@ -36,13 +37,14 @@ def action_tooltip():
 
 def convert_and_insert(editor: Editor, source: ShowOptions):
     mime: QMimeData = editor.mw.app.clipboard().mimeData()
-    w = OnPasteConverter(editor, editor.note, source)
+    conv = OnPasteConverter(editor, source)
     try:
-        w.convert_mime(mime)
-        insert_image_html(editor, w.filename)
-        w.result_tooltip(w.filepath)
+        new_file_path = conv.convert_mime(mime)
     except Exception as ex:
-        w.tooltip(ex)
+        conv.tooltip(ex)
+    else:
+        insert_image_html(editor, os.path.basename(new_file_path))
+        conv.result_tooltip(new_file_path)
 
 
 def on_editor_will_show_context_menu(webview: EditorWebView, menu: QMenu):

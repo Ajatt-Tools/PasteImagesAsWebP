@@ -20,7 +20,7 @@ from .common import find_convertible_images, tooltip
 from .config import config
 from .consts import ADDON_NAME
 from .gui import BulkConvertDialog
-from .image_conversion import InternalFileConverter
+from .image_converters.internal_file_converter import InternalFileConverter
 
 ACTION_NAME = f"{ADDON_NAME}: Bulk-convert"
 
@@ -75,7 +75,6 @@ class ConvertTask:
             except (OSError, RuntimeError, FileNotFoundError) as ex:
                 self._result.add_failed(filename, exception=ex)
             else:
-                assert converted_filename, "after successful conversion new filename must be set."
                 self._result.add_converted(filename, converted_filename)
 
     def update_notes(self):
@@ -118,13 +117,9 @@ class ConvertTask:
         return to_convert
 
     def _convert_stored_image(self, filename: str, note: Note) -> str:
-        try:
-            w = InternalFileConverter(self._browser.editor, note)
-            w.load_internal(filename)
-            w.convert_internal()
-        except (OSError, RuntimeError, FileNotFoundError):
-            raise
-        return w.filename
+        conv = InternalFileConverter(self._browser.editor, note, filename)
+        conv.convert_internal()
+        return conv.new_filename
 
     def _update_notes_op(self, col: Collection) -> ResultWithChanges:
         pos = col.add_custom_undo_entry(f"Convert {len(self._result.converted)} images to WebP")

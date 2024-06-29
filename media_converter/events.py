@@ -1,40 +1,43 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+import os.path
 
 import anki
 import aqt.editor
 from anki import hooks
 from aqt import gui_hooks, mw
+from aqt.qt import *
 from aqt.utils import KeyboardModifiersPressed
 
-from .common import *
+from .common import has_local_file, image_html, tooltip
 from .config import config
-from .image_conversion import CanceledPaste, InvalidInput, OnAddNoteConverter, OnPasteConverter, ShowOptions
+from .image_converters.image_converter import CanceledPaste, InvalidInput, ShowOptions
+from .image_converters.on_add_note_converter import OnAddNoteConverter
+from .image_converters.on_paste_converter import OnPasteConverter
 
 
-def should_paste_raw():
+def should_paste_raw() -> bool:
     return KeyboardModifiersPressed().shift
 
 
-def convert_mime(mime: QMimeData, editor: Editor, action: ShowOptions):
-    w = OnPasteConverter(editor, editor.note, action)
+def convert_mime(mime: QMimeData, editor: aqt.editor.Editor, action: ShowOptions):
+    conv = OnPasteConverter(editor, action)
 
     try:
-        w.convert_mime(mime)
+        new_file_path = conv.convert_mime(mime)
     except InvalidInput:
         pass
     except CanceledPaste as ex:
-        w.tooltip(ex)
+        conv.tooltip(ex)
         mime = QMimeData()
     except FileNotFoundError:
-        w.tooltip("File not found.")
+        conv.tooltip("File not found.")
     except (RuntimeError, AttributeError) as ex:
-        w.tooltip(ex)
+        conv.tooltip(ex)
     else:
         mime = QMimeData()
-        mime.setHtml(image_html(w.filename))
-        w.result_tooltip(w.filepath)
-
+        mime.setHtml(image_html(os.path.basename(new_file_path)))
+        conv.result_tooltip(new_file_path)
     return mime
 
 
@@ -58,12 +61,13 @@ def should_convert_images_in_new_note(note: anki.notes.Note) -> bool:
     Convert media files when a new note is added by AnkiConnect.
     Skip notes added using the Add dialog.
     """
+    assert mw
     return config["convert_on_note_add"] is True and mw.app.activeWindow() is None and note.id == 0
 
 
 def on_add_note(_self: anki.collection.Collection, note: anki.notes.Note, _deck_id: anki.decks.DeckId) -> None:
     if should_convert_images_in_new_note(note):
-        converter = OnAddNoteConverter(mw, note, action=ShowOptions.add_note)
+        converter = OnAddNoteConverter(note, action=ShowOptions.add_note, parent=mw)
         try:
             converter.convert_note()
         except CanceledPaste as ex:

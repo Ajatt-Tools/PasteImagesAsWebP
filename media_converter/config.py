@@ -51,5 +51,13 @@ class MediaConverterConfig(AddonConfigManager):
     def image_quality(self) -> int:
         return clamp(min_val=0, val=self["image_quality"], max_val=100)
 
+    @property
+    def preserve_original_filenames(self) -> bool:
+        return self["preserve_original_filenames"]
+
+    @property
+    def convert_on_note_add(self) -> bool:
+        return self["convert_on_note_add"]
+
 
 config = MediaConverterConfig()

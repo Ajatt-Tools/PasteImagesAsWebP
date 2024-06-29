@@ -1,29 +1,15 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import abc
 from collections.abc import Iterable
-from typing import Optional, Protocol
-
-from anki.notes import Note
-from aqt.editor import Editor
-
-
-class ImageConverter(Protocol):
-    @property
-    @abc.abstractmethod
-    def dest_dir(self) -> str: ...
-
-    @property
-    @abc.abstractmethod
-    def editor(self) -> Optional[Editor]: ...
-
-    @property
-    @abc.abstractmethod
-    def note(self) -> Optional[Note]: ...
+from typing import Callable
 
 
 class FileNamePatterns:
+    _prefixes: dict[str, Callable[[], str]]
+    _suffixes: dict[str, Callable[[], str]]
+    _patterns: list[str]
+
     def __init__(self):
         self._prefixes = {
             "paste": self._default_prefix,
