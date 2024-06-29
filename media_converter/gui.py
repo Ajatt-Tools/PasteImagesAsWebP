@@ -91,7 +91,7 @@ class BulkConvertDialog(SettingsDialog):
 
     def __init__(self, parent=None) -> None:
         self._field_selector = MultipleChoiceSelector()
-        self._reconvert_checkbox = QCheckBox("Reconvert existing WebP images")
+        self._reconvert_checkbox = QCheckBox(f"Reconvert existing {config.image_format.name} images")
         super().__init__(parent)
 
     def selected_fields(self) -> list[str]:
