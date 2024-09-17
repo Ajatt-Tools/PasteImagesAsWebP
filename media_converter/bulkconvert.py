@@ -263,7 +263,6 @@ def on_bulk_convert(browser: Browser):
 def setup_menu(browser: Browser):
     a = QAction(ACTION_NAME, browser)
     qconnect(a.triggered, lambda: on_bulk_convert(browser))
-    browser.form.menuEdit.addSeparator()
     browser.form.menuEdit.addAction(a)
 
 
