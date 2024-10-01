@@ -18,7 +18,7 @@ def get_file_extension(file_path: str) -> str:
 
 
 def find_convertible_images(html: str, include_converted: bool = False) -> Iterable[str]:
-    if not (html and "<img" in html):
+    if "<img" not in html:
         return
     filename: str
     for filename in re.findall(RE_IMAGE_HTML_TAG, html):
