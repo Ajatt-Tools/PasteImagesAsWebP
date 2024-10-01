@@ -251,7 +251,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         self.when_show_dialog_combo_box.setCheckedData(config.show_settings())
         self.filename_pattern_combo_box.setCurrentIndex(config["filename_pattern_num"])
         self.custom_name_field_combo_box.setCurrentText(config["custom_name_field"])
-        self.excluded_image_formats_edit.setText(config["excluded_image_formats"])
+        self.excluded_image_formats_edit.setText(config["excluded_image_formats"].lower())
 
         for key, widget in self.checkboxes.items():
             widget.setChecked(config[key])
