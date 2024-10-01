@@ -165,7 +165,7 @@ def maybe_show_settings(dimensions: ImageDimensions, parent: Optional[QWidget], 
 class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
     """Settings dialog available from the main menu."""
 
-    _checkboxes = {
+    _toggleable_keys = {
         "drag_and_drop": "Convert images on drag and drop",
         "copy_paste": "Convert images on copy-paste",
         "convert_on_note_add": "Convert when AnkiConnect creates new notes",
@@ -181,7 +181,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         self.when_show_dialog_combo_box = self.create_when_show_dialog_combo_box()
         self.filename_pattern_combo_box = self.create_filename_pattern_combo_box()
         self.custom_name_field_combo_box = AnkiFieldSelector(self)
-        self.checkboxes = {key: QCheckBox(text) for key, text in self._checkboxes.items()}
+        self.checkboxes = {key: QCheckBox(text) for key, text in self._toggleable_keys.items()}
         self.add_advanced_button()
         self.add_tooltips()
 

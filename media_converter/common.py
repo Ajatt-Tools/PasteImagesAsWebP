@@ -12,6 +12,7 @@ from .config import config
 
 RE_IMAGE_HTML_TAG = re.compile(r'<img[^<>]*src="([^"]+)"[^<>]*>', flags=re.IGNORECASE)
 
+
 def get_file_extension(file_path: str) -> str:
     return os.path.splitext(file_path)[1].lower()
 
