@@ -266,5 +266,5 @@ def setup_menu(browser: Browser):
     browser.form.menuEdit.addAction(a)
 
 
-def init():
+def init() -> None:
     gui_hooks.browser_menus_did_init.append(setup_menu)

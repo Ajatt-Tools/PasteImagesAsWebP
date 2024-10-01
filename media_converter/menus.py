@@ -89,6 +89,6 @@ def setup_editor_menus():
     gui_hooks.editor_will_show_context_menu.append(on_editor_will_show_context_menu)
 
 
-def init():
+def init() -> None:
     setup_mainwindow_menu()
     setup_editor_menus()

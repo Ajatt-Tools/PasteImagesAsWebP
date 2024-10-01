@@ -136,5 +136,5 @@ class Menus:
         buttons.append(b)
 
 
-def init():
+def init() -> None:
     gui_hooks.editor_did_init_buttons.append(Menus.add_editor_button)

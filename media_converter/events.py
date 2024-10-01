@@ -81,6 +81,6 @@ def on_add_note(_self: anki.collection.Collection, note: anki.notes.Note, _deck_
             pass
 
 
-def init():
+def init() -> None:
     gui_hooks.editor_will_process_mime.append(on_process_mime)
     hooks.note_will_be_added.append(on_add_note)
