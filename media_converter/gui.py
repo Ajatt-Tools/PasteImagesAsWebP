@@ -18,7 +18,7 @@ from .ajt_common.checkable_combobox import CheckableComboBox
 from .ajt_common.enum_select_combo import EnumSelectCombo
 from .ajt_common.multiple_choice_selector import MultipleChoiceSelector
 from .config import ImageFormat, config
-from .consts import ADDON_FULL_NAME, THIS_ADDON_MODULE, WINDOW_MIN_WIDTH, ADDON_NAME
+from .consts import ADDON_FULL_NAME, ADDON_NAME, THIS_ADDON_MODULE, WINDOW_MIN_WIDTH
 from .image_converters.common import ImageDimensions, should_show_settings
 from .utils.converter_interfaces import FileNamePatterns
 from .utils.show_options import ShowOptions
@@ -181,6 +181,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         self.when_show_dialog_combo_box = self.create_when_show_dialog_combo_box()
         self.filename_pattern_combo_box = self.create_filename_pattern_combo_box()
         self.custom_name_field_combo_box = AnkiFieldSelector(self)
+        self.excluded_image_formats_edit = QLineEdit()
         self.checkboxes = {key: QCheckBox(text) for key, text in self._toggleable_keys.items()}
         self.add_advanced_button()
         self.add_tooltips()
@@ -189,6 +190,10 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         self.checkboxes["convert_on_note_add"].setToolTip(
             "Convert images when a new note is added by an external tool, such as AnkiConnect.\n"
             "Does not apply to the native Add dialog."
+        )
+        self.excluded_image_formats_edit.setToolTip(
+            "A comma-separated list of file formats (extensions without the dot)\n"
+            "that should be skipped when converting images."
         )
 
     def add_advanced_button(self) -> None:
@@ -226,6 +231,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
             layout.addRow("Show this dialog", self.when_show_dialog_combo_box)
             layout.addRow("Filename pattern", self.filename_pattern_combo_box)
             layout.addRow("Custom name field", self.custom_name_field_combo_box)
+            layout.addRow("Excluded image formats", self.excluded_image_formats_edit)
             return layout
 
         def create_inner_layout() -> QLayout:
@@ -245,6 +251,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         self.when_show_dialog_combo_box.setCheckedData(config.show_settings())
         self.filename_pattern_combo_box.setCurrentIndex(config["filename_pattern_num"])
         self.custom_name_field_combo_box.setCurrentText(config["custom_name_field"])
+        self.excluded_image_formats_edit.setText(config["excluded_image_formats"])
 
         for key, widget in self.checkboxes.items():
             widget.setChecked(config[key])
@@ -254,6 +261,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         config["image_format"] = self.image_format_combo_box.currentName()
         config["filename_pattern_num"] = self.filename_pattern_combo_box.currentIndex()
         config["custom_name_field"] = self.custom_name_field_combo_box.currentText()
+        config["excluded_image_formats"] = self.excluded_image_formats_edit.text().lower().strip()
         for key, widget in self.checkboxes.items():
             config[key] = widget.isChecked()
         return super().accept()

@@ -62,7 +62,7 @@ class MediaConverterConfig(AddonConfigManager):
     @property
     def excluded_image_extensions(self) -> frozenset[str]:
         # Return excluded formats and prepend a dot to each format.
-        return frozenset(f".{ext}".lower() for ext in self["excluded_image_formats"].split(","))
+        return frozenset(f".{ext}".lower().strip() for ext in self["excluded_image_formats"].split(","))
 
 
 config = MediaConverterConfig()
