@@ -12,6 +12,8 @@
 * `image_height` - Desired height.
 * `image_width` - Desired width.
 * `image_format` - Desired format ("avif" or "webp").
+* `excluded_image_formats` - A comma-separated list of file formats (extensions without the dot)
+  to skip from image conversion.
 * `image_quality` - Compression factor between `0` and `100`.
   `0` produces the worst quality but the smallest file size.
 * `max_image_height` - Limit for the height slider.

@@ -12,12 +12,18 @@ from .config import config
 
 RE_IMAGE_HTML_TAG = re.compile(r'<img[^<>]*src="([^"]+)"[^<>]*>', flags=re.IGNORECASE)
 
+def get_file_extension(file_path: str) -> str:
+    return os.path.splitext(file_path)[1].lower()
+
 
 def find_convertible_images(html: str, include_converted: bool = False) -> Iterable[str]:
     if not (html and "<img" in html):
         return
     filename: str
     for filename in re.findall(RE_IMAGE_HTML_TAG, html):
+        # Check if the filename ends with any of the excluded extensions
+        if get_file_extension(filename) in config.excluded_image_extensions:
+            continue
         if include_converted or not filename.endswith(config.image_extension):
             yield filename
 

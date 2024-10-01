@@ -9,6 +9,7 @@
     "max_image_width": 800,
     "max_image_height": 600,
     "image_format": "webp",
+    "excluded_image_formats": "svg",
     "image_quality": 20,
     "show_settings": "toolbar",
     "drag_and_drop": true,

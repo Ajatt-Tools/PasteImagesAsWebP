@@ -59,5 +59,10 @@ class MediaConverterConfig(AddonConfigManager):
     def convert_on_note_add(self) -> bool:
         return self["convert_on_note_add"]
 
+    @property
+    def excluded_image_extensions(self) -> frozenset[str]:
+        # Return excluded formats and prepend a dot to each format.
+        return frozenset(f".{ext}".lower() for ext in self["excluded_image_formats"].split(","))
+
 
 config = MediaConverterConfig()
