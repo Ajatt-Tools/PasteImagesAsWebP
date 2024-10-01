@@ -3,6 +3,8 @@
 import enum
 from collections.abc import Iterable, Sequence
 
+from aqt import mw
+
 from .ajt_common.addon_config import AddonConfigManager, set_config_update_action
 from .ajt_common.utils import clamp
 from .utils.show_options import ShowOptions
@@ -17,7 +19,6 @@ class ImageFormat(enum.Enum):
 class MediaConverterConfig(AddonConfigManager):
     def __init__(self, default: bool = False) -> None:
         super().__init__(default)
-        set_config_update_action(self.update_from_addon_manager)
 
     def show_settings(self) -> Sequence[ShowOptions]:
         instances = []
@@ -66,3 +67,8 @@ class MediaConverterConfig(AddonConfigManager):
 
 
 config = MediaConverterConfig()
+
+
+if mw:
+    config = MediaConverterConfig()
+    set_config_update_action(config.update_from_addon_manager)
