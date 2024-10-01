@@ -17,15 +17,17 @@ def get_file_extension(file_path: str) -> str:
     return os.path.splitext(file_path)[1].lower()
 
 
+def is_excluded_image_extension(filename: str, include_converted: bool) -> bool:
+    return get_file_extension(filename) in config.get_excluded_image_extensions(include_converted)
+
+
 def find_convertible_images(html: str, include_converted: bool = False) -> Iterable[str]:
     if "<img" not in html:
         return
     filename: str
     for filename in re.findall(RE_IMAGE_HTML_TAG, html):
         # Check if the filename ends with any of the excluded extensions
-        if get_file_extension(filename) in config.excluded_image_extensions:
-            continue
-        if include_converted or not filename.endswith(config.image_extension):
+        if not is_excluded_image_extension(filename, include_converted):
             yield filename
 
 

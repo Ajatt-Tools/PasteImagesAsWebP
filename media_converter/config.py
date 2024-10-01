@@ -60,13 +60,16 @@ class MediaConverterConfig(AddonConfigManager):
     def convert_on_note_add(self) -> bool:
         return self["convert_on_note_add"]
 
-    @property
-    def excluded_image_extensions(self) -> frozenset[str]:
-        # Return excluded formats and prepend a dot to each format.
-        return frozenset(f".{ext}".lower().strip() for ext in self["excluded_image_formats"].split(","))
-
-
-config = MediaConverterConfig()
+    def get_excluded_image_extensions(self, include_converted: bool) -> frozenset[str]:
+        """
+        Return excluded formats and prepend a dot to each format.
+        If the "reconvert" option is enabled when using bulk-convert,
+        the target extension (avif or webp) is not excluded.
+        """
+        excluded_extensions = {f".{ext}".lower().strip() for ext in self["excluded_image_formats"].split(",")}
+        if include_converted:
+            excluded_extensions.discard(self.image_extension)
+        return frozenset(excluded_extensions)
 
 
 if mw:
