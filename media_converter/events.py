@@ -11,7 +11,12 @@ from aqt.utils import KeyboardModifiersPressed
 
 from .common import has_local_file, image_html, tooltip
 from .config import config
-from .image_converters.image_converter import CanceledPaste, FFmpegNotFoundError, InvalidInput, ffmpeg_not_found_dialog
+from .image_converters.image_converter import (
+    CanceledPaste,
+    FFmpegNotFoundError,
+    InvalidInput,
+    ffmpeg_not_found_dialog,
+)
 from .image_converters.on_add_note_converter import OnAddNoteConverter
 from .image_converters.on_paste_converter import OnPasteConverter
 from .utils.show_options import ShowOptions

@@ -10,7 +10,10 @@ from .common import *
 from .config import config
 from .consts import ADDON_FULL_NAME, ADDON_NAME, ADDON_PATH
 from .gui import SettingsMenuDialog
-from .image_converters.image_converter import FFmpegNotFoundError, ffmpeg_not_found_dialog
+from .image_converters.image_converter import (
+    FFmpegNotFoundError,
+    ffmpeg_not_found_dialog,
+)
 from .image_converters.on_paste_converter import OnPasteConverter
 from .utils.show_options import ShowOptions
 
