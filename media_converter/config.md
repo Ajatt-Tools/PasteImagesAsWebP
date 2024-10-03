@@ -1,4 +1,14 @@
-## AJT Media Converter - configuration
+## AJT Media Converter &mdash; edit config
+
+Here you can edit the config file.
+You must know what you're doing.
+Anki needs to be restarted for changes to be applied.
+To restore default settings, click the **"Restore Defaults"** button.
+
+If you have any questions,
+ask other users in the [user group](https://tatsumoto.neocities.org/blog/join-our-community.html).
+
+****
 
 * `avoid_upscaling` - Don't resize an image when its original size is less than requested.
 * `bulk_convert_fields` - List of fields where the add-on looks for images when bulk-converting.
