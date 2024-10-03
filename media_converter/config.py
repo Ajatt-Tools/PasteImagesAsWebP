@@ -16,6 +16,14 @@ class ImageFormat(enum.Enum):
     avif = enum.auto()
 
 
+def cfg_comma_sep_str_to_file_ext_set(cfg_str: str) -> set[str]:
+    """
+    Take a string containing a comma-separated list of file formats
+    and convert it into a set of file extensions
+    """
+    return {f".{ext}".lower().strip() for ext in cfg_str.split(",")}
+
+
 class MediaConverterConfig(AddonConfigManager):
     def __init__(self, default: bool = False) -> None:
         super().__init__(default)
@@ -64,9 +72,9 @@ class MediaConverterConfig(AddonConfigManager):
         """
         Return excluded formats and prepend a dot to each format.
         If the "reconvert" option is enabled when using bulk-convert,
-        the target extension (avif or webp) is not excluded.
+        the target extension (.avif or .webp) is not excluded.
         """
-        excluded_extensions = {f".{ext}".lower().strip() for ext in self["excluded_image_formats"].split(",")}
+        excluded_extensions = cfg_comma_sep_str_to_file_ext_set(self["excluded_image_formats"])
         if include_converted:
             excluded_extensions.discard(self.image_extension)
         return frozenset(excluded_extensions)
