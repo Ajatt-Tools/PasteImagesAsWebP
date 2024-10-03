@@ -15,8 +15,8 @@ from anki.notes import Note
 from anki.utils import html_to_text_line
 from aqt.editor import Editor
 
-from ..config import config
 from .converter_interfaces import FileNamePatterns
+from ..config import config
 
 
 def compatible_filename(f: Callable[..., str]):

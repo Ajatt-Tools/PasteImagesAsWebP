@@ -7,12 +7,12 @@ from typing import Optional
 from aqt.qt import *
 from aqt.utils import showWarning
 
-from .common import IS_MAC, IS_WIN, ImageDimensions, create_process
 from ..ajt_common.utils import find_executable as find_executable_ajt
 from ..common import get_file_extension
 from ..config import ImageFormat, config
 from ..consts import ADDON_FULL_NAME, SUPPORT_DIR
 from ..utils.mime_helper import iter_files
+from .common import IS_MAC, IS_WIN, ImageDimensions, create_process
 
 ANIMATED_OR_VIDEO_FORMATS = frozenset(
     [".apng", ".gif", ".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv", ".webm", ".m4v", ".mpg", ".mpeg"]
@@ -90,7 +90,7 @@ def quality_percent_to_avif_crf(q: int) -> int:
 
 
 def is_animation(source_path: str) -> bool:
-    return os.path.splitext(source_path)[1].lower() in ANIMATED_OR_VIDEO_FORMATS
+    return get_file_extension(source_path) in ANIMATED_OR_VIDEO_FORMATS
 
 
 def ffmpeg_not_found_dialog(parent=None):
