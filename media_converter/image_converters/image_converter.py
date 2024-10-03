@@ -2,20 +2,18 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import functools
-import subprocess
-from typing import Any, Optional
+from typing import Optional
 
 from aqt.qt import *
 from aqt.utils import showWarning
 
+from .common import IS_MAC, IS_WIN, ImageDimensions, create_process
 from ..ajt_common.utils import find_executable as find_executable_ajt
+from ..common import get_file_extension
 from ..config import ImageFormat, config
 from ..consts import ADDON_FULL_NAME, SUPPORT_DIR
 from ..utils.mime_helper import iter_files
-from .common import ImageDimensions
 
-IS_MAC = sys.platform.startswith("darwin")
-IS_WIN = sys.platform.startswith("win32")
 ANIMATED_OR_VIDEO_FORMATS = frozenset(
     [".apng", ".gif", ".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv", ".webm", ".m4v", ".mpg", ".mpeg"]
 )
@@ -36,17 +34,6 @@ class ImageNotLoaded(Exception):
 
 class FFmpegNotFoundError(FileNotFoundError):
     pass
-
-
-@functools.cache
-def startup_info():
-    if IS_WIN:
-        # Prevents a console window from popping up on Windows
-        si = subprocess.STARTUPINFO()
-        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-    else:
-        si = None
-    return si
 
 
 @functools.cache
@@ -84,10 +71,6 @@ def find_ffmpeg_exe() -> Optional[str]:
 def find_cwebp_exe() -> str:
     # https://developers.google.com/speed/webp/download
     return find_executable_ajt("cwebp") or get_bundled_executable("cwebp")
-
-
-def stringify_args(args: list[Any]) -> list[str]:
-    return list(map(str, args))
 
 
 def smaller_than_requested(image: ImageDimensions) -> bool:
@@ -215,17 +198,7 @@ class ImageConverter:
             args = self._make_to_avif_args(source_path, destination_path)
 
         print(f"executing args: {args}")
-        p = subprocess.Popen(
-            stringify_args(args),
-            shell=False,
-            bufsize=-1,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            startupinfo=startup_info(),
-            universal_newlines=True,
-            encoding="utf8",
-        )
-
+        p = create_process(args)
         stdout, stderr = p.communicate()
 
         if p.wait() != 0:
