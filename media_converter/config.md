@@ -22,8 +22,10 @@ ask other users in the [user group](https://tatsumoto.neocities.org/blog/join-ou
 * `image_height` - Desired height.
 * `image_width` - Desired width.
 * `image_format` - Desired format ("avif" or "webp").
-* `excluded_image_formats` - A comma-separated list of file formats (extensions without the dot)
+* `excluded_image_containers` - A comma-separated list of file formats (extensions without the dot)
   to skip from image conversion.
+* `excluded_audio_containers` - A comma-separated list of file formats (extensions without the dot)
+  to skip from audio conversion.
 * `image_quality` - Compression factor between `0` and `100`.
   `0` produces the worst quality but the smallest file size.
 * `max_image_height` - Limit for the height slider.
@@ -41,6 +43,13 @@ ask other users in the [user group](https://tatsumoto.neocities.org/blog/join-ou
 * `tooltip_duration_seconds` - Duration of tooltips.
 * `preserve_original_filenames` - If an image is already named, reuse that name.
   Works when dragging an image from a GUI file manager, e.g. [Thunar](https://wiki.archlinux.org/title/Thunar).
+* `enable_audio_conversion` - Enable/disable conversion of audio files to `opus`.
+* `enable_image_conversion` - Enable/disable conversion of audio files to `webp` or `avif`
+  based on the selected image format.
+* `ffmpeg_audio_args` - Extra [ffmpeg arguments](https://ffmpeg.org/ffmpeg.html) for audio.
+    * `-b:a` - Audio bitrate. Default "64k".
+      [About opus bitrates](https://wiki.xiph.org/Opus_Recommended_Settings).
+* `audio_container` - Container (file extension name) for opus files ("opus" or "ogg").
 
 If one of the dimensions is set to `0`, images will be resized
 preserving the aspect ratio.

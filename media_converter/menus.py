@@ -9,12 +9,10 @@ from .ajt_common.about_menu import menu_root_entry
 from .common import *
 from .config import config
 from .consts import ADDON_FULL_NAME, ADDON_NAME, ADDON_PATH
+from .file_converters.file_converter import FFmpegNotFoundError
+from .file_converters.image_converter import ffmpeg_not_found_dialog
+from .file_converters.on_paste_converter import OnPasteConverter
 from .gui import SettingsMenuDialog
-from .image_converters.image_converter import (
-    FFmpegNotFoundError,
-    ffmpeg_not_found_dialog,
-)
-from .image_converters.on_paste_converter import OnPasteConverter
 from .utils.show_options import ShowOptions
 
 

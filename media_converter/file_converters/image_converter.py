@@ -12,7 +12,15 @@ from ..common import get_file_extension
 from ..config import ImageFormat, config
 from ..consts import ADDON_FULL_NAME, SUPPORT_DIR
 from ..utils.mime_helper import iter_files
-from .common import IS_MAC, IS_WIN, ImageDimensions, create_process
+from .common import (
+    IS_MAC,
+    IS_WIN,
+    ConverterType,
+    ImageDimensions,
+    create_process,
+    run_process,
+)
+from .file_converter import FFmpegNotFoundError, FileConverter, find_ffmpeg_exe
 
 ANIMATED_OR_VIDEO_FORMATS = frozenset(
     [".apng", ".gif", ".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv", ".webm", ".m4v", ".mpg", ".mpeg"]
@@ -29,10 +37,6 @@ class InvalidInput(Warning):
 
 
 class ImageNotLoaded(Exception):
-    pass
-
-
-class FFmpegNotFoundError(FileNotFoundError):
     pass
 
 
@@ -59,12 +63,6 @@ def get_bundled_executable(name: str) -> str:
     if not IS_WIN:
         os.chmod(path_to_exe, 0o755)
     return path_to_exe
-
-
-@functools.cache
-def find_ffmpeg_exe() -> Optional[str]:
-    # https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-essentials.7z
-    return find_executable_ajt("ffmpeg")
 
 
 @functools.cache
@@ -113,11 +111,25 @@ def ffmpeg_not_found_dialog(parent=None):
     )
 
 
-class ImageConverter:
-    _dimensions: ImageDimensions
+def find_image_dimensions(file_path: str) -> ImageDimensions:
+    with open(file_path, "rb") as f:
+        image = QImage.fromData(f.read())  # type: ignore
+    return ImageDimensions(image.width(), image.height())
 
-    def __init__(self, dimensions: ImageDimensions) -> None:
-        self._dimensions = dimensions
+
+class ImageConverter(FileConverter, mode=ConverterType.image):
+    _source_path: str
+    _dimensions: ImageDimensions
+    _destination_path: str
+
+    def __init__(self, source_path: str, destination_path: str) -> None:
+        self._source_path = source_path
+        self._destination_path = destination_path
+        self._dimensions = find_image_dimensions(source_path)
+
+    @property
+    def initial_dimensions(self) -> ImageDimensions:
+        return self._dimensions
 
     def _get_resize_dimensions(self) -> Optional[ImageDimensions]:
         if config["avoid_upscaling"] and smaller_than_requested(self._dimensions):
@@ -191,18 +203,12 @@ class ImageConverter:
         args.append(destination_path)
         return args
 
-    def convert_image(self, source_path: str, destination_path: str) -> None:
+    def convert(self) -> None:
         if config.image_format == ImageFormat.webp:
-            args = self._make_to_webp_args(source_path, destination_path)
+            args = self._make_to_webp_args(self._source_path, self._destination_path)
         else:
-            args = self._make_to_avif_args(source_path, destination_path)
+            args = self._make_to_avif_args(self._source_path, self._destination_path)
 
         print(f"executing args: {args}")
         p = create_process(args)
-        stdout, stderr = p.communicate()
-
-        if p.wait() != 0:
-            print("Conversion failed.")
-            print(f"exit code = {p.returncode}")
-            print(stdout)
-            raise RuntimeError(f"Conversion failed with code {p.returncode}.")
+        run_process(p)

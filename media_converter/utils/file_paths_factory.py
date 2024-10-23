@@ -15,8 +15,10 @@ from anki.notes import Note
 from anki.utils import html_to_text_line
 from aqt.editor import Editor
 
-from .converter_interfaces import FileNamePatterns
+from ..common import get_file_extension
 from ..config import config
+from ..file_converters.common import COMMON_AUDIO_FORMATS, LocalFile
+from .converter_interfaces import FileNamePatterns
 
 
 def compatible_filename(f: Callable[..., str]):
@@ -63,10 +65,9 @@ class FilePathFactory(FileNamePatterns):
         self._note = note
         self._editor = editor
 
-    def make_unique_filepath(self, dest_dir: str, original_filename: Optional[str]) -> str:
-        return ensure_unique(
-            os.path.join(dest_dir, self._make_filename_no_ext(original_filename) + config.image_extension)
-        )
+    def make_unique_filepath(self, dest_dir: str, original_filename: Optional[str], extension: str) -> str:
+        new_file_path = os.path.join(dest_dir, self._make_filename_no_ext(original_filename) + extension)
+        return ensure_unique(new_file_path)
 
     @compatible_filename
     def _make_filename_no_ext(self, original_filename: Optional[str]) -> str:

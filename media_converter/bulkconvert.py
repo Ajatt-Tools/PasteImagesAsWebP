@@ -16,32 +16,33 @@ from aqt.operations import CollectionOp, ResultWithChanges
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, showInfo
 
-from .common import find_convertible_images, tooltip
+from .common import find_convertible_audio, find_convertible_images, tooltip
 from .config import config
 from .consts import ADDON_FULL_NAME
-from .gui import BulkConvertDialog
-from .image_converters.internal_file_converter import InternalFileConverter
+from .file_converters.common import LocalFile
+from .file_converters.internal_file_converter import InternalFileConverter
+from .widgets.bulk_convert_dialog import AnkiBulkConvertDialog
 
 ACTION_NAME = f"{ADDON_FULL_NAME}: Bulk-convert"
 
 
 class ConvertResult:
-    def __init__(self):
-        self._converted: dict[str, str] = {}
-        self._failed: dict[str, Optional[Exception]] = {}
+    def __init__(self) -> None:
+        self._converted: dict[LocalFile, str] = {}
+        self._failed: dict[LocalFile, Optional[Exception]] = {}
 
-    def add_converted(self, old_filename: str, new_filename: str):
-        self._converted[old_filename] = new_filename
+    def add_converted(self, old_file: LocalFile, new_filename: str) -> None:
+        self._converted[old_file] = new_filename
 
-    def add_failed(self, filename: str, exception: Optional[Exception] = None):
-        self._failed[filename] = exception
+    def add_failed(self, file: LocalFile, exception: Optional[Exception] = None):
+        self._failed[file] = exception
 
     @property
-    def converted(self):
+    def converted(self) -> dict[LocalFile, str]:
         return self._converted
 
     @property
-    def failed(self) -> dict[str, Optional[Exception]]:
+    def failed(self) -> dict[LocalFile, Optional[Exception]]:
         return self._failed
 
     def is_dirty(self) -> bool:
@@ -52,13 +53,13 @@ class ConvertTask:
     _browser: Browser
     _selected_fields: list[str]
     _result: ConvertResult
-    to_convert: dict[str, dict[NoteId, Note]]
+    _to_convert: dict[LocalFile, dict[NoteId, Note]]
 
     def __init__(self, browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str]):
         self._browser = browser
         self._selected_fields = selected_fields
-        self._to_convert = self._find_images_to_convert_and_notes(note_ids)
         self._result = ConvertResult()
+        self._to_convert = self._find_files_to_convert_and_notes(note_ids)
 
     @property
     def size(self) -> int:
@@ -67,21 +68,21 @@ class ConvertTask:
     def __call__(self):
         if self._result.is_dirty():
             raise RuntimeError("Already converted.")
-
-        for progress_idx, filename in enumerate(self._to_convert):
+        for progress_idx, file in enumerate(self._to_convert):
             yield progress_idx
             try:
-                converted_filename = self._convert_stored_image(filename, self._first_referenced(filename))
+                converted_filename = self._convert_stored_file(file)
             except (OSError, RuntimeError, FileNotFoundError) as ex:
-                self._result.add_failed(filename, exception=ex)
+                self._result.add_failed(file, exception=ex)
             else:
-                self._result.add_converted(filename, converted_filename)
+                self._result.add_converted(file, converted_filename)
 
     def update_notes(self):
         def show_report_message() -> None:
             showInfo(parent=self._browser, title="Task done", textFormat="rich", text=self._form_report_message())
 
         def on_finish() -> None:
+            assert self._browser.editor
             show_report_message()
             self._browser.editor.loadNoteKeepingFocus()
 
@@ -92,8 +93,8 @@ class ConvertTask:
                 lambda out: on_finish()
             ).run_in_background()
 
-    def _first_referenced(self, filename: str) -> Note:
-        return next(note for note in self._to_convert[filename].values())
+    def _first_referenced(self, file: LocalFile) -> Note:
+        return next(note for note in self._to_convert[file].values())
 
     def _keys_to_update(self, note: Note) -> Iterable[str]:
         if not self._selected_fields:
@@ -101,23 +102,27 @@ class ConvertTask:
         else:
             return set(note.keys()).intersection(self._selected_fields)
 
-    def _find_images_to_convert_and_notes(self, note_ids: Sequence[NoteId]) -> dict[str, dict[NoteId, Note]]:
+    def _find_files_to_convert_and_notes(self, note_ids: Sequence[NoteId]) -> dict[LocalFile, dict[NoteId, Note]]:
         """
         Maps each filename to a set of note ids that reference the filename.
         """
-        to_convert: dict[str, dict[NoteId, Note]] = collections.defaultdict(dict)
+        assert mw
+        to_convert: dict[LocalFile, dict[NoteId, Note]] = collections.defaultdict(dict)
 
         for note in map(mw.col.get_note, note_ids):
             note_content = join_fields([note[field] for field in self._keys_to_update(note)])
-            if "<img" not in note_content:
+            if "<img" not in note_content and "[sound:" not in note_content:
                 continue
-            for filename in find_convertible_images(note_content, include_converted=config.bulk_reconvert):
-                to_convert[filename][note.id] = note
-
+            if config.enable_image_conversion:
+                for filename in find_convertible_images(note_content, include_converted=config.bulk_reconvert):
+                    to_convert[LocalFile.image(filename)][note.id] = note
+            if config.enable_audio_conversion:
+                for filename in find_convertible_audio(note_content, include_converted=config.bulk_reconvert):
+                    to_convert[LocalFile.audio(filename)][note.id] = note
         return to_convert
 
-    def _convert_stored_image(self, filename: str, note: Note) -> str:
-        conv = InternalFileConverter(self._browser.editor, note, filename)
+    def _convert_stored_file(self, file: LocalFile) -> str:
+        conv = InternalFileConverter(self._browser.editor, file, self._first_referenced(file))
         conv.convert_internal()
         return conv.new_filename
 
@@ -125,10 +130,10 @@ class ConvertTask:
         pos = col.add_custom_undo_entry(f"Convert {len(self._result.converted)} images to WebP")
         to_update: dict[NoteId, Note] = {}
 
-        for initial_filename, converted_filename in self._result.converted.items():
-            for note in self._to_convert[initial_filename].values():
+        for old_file, converted_filename in self._result.converted.items():
+            for note in self._to_convert[old_file].values():
                 for field_name in self._keys_to_update(note):
-                    note[field_name] = note[field_name].replace(initial_filename, converted_filename)
+                    note[field_name] = note[field_name].replace(old_file.file_name, converted_filename)
                 to_update[note.id] = note
 
         col.update_notes(list(to_update.values()))
@@ -226,7 +231,7 @@ class ProgressBar(QDialog):
         return self.bar.setRange(min_val, max_val)
 
 
-def reload_note(func: Callable[[Browser, Sequence[NoteId]], None]):
+def reload_note(func: Callable[[Browser, Sequence[NoteId], list[str]], None]):
     @functools.wraps(func)
     def decorator(browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str]) -> None:
         assert browser.editor
@@ -251,7 +256,7 @@ def bulk_convert(browser: Browser, note_ids: Sequence[NoteId], selected_fields: 
 def on_bulk_convert(browser: Browser):
     selected_nids = browser.selectedNotes()
     if selected_nids:
-        dialog = BulkConvertDialog(browser)
+        dialog = AnkiBulkConvertDialog(parent=browser, config=config)
         if dialog.exec():
             if len(selected_nids) == 1:
                 browser.table.clear_selection()

@@ -9,7 +9,7 @@ from aqt.qt import *
 from ..common import find_convertible_images
 from ..gui import maybe_show_settings
 from ..utils.show_options import ShowOptions
-from .common import ImageDimensions, should_show_settings
+from .common import ConverterType, ImageDimensions, LocalFile, should_show_settings
 from .image_converter import CanceledPaste
 from .internal_file_converter import InternalFileConverter
 
@@ -39,8 +39,9 @@ class OnAddNoteConverter:
         return QDialog.DialogCode.Accepted
 
     def _convert_and_replace_stored_image(self, filename: str):
-        conv = InternalFileConverter(note=self._note, initial_filename=filename, editor=None)
-        if self._maybe_show_settings(conv.initial_dimensions) == QDialog.DialogCode.Rejected:
+        conv = InternalFileConverter(file=LocalFile.image(filename), editor=None, note=self._note)
+        ans = self._maybe_show_settings(conv.initial_dimensions)
+        if ans == QDialog.DialogCode.Rejected:
             raise CanceledPaste("Cancelled.")
         conv.convert_internal()
         self._update_note_fields(filename, conv.new_filename)
@@ -50,6 +51,7 @@ class OnAddNoteConverter:
             if mw.col.media.have(filename):
                 print(f"Converting file: {filename}")
                 self._convert_and_replace_stored_image(filename)
+        # TODO handle audio files
 
     def _update_note_fields(self, old_filename: str, new_filename: str):
         for field_name, field_value in self._note.items():

@@ -1,8 +1,10 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+import enum
 import functools
 import subprocess
 import sys
+import typing
 from typing import Any, NamedTuple
 
 from ..config import config
@@ -10,6 +12,27 @@ from ..utils.show_options import ShowOptions
 
 IS_MAC = sys.platform.startswith("darwin")
 IS_WIN = sys.platform.startswith("win32")
+COMMON_AUDIO_FORMATS = frozenset(
+    (".mp3", ".wav", ".ogg", ".flac", ".aac", ".m4a", ".aiff", ".amr", ".ape", ".mp2", ".oga", ".oma", ".opus")
+)
+
+
+class ConverterType(enum.Enum):
+    audio = "audio"
+    image = "image"
+
+
+class LocalFile(typing.NamedTuple):
+    file_name: str
+    type: ConverterType
+
+    @classmethod
+    def image(cls, file_name: str):
+        return cls(file_name, ConverterType.image)
+
+    @classmethod
+    def audio(cls, file_name: str):
+        return cls(file_name, ConverterType.audio)
 
 
 class ImageDimensions(NamedTuple):
@@ -36,7 +59,7 @@ def stringify_args(args: list[Any]) -> list[str]:
     return [str(arg) for arg in args]
 
 
-def create_process(args: list[Any]):
+def create_process(args: list[Any]) -> subprocess.Popen:
     return subprocess.Popen(
         stringify_args(args),
         shell=False,
@@ -47,3 +70,12 @@ def create_process(args: list[Any]):
         universal_newlines=True,
         encoding="utf8",
     )
+
+
+def run_process(p: subprocess.Popen) -> None:
+    stdout, stderr = p.communicate()
+    if p.wait() != 0:
+        print("Conversion failed.")
+        print(f"exit code = {p.returncode}")
+        print(stdout)
+        raise RuntimeError(f"Conversion failed with code {p.returncode}.")

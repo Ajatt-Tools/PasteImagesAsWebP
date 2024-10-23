@@ -6,6 +6,7 @@ import aqt.editor
 from aqt.qt import *
 
 from ..common import filesize_kib, tooltip
+from ..config import config
 from ..gui import maybe_show_settings
 from ..utils.file_paths_factory import FilePathFactory
 from ..utils.mime_helper import image_candidates
@@ -52,10 +53,14 @@ class OnPasteConverter:
         with TempFile() as tmp_file:
             to_convert = save_image(mime, tmp_file.path())
             self._maybe_show_settings(to_convert.dimensions)
-            conv = ImageConverter(to_convert.dimensions)
             fpf = FilePathFactory(note=self._editor.note, editor=self._editor)
-            dest_file_path = fpf.make_unique_filepath(self._dest_dir, to_convert.initial_filename)
-            conv.convert_image(tmp_file.path(), dest_file_path)
+            dest_file_path = fpf.make_unique_filepath(
+                self._dest_dir,
+                to_convert.initial_filename,
+                extension=config.image_extension,
+            )
+            conv = ImageConverter(tmp_file.path(), dest_file_path)
+            conv.convert()
             return dest_file_path
 
     def tooltip(self, msg: Union[Exception, str]) -> None:

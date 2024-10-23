@@ -19,7 +19,7 @@ from .ajt_common.enum_select_combo import EnumSelectCombo
 from .ajt_common.multiple_choice_selector import MultipleChoiceSelector
 from .config import ImageFormat, config
 from .consts import ADDON_FULL_NAME, ADDON_NAME, THIS_ADDON_MODULE, WINDOW_MIN_WIDTH
-from .image_converters.common import ImageDimensions, should_show_settings
+from .file_converters.common import ImageDimensions, should_show_settings
 from .utils.converter_interfaces import FileNamePatterns
 from .utils.show_options import ShowOptions
 from .widgets.image_slider_box import ImageSliderBox
@@ -33,7 +33,7 @@ class SettingsDialog(QDialog):
         super().__init__(parent)
         cast(QDialog, self).setWindowTitle(ADDON_FULL_NAME)
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
-        self._sliders = ImageSliderBox("Image parameters")
+        self._sliders = ImageSliderBox()
         self._presets_editor = PresetsEditor("Presets", sliders=self._sliders)
         self._main_vbox = QVBoxLayout()
         self._button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
@@ -67,7 +67,9 @@ class SettingsDialog(QDialog):
 
     def set_initial_values(self) -> None:
         self._sliders.set_limits(config["max_image_width"], config["max_image_height"])
-        self._sliders.populate(config)
+        self._sliders.image_width = config.image_width
+        self._sliders.image_height = config.image_height
+        self._sliders.image_quality = config.image_quality
         self._presets_editor.set_items(config["saved_presets"])
 
     def accept(self) -> None:
@@ -83,48 +85,17 @@ class SettingsDialog(QDialog):
 
 
 def get_all_keys(notes: Iterable[Note]) -> list[str]:
-    return sorted(set(itertools.chain(*(note.keys() for note in notes))))
-
-
-class BulkConvertDialog(SettingsDialog):
-    """Dialog shown on bulk-convert."""
-
-    def __init__(self, parent=None) -> None:
-        self._field_selector = MultipleChoiceSelector()
-        self._reconvert_checkbox = QCheckBox(f"Reconvert existing {config.image_format.name} images")
-        super().__init__(parent)
-
-    def selected_fields(self) -> list[str]:
-        return self._field_selector.checked_texts()
-
-    def selected_notes(self) -> Iterable[Note]:
-        return (mw.col.get_note(nid) for nid in cast(Browser, self.parent()).selectedNotes())
-
-    def populate_main_vbox(self) -> None:
-        super().populate_main_vbox()
-        self._main_vbox.addWidget(self._field_selector)
-        self._main_vbox.addWidget(self._reconvert_checkbox)
-
-    def set_initial_values(self) -> None:
-        self._field_selector.set_texts(get_all_keys(self.selected_notes()))
-        self._field_selector.set_checked_texts(config["bulk_convert_fields"])
-        self._reconvert_checkbox.setChecked(config.bulk_reconvert)
-        super().set_initial_values()
-
-    def accept(self) -> None:
-        if self._field_selector.isChecked() and not self._field_selector.checked_texts():
-            showInfo(title="Can't accept settings", text="No fields selected. Nothing to convert.")
-        else:
-            config["bulk_convert_fields"] = self._field_selector.checked_texts()
-            config.bulk_reconvert = self._reconvert_checkbox.isChecked()
-            return super().accept()
+    """
+    Returns a list of field names present in passed notes, without duplicates.
+    """
+    return sorted(frozenset(itertools.chain(*(note.keys() for note in notes))))
 
 
 class PasteDialog(SettingsDialog):
     """Dialog shown on paste."""
 
-    def __init__(self, image: ImageDimensions, parent=None) -> None:
-        self.image = image
+    def __init__(self, dimensions: ImageDimensions, parent=None) -> None:
+        self._dimensions = dimensions
         super().__init__(parent)
 
     def populate_main_vbox(self) -> None:
@@ -132,15 +103,15 @@ class PasteDialog(SettingsDialog):
         self._main_vbox.addWidget(self.create_scale_settings_group_box())
 
     def create_scale_settings_group_box(self) -> QGroupBox:
-        gbox = QGroupBox(f"Original size: {self.image.width} x {self.image.height} px")
+        gbox = QGroupBox(f"Original size: {self._dimensions.width} x {self._dimensions.height} px")
         gbox.setLayout(self.create_scale_options_grid())
         return gbox
 
     def adjust_sliders(self, factor: float) -> None:
-        if self._sliders.width > 0:
-            self._sliders.width = int(self.image.width * factor)
-        if self._sliders.height > 0:
-            self._sliders.height = int(self.image.height * factor)
+        if self._sliders.image_width > 0:
+            self._sliders.image_width = int(self._dimensions.width * factor)
+        if self._sliders.image_height > 0:
+            self._sliders.image_height = int(self._dimensions.height * factor)
 
     def create_scale_options_grid(self) -> QGridLayout:
         grid = QGridLayout()
@@ -157,7 +128,7 @@ class PasteDialog(SettingsDialog):
 
 def maybe_show_settings(dimensions: ImageDimensions, parent: Optional[QWidget], action: ShowOptions) -> int:
     if should_show_settings(action):
-        dlg = PasteDialog(image=dimensions, parent=parent)
+        dlg = PasteDialog(dimensions=dimensions, parent=parent)
         return dlg.exec()
     return QDialog.DialogCode.Accepted
 
@@ -181,7 +152,8 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         self.when_show_dialog_combo_box = self.create_when_show_dialog_combo_box()
         self.filename_pattern_combo_box = self.create_filename_pattern_combo_box()
         self.custom_name_field_combo_box = AnkiFieldSelector(self)
-        self.excluded_image_formats_edit = QLineEdit()
+        self.excluded_image_containers_edit = QLineEdit()
+        # TODO excluded_audio_containers
         self.checkboxes = {key: QCheckBox(text) for key, text in self._toggleable_keys.items()}
         self.add_advanced_button()
         self.add_tooltips()
@@ -191,7 +163,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
             "Convert images when a new note is added by an external tool, such as AnkiConnect.\n"
             "Does not apply to the native Add dialog."
         )
-        self.excluded_image_formats_edit.setToolTip(
+        self.excluded_image_containers_edit.setToolTip(
             "A comma-separated list of file formats (extensions without the dot)\n"
             "that should be skipped when converting images."
         )
@@ -231,7 +203,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
             layout.addRow("Show this dialog", self.when_show_dialog_combo_box)
             layout.addRow("Filename pattern", self.filename_pattern_combo_box)
             layout.addRow("Custom name field", self.custom_name_field_combo_box)
-            layout.addRow("Excluded image formats", self.excluded_image_formats_edit)
+            layout.addRow("Excluded image formats", self.excluded_image_containers_edit)
             return layout
 
         def create_inner_layout() -> QLayout:
@@ -251,7 +223,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         self.when_show_dialog_combo_box.setCheckedData(config.show_settings())
         self.filename_pattern_combo_box.setCurrentIndex(config["filename_pattern_num"])
         self.custom_name_field_combo_box.setCurrentText(config["custom_name_field"])
-        self.excluded_image_formats_edit.setText(config["excluded_image_formats"].lower())
+        self.excluded_image_containers_edit.setText(config["excluded_image_containers"].lower())
 
         for key, widget in self.checkboxes.items():
             widget.setChecked(config[key])
@@ -261,7 +233,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         config["image_format"] = self.image_format_combo_box.currentName()
         config["filename_pattern_num"] = self.filename_pattern_combo_box.currentIndex()
         config["custom_name_field"] = self.custom_name_field_combo_box.currentText()
-        config["excluded_image_formats"] = self.excluded_image_formats_edit.text().lower().strip()
+        config["excluded_image_containers"] = self.excluded_image_containers_edit.text().lower().strip()
         for key, widget in self.checkboxes.items():
             config[key] = widget.isChecked()
         return super().accept()

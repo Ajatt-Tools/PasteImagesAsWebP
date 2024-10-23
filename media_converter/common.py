@@ -11,6 +11,7 @@ from aqt.qt import *
 from .config import config
 
 RE_IMAGE_HTML_TAG = re.compile(r'<img[^<>]*src="([^"]+)"[^<>]*>', flags=re.IGNORECASE)
+RE_AUDIO_HTML_TAG = re.compile(r"\[sound:([^\]]+)\]", flags=re.IGNORECASE)
 
 
 def get_file_extension(file_path: str) -> str:
@@ -21,6 +22,10 @@ def is_excluded_image_extension(filename: str, include_converted: bool) -> bool:
     return get_file_extension(filename) in config.get_excluded_image_extensions(include_converted)
 
 
+def is_excluded_audio_extension(filename: str, include_converted: bool) -> bool:
+    return get_file_extension(filename) in config.get_excluded_audio_extensions(include_converted)
+
+
 def find_convertible_images(html: str, include_converted: bool = False) -> Iterable[str]:
     if "<img" not in html:
         return
@@ -28,6 +33,16 @@ def find_convertible_images(html: str, include_converted: bool = False) -> Itera
     for filename in re.findall(RE_IMAGE_HTML_TAG, html):
         # Check if the filename ends with any of the excluded extensions
         if not is_excluded_image_extension(filename, include_converted):
+            yield filename
+
+
+def find_convertible_audio(html: str, include_converted: bool = False) -> Iterable[str]:
+    if "[sound:" not in html:
+        return
+    filename: str
+    for filename in re.findall(RE_AUDIO_HTML_TAG, html):
+        # Check if the filename ends with any of the excluded extensions
+        if not is_excluded_audio_extension(filename, include_converted):
             yield filename
 
 
