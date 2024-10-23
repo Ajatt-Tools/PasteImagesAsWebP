@@ -1,7 +1,7 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 from collections.abc import Iterable
-from typing import NamedTuple
+from typing import NamedTuple, TypedDict
 
 from aqt.qt import *
 
@@ -12,6 +12,12 @@ class Sliders(NamedTuple):
     image_width: RichSlider
     image_height: RichSlider
     image_quality: RichSlider
+
+
+class PresetDict(TypedDict):
+    image_height: int
+    image_quality: int
+    image_width: int
 
 
 def sliders_to_grid(sliders: Iterable[RichSlider]) -> QLayout:
@@ -44,7 +50,7 @@ class ImageSliderBox(QWidget):
         self._sliders.image_width.set_upper_limit(width)
         self._sliders.image_height.set_upper_limit(height)
 
-    def as_dict(self) -> dict[str, int]:
+    def as_dict(self) -> PresetDict:
         return {key: slider.value for key, slider in self._sliders._asdict().items()}
 
     @property
