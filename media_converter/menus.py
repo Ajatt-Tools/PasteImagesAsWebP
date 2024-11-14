@@ -1,5 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+import functools
 import os.path
 
 from aqt import gui_hooks, mw
@@ -68,7 +69,7 @@ def on_editor_did_init_buttons(buttons: list[str], editor: Editor):
             editor.addButton(
                 icon=os.path.join(ADDON_PATH, "icons", "webp.png"),
                 cmd=f"ajt__{ADDON_FULL_NAME.lower().replace(' ', '_')}_button",
-                func=lambda e=editor: convert_and_insert(e, source=ShowOptions.toolbar),
+                func=functools.partial(convert_and_insert, editor=editor, source=ShowOptions.toolbar),
                 tip=action_tooltip(),
                 keys=config["shortcut"] or None,
             )
