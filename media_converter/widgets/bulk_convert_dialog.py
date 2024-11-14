@@ -174,6 +174,7 @@ class BulkConvertDialog(SettingsDialogBase):
     _tabs: SettingsTabs
     _image_settings: ImageSettings
     _audio_settings: AudioSettings
+    _bulk_convert_settings: BulkConvertSettings
 
     def __init__(self, config: MediaConverterConfig, parent=None) -> None:
         super().__init__(config, parent)
