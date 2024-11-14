@@ -9,13 +9,12 @@ from aqt.browser import Browser
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, showInfo
 
+from .image_settings_widget import ImageSettings
 from .settings_dialog_base import ConfigPropMixIn, SettingsDialogBase
 from ..ajt_common.enum_select_combo import EnumSelectCombo
 from ..ajt_common.multiple_choice_selector import MultipleChoiceSelector
 from ..config import AudioContainer, ImageFormat, MediaConverterConfig
 from ..consts import ADDON_NAME
-from ..widgets.image_slider_box import ImageSliderBox
-from ..widgets.presets_editor import PresetsEditor
 from .audio_slider_box import AudioSliderBox
 
 
@@ -24,45 +23,6 @@ def get_all_keys(notes: Iterable[Note]) -> list[str]:
     Returns a list of field names present in passed notes, without duplicates.
     """
     return sorted(frozenset(itertools.chain(*(note.keys() for note in notes))))
-
-
-class ImageSettings(QWidget, ConfigPropMixIn):
-    name = "Image settings"
-    _enable_checkbox: QCheckBox
-    _img_sliders: ImageSliderBox
-    _presets_editor: PresetsEditor
-
-    def __init__(self, config: MediaConverterConfig, parent=None) -> None:
-        super().__init__(parent)
-        self._config = config
-        self._layout = QFormLayout()
-        self._enable_checkbox = QCheckBox("Enable image conversion")
-        self._img_sliders = ImageSliderBox()
-        self._presets_editor = PresetsEditor("Presets", sliders=self._img_sliders)
-        self._setup_ui()
-        self._add_tooltips()
-
-    def _setup_ui(self) -> None:
-        self._layout.addRow(self._enable_checkbox)
-        self._layout.addRow(self._img_sliders)
-        self._layout.addRow(self._presets_editor)
-        self.setLayout(self._layout)
-
-    def _add_tooltips(self) -> None:
-        self._enable_checkbox.setToolTip("Enable conversion of image files.")
-
-    def set_initial_values(self) -> None:
-        self._enable_checkbox.setChecked(self.config.enable_image_conversion)
-        self._img_sliders.set_limits(self.config["max_image_width"], self.config["max_image_height"])
-        self._img_sliders.image_width = self.config.image_width
-        self._img_sliders.image_height = self.config.image_height
-        self._img_sliders.image_quality = self.config.image_quality
-        self._presets_editor.set_items(self.config["saved_presets"])
-
-    def pass_settings_to_config(self) -> None:
-        self.config["enable_image_conversion"] = self._enable_checkbox.isChecked()
-        self.config.update(self._img_sliders.as_dict())
-        self.config["saved_presets"] = self._presets_editor.as_list()
 
 
 class AudioSettings(QWidget, ConfigPropMixIn):
@@ -212,6 +172,7 @@ class BulkConvertDialog(SettingsDialogBase):
             return
         self._image_settings.pass_settings_to_config()
         self._audio_settings.pass_settings_to_config()
+        self._bulk_convert_settings.pass_settings_to_config()
         self.config.write_config()
         return super().accept()
 

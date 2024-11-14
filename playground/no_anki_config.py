@@ -19,4 +19,5 @@ class NoAnkiConfigView(MediaConverterConfig):
             self._default_config = self._config = json.load(f)
 
     def write_config(self) -> None:
-        print("write requested. doing nothing.")
+        print("write requested. doing nothing. config contents:")
+        print(json.dumps(self._config, indent=4, ensure_ascii=False))
