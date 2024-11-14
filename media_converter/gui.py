@@ -6,17 +6,14 @@ from collections.abc import Iterable
 from typing import Optional, cast
 
 from anki.notes import Note
-from aqt import mw
 from aqt.addons import AddonsDialog, ConfigEditor
-from aqt.browser import Browser
 from aqt.qt import *
-from aqt.utils import restoreGeom, saveGeom, showInfo
+from aqt.utils import restoreGeom, saveGeom
 
 from .ajt_common.addon_config import MgrPropMixIn
 from .ajt_common.anki_field_selector import AnkiFieldSelector
 from .ajt_common.checkable_combobox import CheckableComboBox
 from .ajt_common.enum_select_combo import EnumSelectCombo
-from .ajt_common.multiple_choice_selector import MultipleChoiceSelector
 from .config import ImageFormat, config
 from .consts import ADDON_FULL_NAME, ADDON_NAME, THIS_ADDON_MODULE, WINDOW_MIN_WIDTH
 from .file_converters.common import ImageDimensions, should_show_settings
