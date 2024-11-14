@@ -9,55 +9,14 @@ from aqt.browser import Browser
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, showInfo
 
+from .settings_dialog_base import ConfigPropMixIn, SettingsDialogBase
 from ..ajt_common.enum_select_combo import EnumSelectCombo
 from ..ajt_common.multiple_choice_selector import MultipleChoiceSelector
 from ..config import AudioContainer, ImageFormat, MediaConverterConfig
-from ..consts import ADDON_FULL_NAME, ADDON_NAME, WINDOW_MIN_WIDTH
+from ..consts import ADDON_NAME
 from ..widgets.image_slider_box import ImageSliderBox
 from ..widgets.presets_editor import PresetsEditor
 from .audio_slider_box import AudioSliderBox
-
-
-def accept_reject_box() -> QDialogButtonBox:
-    return QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-
-
-class ConfigPropMixIn:
-    _config: MediaConverterConfig
-
-    @property
-    def config(self) -> MediaConverterConfig:
-        assert self._config is not None
-        return self._config
-
-
-class SettingsDialogBase(QDialog, ConfigPropMixIn):
-    name = f"ajt__{ADDON_NAME.lower().replace(' ', '_')}_settings_dialog"
-
-    def __init__(self, config: MediaConverterConfig, parent=None) -> None:
-        super().__init__(parent)
-        self._config = config
-        self.setWindowTitle(ADDON_FULL_NAME)
-        self.setMinimumWidth(WINDOW_MIN_WIDTH)
-        self._main_vbox = QVBoxLayout()
-        self._button_box = accept_reject_box()
-        self.setLayout(self._main_vbox)
-
-    @property
-    def button_box(self) -> QDialogButtonBox:
-        return self._button_box
-
-    @property
-    def main_vbox(self) -> QVBoxLayout:
-        return self._main_vbox
-
-    def setup_bottom_button_box(self) -> None:
-        """
-        Adds the button box at the bottom of the main layout and connects the Accept and Reject buttons.
-        """
-        qconnect(self._button_box.accepted, self.accept)
-        qconnect(self._button_box.rejected, self.reject)
-        self._button_box.button(QDialogButtonBox.StandardButton.Ok).setFocus()
 
 
 def get_all_keys(notes: Iterable[Note]) -> list[str]:
