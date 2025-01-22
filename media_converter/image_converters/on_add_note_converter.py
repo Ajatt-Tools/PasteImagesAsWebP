@@ -6,6 +6,8 @@ from anki.notes import Note
 from aqt import mw
 from aqt.qt import *
 
+import os
+
 from ..common import find_convertible_images
 from ..gui import maybe_show_settings
 from ..utils.show_options import ShowOptions
@@ -50,6 +52,7 @@ class OnAddNoteConverter:
             if mw.col.media.have(filename):
                 print(f"Converting file: {filename}")
                 self._convert_and_replace_stored_image(filename)
+                os.remove(filename)
 
     def _update_note_fields(self, old_filename: str, new_filename: str):
         for field_name, field_value in self._note.items():
