@@ -1,6 +1,7 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import os.path
+import os
 from typing import Optional
 
 import aqt.editor
@@ -63,3 +64,4 @@ class InternalFileConverter:
             destination_path=self._destination_file_path,
         )
         self._conversion_finished = True
+        os.remove(self._initial_file_path)
