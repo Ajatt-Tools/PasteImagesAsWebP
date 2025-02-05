@@ -8,6 +8,8 @@ from ..config import MediaConverterConfig
 from ..consts import ADDON_FULL_NAME, ADDON_NAME, WINDOW_MIN_WIDTH
 
 
+ADDON_NAME_SNAKE = ADDON_NAME.lower().replace(' ', '_')
+
 def make_accept_reject_box() -> QDialogButtonBox:
     return QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
 
@@ -21,8 +23,12 @@ class ConfigPropMixIn:
         return self._config
 
 
-class SettingsDialogBase(QDialog, ConfigPropMixIn):
-    name = f"ajt__{ADDON_NAME.lower().replace(' ', '_')}_settings_dialog"
+class HasNameMixIn(QWidget):
+    name: str = "undefined"
+
+
+class SettingsDialogBase(QDialog, ConfigPropMixIn, HasNameMixIn):
+    name = f"ajt__{ADDON_NAME_SNAKE}_settings_dialog"
 
     def __init__(self, config: MediaConverterConfig, parent=None) -> None:
         super().__init__(parent)

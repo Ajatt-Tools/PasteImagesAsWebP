@@ -15,7 +15,7 @@ from ..config import AudioContainer, ImageFormat, MediaConverterConfig
 from ..consts import ADDON_NAME
 from .audio_slider_box import AudioSliderBox
 from .image_settings_widget import ImageSettings
-from .settings_dialog_base import ConfigPropMixIn, SettingsDialogBase
+from .settings_dialog_base import ConfigPropMixIn, SettingsDialogBase, SettingsTabs, HasNameMixIn, ADDON_NAME_SNAKE
 
 
 def get_all_keys(notes: Iterable[Note]) -> list[str]:
@@ -130,7 +130,7 @@ class SettingsTabs(QTabWidget):
 class BulkConvertDialog(SettingsDialogBase):
     """Dialog shown on bulk-convert."""
 
-    name = f"ajt__{ADDON_NAME.lower().replace(' ', '_')}_bulk_convert_dialog"
+    name = f"ajt__{ADDON_NAME_SNAKE}_bulk_convert_dialog"
     _tabs: SettingsTabs
     _image_settings: ImageSettings
     _audio_settings: AudioSettings

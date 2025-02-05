@@ -24,7 +24,7 @@ from .widgets.presets_editor import PresetsEditor
 
 
 class SettingsDialog(QDialog):
-    name = f"ajt__{ADDON_NAME.lower().replace(' ', '_')}_options_dialog"
+    name = f"ajt__{ADDON_NAME_SNAKE}_options_dialog"
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
