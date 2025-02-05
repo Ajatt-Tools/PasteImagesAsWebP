@@ -9,13 +9,13 @@ from aqt.browser import Browser
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, showInfo
 
-from .image_settings_widget import ImageSettings
-from .settings_dialog_base import ConfigPropMixIn, SettingsDialogBase
 from ..ajt_common.enum_select_combo import EnumSelectCombo
 from ..ajt_common.multiple_choice_selector import MultipleChoiceSelector
 from ..config import AudioContainer, ImageFormat, MediaConverterConfig
 from ..consts import ADDON_NAME
 from .audio_slider_box import AudioSliderBox
+from .image_settings_widget import ImageSettings
+from .settings_dialog_base import ConfigPropMixIn, SettingsDialogBase
 
 
 def get_all_keys(notes: Iterable[Note]) -> list[str]:
