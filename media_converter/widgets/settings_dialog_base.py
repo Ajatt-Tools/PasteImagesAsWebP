@@ -52,3 +52,18 @@ class SettingsDialogBase(QDialog, ConfigPropMixIn, HasNameMixIn):
         qconnect(self._button_box.accepted, self.accept)
         qconnect(self._button_box.rejected, self.reject)
         self._button_box.button(QDialogButtonBox.StandardButton.Ok).setFocus()
+
+
+class SettingsTabs(QTabWidget):
+    _config: MediaConverterConfig
+
+    def __init__(
+        self,
+        config: MediaConverterConfig,
+        *tabs: HasNameMixIn,
+        parent=None,
+    ) -> None:
+        super().__init__(parent)
+        self._config = config
+        for widget in tabs:
+            self.addTab(widget, widget.name)

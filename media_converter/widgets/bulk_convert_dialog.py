@@ -118,21 +118,6 @@ class BulkConvertSettings(HasNameMixIn, ConfigPropMixIn):
         self.config.bulk_reconvert = self._reconvert_checkbox.isChecked()
 
 
-class SettingsTabs(QTabWidget):
-    _config: MediaConverterConfig
-
-    def __init__(
-        self,
-        config: MediaConverterConfig,
-        *tabs: QWidget,
-        parent=None,
-    ) -> None:
-        super().__init__(parent)
-        self._config = config
-        for widget in tabs:
-            self.addTab(widget, widget.name)
-
-
 class BulkConvertDialog(SettingsDialogBase):
     """Dialog shown on bulk-convert."""
 
