@@ -1,14 +1,12 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-
-from aqt import qconnect
 from aqt.qt import *
 
 from ..config import MediaConverterConfig
 from ..consts import ADDON_FULL_NAME, ADDON_NAME, WINDOW_MIN_WIDTH
 
+ADDON_NAME_SNAKE = ADDON_NAME.lower().replace(" ", "_")
 
-ADDON_NAME_SNAKE = ADDON_NAME.lower().replace(' ', '_')
 
 def make_accept_reject_box() -> QDialogButtonBox:
     return QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)

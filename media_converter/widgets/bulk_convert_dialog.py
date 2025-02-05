@@ -15,7 +15,13 @@ from ..config import AudioContainer, ImageFormat, MediaConverterConfig
 from ..consts import ADDON_NAME
 from .audio_slider_box import AudioSliderBox
 from .image_settings_widget import ImageSettings
-from .settings_dialog_base import ConfigPropMixIn, SettingsDialogBase, SettingsTabs, HasNameMixIn, ADDON_NAME_SNAKE
+from .settings_dialog_base import (
+    ADDON_NAME_SNAKE,
+    ConfigPropMixIn,
+    HasNameMixIn,
+    SettingsDialogBase,
+    SettingsTabs,
+)
 
 
 def get_all_keys(notes: Iterable[Note]) -> list[str]:
@@ -25,7 +31,7 @@ def get_all_keys(notes: Iterable[Note]) -> list[str]:
     return sorted(frozenset(itertools.chain(*(note.keys() for note in notes))))
 
 
-class AudioSettings(QWidget, ConfigPropMixIn):
+class AudioSettings(HasNameMixIn, ConfigPropMixIn):
     name = "Audio settings"
     _audio_container_combo: EnumSelectCombo
 
@@ -69,7 +75,7 @@ class EnableReconvertCheckbox(QCheckBox):
         self.setText(f"Reconvert existing {enabled_image_format.name} images")
 
 
-class BulkConvertSettings(QWidget, ConfigPropMixIn):
+class BulkConvertSettings(HasNameMixIn, ConfigPropMixIn):
     name = "Bulk-convert settings"
     _field_selector: MultipleChoiceSelector
     _reconvert_checkbox: QCheckBox
