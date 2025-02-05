@@ -19,14 +19,32 @@ def get_file_extension(file_path: str) -> str:
 
 
 def is_excluded_image_extension(filename: str, include_converted: bool) -> bool:
+    """
+    Return true if the image file with this filename should not be converted.
+
+    :param filename: Name of the file.
+    :param include_converted: Allow reconversion. The target extension (webp, avif) will not be excluded.
+    """
     return get_file_extension(filename) in config.get_excluded_image_extensions(include_converted)
 
 
 def is_excluded_audio_extension(filename: str, include_converted: bool) -> bool:
+    """
+    Return true if the audio file with this filename should not be converted.
+
+    :param filename: Name of the file.
+    :param include_converted: Allow reconversion. The target extension (webp, avif) will not be excluded.
+    """
     return get_file_extension(filename) in config.get_excluded_audio_extensions(include_converted)
 
 
 def find_convertible_images(html: str, include_converted: bool = False) -> Iterable[str]:
+    """
+    Find image files referenced by a note.
+    :param html: Note content (joined fields).
+    :param include_converted: Reconvert files even if they already have been converted to the target format. E.g. to reduce size.
+    :return: Filenames
+    """
     if "<img" not in html:
         return
     filename: str
@@ -37,6 +55,12 @@ def find_convertible_images(html: str, include_converted: bool = False) -> Itera
 
 
 def find_convertible_audio(html: str, include_converted: bool = False) -> Iterable[str]:
+    """
+    Find audio files referenced by a note.
+    :param html: Note content (joined fields).
+    :param include_converted: Reconvert files even if they already have been converted to the target format. E.g. to reduce size.
+    :return: Filenames
+    """
     if "[sound:" not in html:
         return
     filename: str

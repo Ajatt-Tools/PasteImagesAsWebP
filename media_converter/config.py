@@ -102,10 +102,16 @@ class MediaConverterConfig(AddonConfigManager):
         Return excluded formats and prepend a dot to each format.
         If the "reconvert" option is enabled when using bulk-convert,
         the target extension (.avif or .webp) is not excluded.
+
+        :param include_converted: The current image extension will not be in the list,
+               thus webp/avif files will be reconverted.
+        :return: Image extensions.
         """
         excluded_extensions = cfg_comma_sep_str_to_file_ext_set(self["excluded_image_containers"])
         if include_converted:
             excluded_extensions.discard(self.image_extension)
+        else:
+            excluded_extensions.add(self.image_extension)
         return frozenset(excluded_extensions)
 
     def get_excluded_audio_extensions(self, include_converted: bool) -> frozenset[str]:
@@ -113,10 +119,16 @@ class MediaConverterConfig(AddonConfigManager):
         Return excluded formats and prepend a dot to each format.
         If the "reconvert" option is enabled when using bulk-convert,
         the target extension (.opus or .ogg) is not excluded.
+
+        :param include_converted: The current audio extension will not be in the list,
+               thus ogg/opus files will be reconverted.
+        :return: Audio extensions.
         """
         excluded_extensions = cfg_comma_sep_str_to_file_ext_set(self["excluded_audio_containers"])
         if include_converted:
             excluded_extensions.discard(self.audio_extension)
+        else:
+            excluded_extensions.add(self.audio_extension)
         return frozenset(excluded_extensions)
 
     @property
