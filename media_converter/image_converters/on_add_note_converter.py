@@ -19,11 +19,12 @@ class OnAddNoteConverter:
     Converter used when a new note is added by AnkiConnect.
     """
 
-    def __init__(self, note: Note, action: ShowOptions, parent: Optional[QWidget]) -> None:
+    def __init__(self, note: Note, action: ShowOptions, parent: Optional[QWidget], delete_original_file: bool) -> None:
         self._settings_shown = False
         self._action = action
         self._note = note
         self._parent = parent
+        self._delete_original_file = delete_original_file
 
     def _should_show_settings(self) -> bool:
         if self._settings_shown is False:
@@ -39,7 +40,7 @@ class OnAddNoteConverter:
         return QDialog.DialogCode.Accepted
 
     def _convert_and_replace_stored_image(self, filename: str):
-        conv = InternalFileConverter(note=self._note, initial_filename=filename, editor=None)
+        conv = InternalFileConverter(note=self._note, initial_filename=filename, editor=None, delete_original_file=self._delete_original_file)
         if self._maybe_show_settings(conv.initial_dimensions) == QDialog.DialogCode.Rejected:
             raise CanceledPaste("Cancelled.")
         conv.convert_internal()

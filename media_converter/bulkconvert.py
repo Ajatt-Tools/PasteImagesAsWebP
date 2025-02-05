@@ -117,7 +117,7 @@ class ConvertTask:
         return to_convert
 
     def _convert_stored_image(self, filename: str, note: Note) -> str:
-        conv = InternalFileConverter(self._browser.editor, note, filename)
+        conv = InternalFileConverter(self._browser.editor, note, filename, delete_original_file=config.delete_original_file_on_convert)
         conv.convert_internal()
         return conv.new_filename
 

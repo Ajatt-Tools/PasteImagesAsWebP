@@ -173,6 +173,7 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         "avoid_upscaling": "Avoid upscaling",
         "show_editor_button": "Show a Converter button on the Editor Toolbar",
         "show_context_menu_entry": "Show a separate context menu item",
+        "delete_original_file_on_convert": "Delete original file after conversion",
     }
 
     def __init__(self, parent=None) -> None:
@@ -189,6 +190,10 @@ class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
         self.checkboxes["convert_on_note_add"].setToolTip(
             "Convert images when a new note is added by an external tool, such as AnkiConnect.\n"
             "Does not apply to the native Add dialog."
+        )
+        self.checkboxes["delete_original_file_on_convert"].setToolTip(
+            "Once the image is converted, the original file will be deleted.\n"
+            "Only applied when convert_on_note_add is enabled or bulk converting."
         )
 
     def add_advanced_button(self) -> None:

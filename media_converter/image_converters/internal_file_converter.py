@@ -25,7 +25,7 @@ class InternalFileConverter:
     _destination_file_path: str
     _conversion_finished: bool
 
-    def __init__(self, editor: Optional[aqt.editor.Editor], note: Note, initial_filename: str):
+    def __init__(self, editor: Optional[aqt.editor.Editor], note: Note, initial_filename: str, delete_original_file: bool):
         self._conversion_finished = False
         self._note = note
         self._fpf = FilePathFactory(note=note, editor=editor)
@@ -33,6 +33,7 @@ class InternalFileConverter:
         self._initial_dimensions = self.load_internal(initial_filename)
         self._destination_file_path = self._fpf.make_unique_filepath(self._dest_dir, initial_filename)
         self._converter = ImageConverter(self._initial_dimensions)
+        self._delete_original_file = delete_original_file
 
     @property
     def _dest_dir(self) -> str:
@@ -64,4 +65,6 @@ class InternalFileConverter:
             destination_path=self._destination_file_path,
         )
         self._conversion_finished = True
-        os.remove(self._initial_file_path)
+        if self._delete_original_file:
+            print("Removing original file.")
+            os.remove(self._initial_file_path)

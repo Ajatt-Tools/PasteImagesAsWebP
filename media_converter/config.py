@@ -58,6 +58,10 @@ class MediaConverterConfig(AddonConfigManager):
     @property
     def convert_on_note_add(self) -> bool:
         return self["convert_on_note_add"]
+    
+    @property
+    def delete_original_file_on_convert(self) -> bool:
+        return self["delete_original_file_on_convert"]
 
 
 config = MediaConverterConfig()

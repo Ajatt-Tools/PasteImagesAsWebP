@@ -70,7 +70,7 @@ def should_convert_images_in_new_note(note: anki.notes.Note) -> bool:
 
 def on_add_note(_self: anki.collection.Collection, note: anki.notes.Note, _deck_id: anki.decks.DeckId) -> None:
     if should_convert_images_in_new_note(note):
-        converter = OnAddNoteConverter(note, action=ShowOptions.add_note, parent=mw)
+        converter = OnAddNoteConverter(note, action=ShowOptions.add_note, parent=mw, delete_original_file=config["delete_original_file_on_convert"])
         try:
             converter.convert_note()
         except FFmpegNotFoundError:
