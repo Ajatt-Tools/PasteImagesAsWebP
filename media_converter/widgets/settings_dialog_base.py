@@ -2,6 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 from aqt.qt import *
 
+from ..ajt_common.addon_config import MgrPropMixIn
 from ..config import MediaConverterConfig
 from ..consts import ADDON_FULL_NAME, ADDON_NAME, WINDOW_MIN_WIDTH
 
@@ -25,7 +26,7 @@ class HasNameMixIn(QWidget):
     name: str = "undefined"
 
 
-class SettingsDialogBase(QDialog, ConfigPropMixIn, HasNameMixIn):
+class SettingsDialogBase(QDialog, ConfigPropMixIn, MgrPropMixIn):
     name = f"ajt__{ADDON_NAME_SNAKE}_settings_dialog"
 
     def __init__(self, config: MediaConverterConfig, parent=None) -> None:
