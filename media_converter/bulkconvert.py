@@ -18,9 +18,9 @@ from aqt.utils import showInfo
 
 from .common import find_convertible_audio, find_convertible_images, tooltip
 from .config import config
-from .consts import ADDON_FULL_NAME
+from .consts import ADDON_FULL_NAME, ADDON_NAME_SNAKE
 from .dialogs.bulk_convert_dialog import AnkiBulkConvertDialog
-from .dialogs.settings_dialog_base import ADDON_NAME_SNAKE, AnkiSaveAndRestoreGeomDialog
+from .dialogs.settings_dialog_base import AnkiSaveAndRestoreGeomDialog
 from .file_converters.common import LocalFile
 from .file_converters.internal_file_converter import InternalFileConverter
 
