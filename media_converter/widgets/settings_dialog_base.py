@@ -3,6 +3,7 @@
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom
 
+from ..ajt_common.about_menu import tweak_window
 from ..ajt_common.addon_config import MgrPropMixIn
 from ..config import MediaConverterConfig
 from ..consts import ADDON_FULL_NAME, ADDON_NAME, WINDOW_MIN_WIDTH
@@ -38,6 +39,7 @@ class SettingsDialogBase(QDialog, ConfigPropMixIn, MgrPropMixIn):
         self._main_vbox = QVBoxLayout()
         self._button_box = make_accept_reject_box()
         self.setLayout(self._main_vbox)
+        tweak_window(self)
 
     @property
     def button_box(self) -> QDialogButtonBox:
