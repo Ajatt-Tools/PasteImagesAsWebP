@@ -3,7 +3,7 @@
 
 from aqt.qt import *
 
-from media_converter.widgets.main_settings_dialog import MainSettingsDialog
+from media_converter.dialogs.main_settings_dialog import MainSettingsDialog
 from playground.no_anki_config import NoAnkiConfigView
 
 

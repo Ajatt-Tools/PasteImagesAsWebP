@@ -10,11 +10,11 @@ from aqt.qt import *
 
 from .config import config
 from .consts import ADDON_FULL_NAME, WINDOW_MIN_WIDTH
+from .dialogs.settings_dialog_base import ADDON_NAME_SNAKE, AnkiSaveAndRestoreGeomDialog
 from .file_converters.common import ImageDimensions, should_show_settings
 from .utils.show_options import ShowOptions
 from .widgets.image_slider_box import ImageSliderBox
 from .widgets.presets_editor import PresetsEditor
-from .widgets.settings_dialog_base import ADDON_NAME_SNAKE, AnkiSaveAndRestoreGeomDialog
 
 
 class SettingsDialog(AnkiSaveAndRestoreGeomDialog):

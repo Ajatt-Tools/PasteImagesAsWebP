@@ -5,7 +5,7 @@ from aqt.qt import *
 
 from ..ajt_common.multiple_choice_selector import MultipleChoiceSelector
 from ..config import ImageFormat, MediaConverterConfig
-from .settings_dialog_base import ConfigPropMixIn, WidgetHasName
+from ..dialogs.settings_dialog_base import ConfigPropMixIn, WidgetHasName
 
 
 class EnableReconvertCheckbox(QCheckBox):

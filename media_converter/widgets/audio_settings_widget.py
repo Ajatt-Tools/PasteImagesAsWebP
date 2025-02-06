@@ -5,8 +5,8 @@ from aqt.qt import *
 
 from ..ajt_common.enum_select_combo import EnumSelectCombo
 from ..config import AudioContainer, MediaConverterConfig
+from ..dialogs.settings_dialog_base import ConfigPropMixIn, WidgetHasName
 from .audio_slider_box import AudioSliderBox
-from .settings_dialog_base import ConfigPropMixIn, WidgetHasName
 
 
 class AudioSettings(WidgetHasName, ConfigPropMixIn):

@@ -3,7 +3,7 @@
 
 from aqt.qt import *
 
-from media_converter.widgets.bulk_convert_dialog import BulkConvertDialog
+from media_converter.dialogs.bulk_convert_dialog import BulkConvertDialog
 from playground.no_anki_config import NoAnkiConfigView
 
 

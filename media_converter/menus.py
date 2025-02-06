@@ -10,11 +10,11 @@ from .ajt_common.about_menu import menu_root_entry
 from .common import *
 from .config import config
 from .consts import ADDON_FULL_NAME, ADDON_NAME, ADDON_PATH
+from .dialogs.main_settings_dialog import AnkiMainSettingsDialog
 from .file_converters.file_converter import FFmpegNotFoundError
 from .file_converters.image_converter import ffmpeg_not_found_dialog
 from .file_converters.on_paste_converter import OnPasteConverter
 from .utils.show_options import ShowOptions
-from .widgets.main_settings_dialog import AnkiMainSettingsDialog
 
 
 def setup_mainwindow_menu():

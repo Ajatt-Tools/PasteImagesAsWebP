@@ -9,9 +9,9 @@ from aqt.browser import Browser
 from aqt.utils import showInfo
 
 from ..config import MediaConverterConfig
-from .audio_settings_widget import AudioSettings
-from .bulk_convert_settings_widget import BulkConvertSettings
-from .image_settings_widget import ImageSettings
+from ..widgets.audio_settings_widget import AudioSettings
+from ..widgets.bulk_convert_settings_widget import BulkConvertSettings
+from ..widgets.image_settings_widget import ImageSettings
 from .settings_dialog_base import (
     ADDON_NAME_SNAKE,
     AnkiSaveAndRestoreGeomDialog,

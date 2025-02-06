@@ -7,9 +7,9 @@ from ..ajt_common.anki_field_selector import AnkiFieldSelector
 from ..ajt_common.checkable_combobox import CheckableComboBox
 from ..ajt_common.enum_select_combo import EnumSelectCombo
 from ..config import ImageFormat, MediaConverterConfig
+from ..dialogs.settings_dialog_base import ConfigPropMixIn, WidgetHasName
 from ..utils.converter_interfaces import FileNamePatterns
 from ..utils.show_options import ShowOptions
-from .settings_dialog_base import ConfigPropMixIn, WidgetHasName
 
 # Keys in the config file that will be converted to checkboxes.
 VISIBLE_BOOL_CONFIG_KEYS = {

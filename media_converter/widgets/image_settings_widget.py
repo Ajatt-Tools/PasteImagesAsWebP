@@ -3,9 +3,9 @@
 from aqt.qt import *
 
 from ..config import MediaConverterConfig
+from ..dialogs.settings_dialog_base import ConfigPropMixIn, WidgetHasName
 from .image_slider_box import ImageSliderBox
 from .presets_editor import PresetsEditor
-from .settings_dialog_base import ConfigPropMixIn, WidgetHasName
 
 
 class ImageSettings(WidgetHasName, ConfigPropMixIn):
