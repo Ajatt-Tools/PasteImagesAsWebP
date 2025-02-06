@@ -22,6 +22,7 @@ from .consts import ADDON_FULL_NAME
 from .file_converters.common import LocalFile
 from .file_converters.internal_file_converter import InternalFileConverter
 from .widgets.bulk_convert_dialog import AnkiBulkConvertDialog
+from .widgets.settings_dialog_base import AnkiSaveAndRestoreGeomDialog, ADDON_NAME_SNAKE
 
 ACTION_NAME = f"{ADDON_FULL_NAME}: Bulk-convert"
 
@@ -178,8 +179,8 @@ class ConvertRunnable(QRunnable):
         self.signals.task_done.emit()  # type: ignore
 
 
-class ProgressBar(QDialog):
-    name = "ajt__convert_progress_bar"
+class ProgressBar(AnkiSaveAndRestoreGeomDialog):
+    name: str = f"ajt__{ADDON_NAME_SNAKE}_convert_progress_bar"
     task: ConvertTask
 
     def __init__(self, task: ConvertTask, parent=None) -> None:
@@ -197,20 +198,11 @@ class ProgressBar(QDialog):
         qconnect(self.cancel_button.clicked, self.set_canceled)
         qconnect(self.signals.task_done, self.accept)
         qconnect(self.signals.update_progress, self.bar.setValue)
-        restoreGeom(self, self.name, adjustSize=True)
 
     def start_task(self) -> int:
         runnable = ConvertRunnable(self.task, self.signals)
         self.pool.start(runnable)
         return self.exec()
-
-    def accept(self) -> None:
-        saveGeom(self, self.name)
-        super().accept()
-
-    def reject(self) -> None:
-        saveGeom(self, self.name)
-        super().reject()
 
     def set_canceled(self):
         self.signals.canceled.emit()  # type: ignore

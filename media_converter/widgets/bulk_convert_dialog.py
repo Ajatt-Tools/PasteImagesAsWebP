@@ -6,14 +6,15 @@ from collections.abc import Iterable
 from anki.notes import Note
 from aqt import mw
 from aqt.browser import Browser
-from aqt.utils import restoreGeom, saveGeom, showInfo
+from aqt.utils import showInfo
 
-from .bulk_convert_settings_widget import BulkConvertSettings
 from ..config import MediaConverterConfig
 from .audio_settings_widget import AudioSettings
+from .bulk_convert_settings_widget import BulkConvertSettings
 from .image_settings_widget import ImageSettings
 from .settings_dialog_base import (
     ADDON_NAME_SNAKE,
+    AnkiSaveAndRestoreGeomDialog,
     SettingsDialogBase,
     SettingsTabs,
 )
@@ -76,14 +77,13 @@ class BulkConvertDialog(SettingsDialogBase):
         return super().accept()
 
 
-class AnkiBulkConvertDialog(BulkConvertDialog):
+class AnkiBulkConvertDialog(BulkConvertDialog, AnkiSaveAndRestoreGeomDialog):
     """
     Adds methods that work only when Anki is running.
     """
 
     def __init__(self, config: MediaConverterConfig, parent=None) -> None:
         super().__init__(config, parent)
-        restoreGeom(self, self.name, adjustSize=True)
 
     def selected_notes_fields(self) -> list[str]:
         """
@@ -93,11 +93,3 @@ class AnkiBulkConvertDialog(BulkConvertDialog):
         assert mw
         assert isinstance(browser, Browser)
         return get_all_keys(mw.col.get_note(nid) for nid in browser.selectedNotes())
-
-    def accept(self) -> None:
-        saveGeom(self, self.name)
-        return super().accept()
-
-    def reject(self) -> None:
-        saveGeom(self, self.name)
-        return super().reject()

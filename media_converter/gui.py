@@ -6,26 +6,20 @@ from collections.abc import Iterable
 from typing import Optional, cast
 
 from anki.notes import Note
-from aqt.addons import AddonsDialog, ConfigEditor
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom
 
-from .ajt_common.addon_config import MgrPropMixIn
-from .ajt_common.anki_field_selector import AnkiFieldSelector
-from .ajt_common.checkable_combobox import CheckableComboBox
-from .ajt_common.enum_select_combo import EnumSelectCombo
-from .config import ImageFormat, config
-from .consts import ADDON_FULL_NAME, ADDON_NAME, THIS_ADDON_MODULE, WINDOW_MIN_WIDTH
+from .config import config
+from .consts import ADDON_FULL_NAME, WINDOW_MIN_WIDTH
 from .file_converters.common import ImageDimensions, should_show_settings
-from .utils.converter_interfaces import FileNamePatterns
 from .utils.show_options import ShowOptions
 from .widgets.image_slider_box import ImageSliderBox
 from .widgets.presets_editor import PresetsEditor
-from .widgets.settings_dialog_base import ADDON_NAME_SNAKE
+from .widgets.settings_dialog_base import ADDON_NAME_SNAKE, AnkiSaveAndRestoreGeomDialog
 
 
-class SettingsDialog(QDialog):
-    name = f"ajt__{ADDON_NAME_SNAKE}_options_dialog"
+class SettingsDialog(AnkiSaveAndRestoreGeomDialog):
+    name: str = f"ajt__{ADDON_NAME_SNAKE}_options_dialog"
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -41,7 +35,6 @@ class SettingsDialog(QDialog):
         self.populate_main_vbox()
         self.setup_logic()
         self.set_initial_values()
-        restoreGeom(self, self.name, adjustSize=True)
 
     def exec(self) -> int:
         self.setup_ui()
@@ -74,12 +67,7 @@ class SettingsDialog(QDialog):
         config.update(self._sliders.as_dict())
         config["saved_presets"] = self._presets_editor.as_list()
         config.write_config()
-        saveGeom(self, self.name)
         return super().accept()
-
-    def reject(self) -> None:
-        saveGeom(self, self.name)
-        return super().reject()
 
 
 def get_all_keys(notes: Iterable[Note]) -> list[str]:

@@ -9,7 +9,7 @@ from aqt.qt import *
 from ..common import find_convertible_images
 from ..gui import maybe_show_settings
 from ..utils.show_options import ShowOptions
-from .common import ConverterType, ImageDimensions, LocalFile, should_show_settings
+from .common import ImageDimensions, LocalFile, should_show_settings
 from .image_converter import CanceledPaste
 from .internal_file_converter import InternalFileConverter
 
