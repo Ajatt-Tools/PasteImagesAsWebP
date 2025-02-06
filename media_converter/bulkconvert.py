@@ -118,7 +118,8 @@ class ConvertTask:
                 for filename in find_convertible_images(note_content, include_converted=config.bulk_reconvert):
                     to_convert[LocalFile.image(filename)][note.id] = note
             if config.enable_audio_conversion:
-                for filename in find_convertible_audio(note_content, include_converted=config.bulk_reconvert):
+                # TODO config.bulk_reconvert
+                for filename in find_convertible_audio(note_content, include_converted=False):
                     to_convert[LocalFile.audio(filename)][note.id] = note
         return to_convert
 
