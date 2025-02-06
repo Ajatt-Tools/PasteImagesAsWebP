@@ -7,7 +7,6 @@ from typing import Optional, cast
 
 from anki.notes import Note
 from aqt.qt import *
-from aqt.utils import restoreGeom, saveGeom
 
 from .config import config
 from .consts import ADDON_FULL_NAME, WINDOW_MIN_WIDTH

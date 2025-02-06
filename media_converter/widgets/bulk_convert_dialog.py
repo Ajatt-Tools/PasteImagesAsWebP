@@ -30,7 +30,7 @@ def get_all_keys(notes: Iterable[Note]) -> list[str]:
 class BulkConvertDialog(SettingsDialogBase):
     """Dialog shown on bulk-convert."""
 
-    name = f"ajt__{ADDON_NAME_SNAKE}_bulk_convert_dialog"
+    name: str = f"ajt__{ADDON_NAME_SNAKE}_bulk_convert_dialog"
     _tabs: SettingsTabs
     _image_settings: ImageSettings
     _audio_settings: AudioSettings

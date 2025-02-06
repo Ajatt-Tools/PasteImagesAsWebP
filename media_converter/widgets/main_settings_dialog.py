@@ -2,20 +2,26 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 from typing import cast
 
-from aqt.addons import ConfigEditor, AddonsDialog
+from aqt.addons import AddonsDialog, ConfigEditor
 from aqt.qt import *
+
+from ..config import MediaConverterConfig
+from ..consts import THIS_ADDON_MODULE
 from .audio_settings_widget import AudioSettings
 from .behavior_settings_widget import BehaviorSettings
 from .image_settings_widget import ImageSettings
-from .settings_dialog_base import ADDON_NAME_SNAKE, SettingsDialogBase, SettingsTabs, AnkiSaveAndRestoreGeomDialog
-from ..config import MediaConverterConfig
-from ..consts import THIS_ADDON_MODULE
+from .settings_dialog_base import (
+    ADDON_NAME_SNAKE,
+    AnkiSaveAndRestoreGeomDialog,
+    SettingsDialogBase,
+    SettingsTabs,
+)
 
 
 class MainSettingsDialog(SettingsDialogBase):
-    """Dialog available from the "AJT" menu."""
+    """Dialog available from the "AJT" menu (main window)."""
 
-    name = f"ajt__{ADDON_NAME_SNAKE}_main_menu_dialog"
+    name: str = f"ajt__{ADDON_NAME_SNAKE}_main_menu_dialog"
     _tabs: SettingsTabs
     _image_settings: ImageSettings
     _audio_settings: AudioSettings

@@ -62,6 +62,7 @@ class OnPasteConverter:
             conv = ImageConverter(tmp_file.path(), dest_file_path)
             conv.convert()
             return dest_file_path
+        # TODO handle audio
 
     def tooltip(self, msg: Union[Exception, str]) -> None:
         return tooltip(str(msg), parent=self._editor.parentWindow)

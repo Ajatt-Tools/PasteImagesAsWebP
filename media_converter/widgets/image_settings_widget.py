@@ -9,7 +9,7 @@ from .settings_dialog_base import ConfigPropMixIn, HasNameMixIn
 
 
 class ImageSettings(HasNameMixIn, ConfigPropMixIn):
-    name = "Image settings"
+    name: str = "Image settings"
     _enable_checkbox: QCheckBox
     _img_sliders: ImageSliderBox
     _presets_editor: PresetsEditor

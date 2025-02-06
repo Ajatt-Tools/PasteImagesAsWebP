@@ -10,7 +10,7 @@ from .settings_dialog_base import ConfigPropMixIn, HasNameMixIn
 
 
 class AudioSettings(HasNameMixIn, ConfigPropMixIn):
-    name = "Audio settings"
+    name: str = "Audio settings"
     _audio_container_combo: EnumSelectCombo
 
     def __init__(self, config: MediaConverterConfig, parent=None) -> None:

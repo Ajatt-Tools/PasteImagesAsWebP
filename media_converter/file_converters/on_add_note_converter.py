@@ -18,6 +18,10 @@ class OnAddNoteConverter:
     """
     Converter used when a new note is added by AnkiConnect.
     """
+    _settings_shown: bool
+    _action: ShowOptions
+    _note: Note
+    _parent: Optional[QWidget] = None
 
     def __init__(self, note: Note, action: ShowOptions, parent: Optional[QWidget]) -> None:
         self._settings_shown = False

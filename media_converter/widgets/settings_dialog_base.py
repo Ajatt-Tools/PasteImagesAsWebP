@@ -28,7 +28,7 @@ class HasNameMixIn(QWidget):
 
 
 class SettingsDialogBase(QDialog, ConfigPropMixIn, MgrPropMixIn):
-    name = f"ajt__{ADDON_NAME_SNAKE}_settings_dialog"
+    name: str = f"ajt__{ADDON_NAME_SNAKE}_settings_dialog"
 
     def __init__(self, config: MediaConverterConfig, parent=None) -> None:
         super().__init__(parent)
@@ -57,6 +57,10 @@ class SettingsDialogBase(QDialog, ConfigPropMixIn, MgrPropMixIn):
 
 
 class SettingsTabs(QTabWidget):
+    """
+    A widget that accepts a list of widgets and groups them into tabs.
+    """
+
     _config: MediaConverterConfig
 
     def __init__(
