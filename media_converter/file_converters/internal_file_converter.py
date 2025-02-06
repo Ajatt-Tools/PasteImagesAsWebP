@@ -15,7 +15,10 @@ from .file_converter import FileConverter
 from .image_converter import ImageConverter
 
 
-def get_extension(file: LocalFile) -> str:
+def get_target_extension(file: LocalFile) -> str:
+    """
+    If image file, convert to avif or webp. If audio file, convert to opus.
+    """
     if file.type == ConverterType.audio:
         return config.audio_extension
     return config.image_extension
@@ -38,7 +41,7 @@ class InternalFileConverter:
         self._destination_file_path = self._fpf.make_unique_filepath(
             self._dest_dir,
             file.file_name,
-            extension=get_extension(file),
+            extension=get_target_extension(file),
         )
         self._converter = FileConverter(self._initial_file_path, self._destination_file_path)
 
