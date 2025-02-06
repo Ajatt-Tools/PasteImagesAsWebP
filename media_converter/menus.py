@@ -25,7 +25,7 @@ def setup_mainwindow_menu():
 
     def open_settings():
         dialog = AnkiMainSettingsDialog(config, mw)
-        dialog.exec()
+        dialog.show()
 
     action = QAction(f"{ADDON_NAME} Options...", root_menu)
     qconnect(action.triggered, open_settings)
