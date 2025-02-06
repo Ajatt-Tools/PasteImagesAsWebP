@@ -9,7 +9,7 @@ from ..ajt_common.enum_select_combo import EnumSelectCombo
 from ..config import ImageFormat, MediaConverterConfig
 from ..utils.converter_interfaces import FileNamePatterns
 from ..utils.show_options import ShowOptions
-from .settings_dialog_base import ConfigPropMixIn, HasNameMixIn
+from .settings_dialog_base import ConfigPropMixIn, WidgetHasName
 
 # Keys in the config file that will be converted to checkboxes.
 VISIBLE_BOOL_CONFIG_KEYS = {
@@ -43,7 +43,7 @@ def create_filename_pattern_combo_box() -> QComboBox:
     return combobox
 
 
-class BehaviorSettings(HasNameMixIn, ConfigPropMixIn):
+class BehaviorSettings(WidgetHasName, ConfigPropMixIn):
     name: str = "Behavior settings"
 
     def __init__(self, config: MediaConverterConfig, parent=None) -> None:

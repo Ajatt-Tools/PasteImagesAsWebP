@@ -6,10 +6,10 @@ from aqt.qt import *
 from ..ajt_common.enum_select_combo import EnumSelectCombo
 from ..config import AudioContainer, MediaConverterConfig
 from .audio_slider_box import AudioSliderBox
-from .settings_dialog_base import ConfigPropMixIn, HasNameMixIn
+from .settings_dialog_base import ConfigPropMixIn, WidgetHasName
 
 
-class AudioSettings(HasNameMixIn, ConfigPropMixIn):
+class AudioSettings(WidgetHasName, ConfigPropMixIn):
     name: str = "Audio settings"
     _audio_container_combo: EnumSelectCombo
 

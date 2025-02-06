@@ -5,7 +5,7 @@ from aqt.qt import *
 
 from ..ajt_common.multiple_choice_selector import MultipleChoiceSelector
 from ..config import ImageFormat, MediaConverterConfig
-from .settings_dialog_base import ConfigPropMixIn, HasNameMixIn
+from .settings_dialog_base import ConfigPropMixIn, WidgetHasName
 
 
 class EnableReconvertCheckbox(QCheckBox):
@@ -14,7 +14,7 @@ class EnableReconvertCheckbox(QCheckBox):
         self.setText(f"Reconvert existing {enabled_image_format.name} images")
 
 
-class BulkConvertSettings(HasNameMixIn, ConfigPropMixIn):
+class BulkConvertSettings(WidgetHasName, ConfigPropMixIn):
     name: str = "Bulk-convert settings"
     _field_selector: MultipleChoiceSelector
     _reconvert_checkbox: QCheckBox

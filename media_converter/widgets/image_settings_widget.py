@@ -5,10 +5,10 @@ from aqt.qt import *
 from ..config import MediaConverterConfig
 from .image_slider_box import ImageSliderBox
 from .presets_editor import PresetsEditor
-from .settings_dialog_base import ConfigPropMixIn, HasNameMixIn
+from .settings_dialog_base import ConfigPropMixIn, WidgetHasName
 
 
-class ImageSettings(HasNameMixIn, ConfigPropMixIn):
+class ImageSettings(WidgetHasName, ConfigPropMixIn):
     name: str = "Image settings"
     _enable_checkbox: QCheckBox
     _img_sliders: ImageSliderBox

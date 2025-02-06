@@ -23,7 +23,7 @@ class ConfigPropMixIn:
         return self._config
 
 
-class HasNameMixIn(QWidget):
+class WidgetHasName(QWidget):
     name: str = "undefined"
 
 
@@ -66,7 +66,7 @@ class SettingsTabs(QTabWidget):
     def __init__(
         self,
         config: MediaConverterConfig,
-        *tabs: HasNameMixIn,
+        *tabs: WidgetHasName,
         parent=None,
     ) -> None:
         super().__init__(parent)
