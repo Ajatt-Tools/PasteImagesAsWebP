@@ -18,6 +18,7 @@ class OnAddNoteConverter:
     """
     Converter used when a new note is added by AnkiConnect.
     """
+
     _settings_shown: bool
     _action: ShowOptions
     _note: Note

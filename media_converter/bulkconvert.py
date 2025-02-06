@@ -14,7 +14,7 @@ from aqt import gui_hooks, mw
 from aqt.browser import Browser
 from aqt.operations import CollectionOp, ResultWithChanges
 from aqt.qt import *
-from aqt.utils import restoreGeom, saveGeom, showInfo
+from aqt.utils import showInfo
 
 from .common import find_convertible_audio, find_convertible_images, tooltip
 from .config import config
@@ -22,7 +22,7 @@ from .consts import ADDON_FULL_NAME
 from .file_converters.common import LocalFile
 from .file_converters.internal_file_converter import InternalFileConverter
 from .widgets.bulk_convert_dialog import AnkiBulkConvertDialog
-from .widgets.settings_dialog_base import AnkiSaveAndRestoreGeomDialog, ADDON_NAME_SNAKE
+from .widgets.settings_dialog_base import ADDON_NAME_SNAKE, AnkiSaveAndRestoreGeomDialog
 
 ACTION_NAME = f"{ADDON_FULL_NAME}: Bulk-convert"
 

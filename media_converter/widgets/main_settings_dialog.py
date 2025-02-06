@@ -67,8 +67,10 @@ class AnkiMainSettingsDialog(MainSettingsDialog, AnkiSaveAndRestoreGeomDialog):
         """
         Add the "Show advanced settings" button to the bottom button box (Okay, Cancel).
         """
+
         def advanced_clicked() -> None:
             d = ConfigEditor(cast(AddonsDialog, self), THIS_ADDON_MODULE, self.config.dict_copy())
             qconnect(d.accepted, self.set_initial_values)
+
         b = self.button_box.addButton("Advanced", QDialogButtonBox.ButtonRole.HelpRole)
         qconnect(b.clicked, advanced_clicked)
