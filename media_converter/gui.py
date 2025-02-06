@@ -21,6 +21,7 @@ from .utils.converter_interfaces import FileNamePatterns
 from .utils.show_options import ShowOptions
 from .widgets.image_slider_box import ImageSliderBox
 from .widgets.presets_editor import PresetsEditor
+from .widgets.settings_dialog_base import ADDON_NAME_SNAKE
 
 
 class SettingsDialog(QDialog):
@@ -128,109 +129,3 @@ def maybe_show_settings(dimensions: ImageDimensions, parent: Optional[QWidget], 
         dlg = PasteDialog(dimensions=dimensions, parent=parent)
         return dlg.exec()
     return QDialog.DialogCode.Accepted
-
-
-class SettingsMenuDialog(SettingsDialog, MgrPropMixIn):
-    """Settings dialog available from the main menu."""
-
-    _toggleable_keys = {
-        "drag_and_drop": "Convert images on drag and drop",
-        "copy_paste": "Convert images on copy-paste",
-        "convert_on_note_add": "Convert when AnkiConnect creates new notes",
-        "preserve_original_filenames": "Preserve original filenames, if available",
-        "avoid_upscaling": "Avoid upscaling",
-        "show_editor_button": "Show a Converter button on the Editor Toolbar",
-        "show_context_menu_entry": "Show a separate context menu item",
-    }
-
-    def __init__(self, parent=None) -> None:
-        super().__init__(parent)
-        self.image_format_combo_box = EnumSelectCombo(ImageFormat)
-        self.when_show_dialog_combo_box = self.create_when_show_dialog_combo_box()
-        self.filename_pattern_combo_box = self.create_filename_pattern_combo_box()
-        self.custom_name_field_combo_box = AnkiFieldSelector(self)
-        self.excluded_image_containers_edit = QLineEdit()
-        # TODO excluded_audio_containers
-        self.checkboxes = {key: QCheckBox(text) for key, text in self._toggleable_keys.items()}
-        self.add_advanced_button()
-        self.add_tooltips()
-
-    def add_tooltips(self) -> None:
-        self.checkboxes["convert_on_note_add"].setToolTip(
-            "Convert images when a new note is added by an external tool, such as AnkiConnect.\n"
-            "Does not apply to the native Add dialog."
-        )
-        self.excluded_image_containers_edit.setToolTip(
-            "A comma-separated list of file formats (extensions without the dot)\n"
-            "that should be skipped when converting images."
-        )
-
-    def add_advanced_button(self) -> None:
-        def advanced_clicked() -> None:
-            d = ConfigEditor(cast(AddonsDialog, self), THIS_ADDON_MODULE, config.dict_copy())
-            qconnect(d.accepted, self.set_initial_values)
-
-        b = self._button_box.addButton("Advanced", QDialogButtonBox.ButtonRole.HelpRole)
-        qconnect(b.clicked, advanced_clicked)
-
-    @staticmethod
-    def create_when_show_dialog_combo_box() -> CheckableComboBox:
-        combobox = CheckableComboBox()
-        for option in ShowOptions:
-            combobox.addCheckableItem(option.value, option)
-        return combobox
-
-    @staticmethod
-    def create_filename_pattern_combo_box() -> QComboBox:
-        combobox = QComboBox()
-        for option in FileNamePatterns().all_examples():
-            combobox.addItem(option)
-        return combobox
-
-    def populate_main_vbox(self) -> None:
-        super().populate_main_vbox()
-        self._main_vbox.addWidget(self.create_additional_settings_group_box())
-
-    def create_additional_settings_group_box(self) -> QGroupBox:
-        """Creates the "Behavior" groupbox showing additional settings and checkboxes."""
-
-        def create_combo_boxes_layout() -> QLayout:
-            layout = QFormLayout()
-            layout.addRow("Image format", self.image_format_combo_box)
-            layout.addRow("Show this dialog", self.when_show_dialog_combo_box)
-            layout.addRow("Filename pattern", self.filename_pattern_combo_box)
-            layout.addRow("Custom name field", self.custom_name_field_combo_box)
-            layout.addRow("Excluded image formats", self.excluded_image_containers_edit)
-            return layout
-
-        def create_inner_layout() -> QLayout:
-            vbox = QVBoxLayout()
-            vbox.addLayout(create_combo_boxes_layout())
-            for widget in self.checkboxes.values():
-                vbox.addWidget(widget)
-            return vbox
-
-        gbox = QGroupBox("Behavior")
-        gbox.setLayout(create_inner_layout())
-        return gbox
-
-    def set_initial_values(self) -> None:
-        super().set_initial_values()
-        self.image_format_combo_box.setCurrentName(config.image_format)
-        self.when_show_dialog_combo_box.setCheckedData(config.show_settings())
-        self.filename_pattern_combo_box.setCurrentIndex(config["filename_pattern_num"])
-        self.custom_name_field_combo_box.setCurrentText(config["custom_name_field"])
-        self.excluded_image_containers_edit.setText(config["excluded_image_containers"].lower())
-
-        for key, widget in self.checkboxes.items():
-            widget.setChecked(config[key])
-
-    def accept(self) -> None:
-        config.set_show_options(self.when_show_dialog_combo_box.checkedData())
-        config["image_format"] = self.image_format_combo_box.currentName()
-        config["filename_pattern_num"] = self.filename_pattern_combo_box.currentIndex()
-        config["custom_name_field"] = self.custom_name_field_combo_box.currentText()
-        config["excluded_image_containers"] = self.excluded_image_containers_edit.text().lower().strip()
-        for key, widget in self.checkboxes.items():
-            config[key] = widget.isChecked()
-        return super().accept()
