@@ -31,7 +31,12 @@ class ImageSettings(HasNameMixIn, ConfigPropMixIn):
         self.setLayout(self._layout)
 
     def _add_tooltips(self) -> None:
-        self._enable_checkbox.setToolTip("Enable conversion of image files.")
+        self._enable_checkbox.setToolTip(
+            "Enable conversion of image files.\n"
+            "When target image format is set to `Avif`,\n"
+            "FFmpeg must be installed in the system.\n"
+            "If running Arch, run `sudo pacman -S ffmpeg` to install it."
+        )
 
     def set_initial_values(self) -> None:
         self._enable_checkbox.setChecked(self.config.enable_image_conversion)

@@ -30,10 +30,16 @@ class AudioSettings(HasNameMixIn, ConfigPropMixIn):
         self.setLayout(self._layout)
 
     def _add_tooltips(self) -> None:
+        self._enable_checkbox.setToolTip(
+            "Enable conversion of audio files.\n"
+            "FFmpeg must be installed in the system.\n"
+            "If running Arch, run `sudo pacman -S ffmpeg` to install it."
+        )
         self._audio_container_combo.setToolTip(
             "Audio container, or the file extension\n"
             "that will be used for audio files.\n"
-            "Choose the one that works on your computer."
+            "Choose the one that works on your computer.\n"
+            "Regardless of the chosen container, the target codec is always Opus."
         )
 
     def set_initial_values(self) -> None:
