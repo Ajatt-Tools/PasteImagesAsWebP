@@ -6,7 +6,7 @@ from aqt.addons import AddonsDialog, ConfigEditor
 from aqt.qt import *
 
 from ..config import MediaConverterConfig
-from ..consts import THIS_ADDON_MODULE, ADDON_NAME_SNAKE
+from ..consts import ADDON_NAME_SNAKE, THIS_ADDON_MODULE
 from ..widgets.audio_settings_widget import AudioSettings
 from ..widgets.behavior_settings_widget import BehaviorSettings
 from ..widgets.image_settings_widget import ImageSettings

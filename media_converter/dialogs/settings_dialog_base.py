@@ -6,7 +6,7 @@ from aqt.utils import restoreGeom, saveGeom
 from ..ajt_common.about_menu import tweak_window
 from ..ajt_common.addon_config import MgrPropMixIn
 from ..config import MediaConverterConfig
-from ..consts import ADDON_FULL_NAME, WINDOW_MIN_WIDTH, ADDON_NAME_SNAKE
+from ..consts import ADDON_FULL_NAME, ADDON_NAME_SNAKE, WINDOW_MIN_WIDTH
 
 
 def make_accept_reject_box() -> QDialogButtonBox:

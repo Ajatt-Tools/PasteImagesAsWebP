@@ -9,6 +9,7 @@ from aqt.browser import Browser
 from aqt.utils import showInfo
 
 from ..config import MediaConverterConfig
+from ..consts import ADDON_NAME_SNAKE
 from ..widgets.audio_settings_widget import AudioSettings
 from ..widgets.bulk_convert_settings_widget import BulkConvertSettings
 from ..widgets.image_settings_widget import ImageSettings
@@ -17,7 +18,6 @@ from .settings_dialog_base import (
     SettingsDialogBase,
     SettingsTabs,
 )
-from ..consts import ADDON_NAME_SNAKE
 
 
 def get_all_keys(notes: Iterable[Note]) -> list[str]:

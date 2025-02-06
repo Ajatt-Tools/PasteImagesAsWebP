@@ -49,6 +49,18 @@ class OnPasteConverter:
         if result == QDialog.DialogCode.Rejected:
             raise CanceledPaste("Cancelled.")
 
+    def convert_image(self, image_path: str) -> str:
+        fpf = FilePathFactory(note=self._editor.note, editor=self._editor)
+        destination_path = fpf.make_unique_filepath(
+            dest_dir=self._dest_dir,
+            original_filename=os.path.basename(image_path),
+            extension=config.image_extension,
+        )
+        conv = ImageConverter(image_path, destination_path)
+        self._maybe_show_settings(conv.initial_dimensions)
+        conv.convert()
+        return destination_path
+
     def convert_mime(self, mime: QMimeData) -> str:
         with TempFile() as tmp_file:
             to_convert = save_image(mime, tmp_file.path())
