@@ -1,6 +1,7 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 from aqt.qt import *
+from aqt.utils import restoreGeom, saveGeom
 
 from ..ajt_common.addon_config import MgrPropMixIn
 from ..config import MediaConverterConfig
@@ -68,3 +69,29 @@ class SettingsTabs(QTabWidget):
         self._config = config
         for widget in tabs:
             self.addTab(widget, widget.name)
+
+
+class AnkiSaveAndRestoreGeomDialog(QDialog):
+    """
+    A dialog running inside Anki should save and restore its position and size when closed/opened.
+    """
+
+    name: str
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        assert isinstance(self.name, str) and self.name, "Dialog name must be set."
+        restoreGeom(self, self.name, adjustSize=True)
+        print(f"restored geom for {self.name}")
+
+    def _save_geom(self) -> None:
+        saveGeom(self, self.name)
+        print(f"saved geom for {self.name}")
+
+    def accept(self) -> None:
+        self._save_geom()
+        return super().accept()
+
+    def reject(self) -> None:
+        self._save_geom()
+        return super().reject()
