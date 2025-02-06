@@ -13,8 +13,8 @@ from .consts import ADDON_FULL_NAME, ADDON_NAME, ADDON_PATH
 from .file_converters.file_converter import FFmpegNotFoundError
 from .file_converters.image_converter import ffmpeg_not_found_dialog
 from .file_converters.on_paste_converter import OnPasteConverter
-from .gui import SettingsMenuDialog
 from .utils.show_options import ShowOptions
+from .widgets.main_settings_dialog import AnkiMainSettingsDialog
 
 
 def setup_mainwindow_menu():
@@ -24,7 +24,7 @@ def setup_mainwindow_menu():
     root_menu = menu_root_entry()
 
     def open_settings():
-        dialog = SettingsMenuDialog(mw)
+        dialog = AnkiMainSettingsDialog(config, mw)
         dialog.exec()
 
     action = QAction(f"{ADDON_NAME} Options...", root_menu)
