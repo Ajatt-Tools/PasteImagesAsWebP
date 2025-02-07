@@ -18,7 +18,7 @@ def get_file_extension(file_path: str) -> str:
     return os.path.splitext(file_path)[1].lower()
 
 
-def is_excluded_image_extension(filename: str, include_converted: bool) -> bool:
+def is_excluded_image_extension(filename: str, include_converted: bool = False) -> bool:
     """
     Return true if the image file with this filename should not be converted.
 
@@ -28,7 +28,7 @@ def is_excluded_image_extension(filename: str, include_converted: bool) -> bool:
     return get_file_extension(filename) in config.get_excluded_image_extensions(include_converted)
 
 
-def is_excluded_audio_extension(filename: str, include_converted: bool) -> bool:
+def is_excluded_audio_extension(filename: str, include_converted: bool = False) -> bool:
     """
     Return true if the audio file with this filename should not be converted.
 
