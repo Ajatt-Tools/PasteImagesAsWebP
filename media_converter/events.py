@@ -11,7 +11,7 @@ from aqt import gui_hooks, mw
 from aqt.qt import *
 from aqt.utils import KeyboardModifiersPressed
 
-from .common import has_local_file, image_html, tooltip
+from .common import has_local_file, image_html, is_excluded_image_extension, tooltip
 from .config import config
 from .consts import ADDON_NAME_SNAKE
 from .file_converters.file_converter import FFmpegNotFoundError
@@ -95,7 +95,7 @@ def on_setup_mask_editor(self: aqt.editor.Editor, image_path: str, _old: Callabl
     Wrap Image Occlusion and convert the pasted image before Occlusion is used.
     https://docs.ankiweb.net/editing.html#image-occlusion
     """
-    if config["copy_paste"]:
+    if config["copy_paste"] and not is_excluded_image_extension(os.path.basename(image_path)):
         conv = OnPasteConverter(self, action=ShowOptions.paste)
         try:
             new_image_path = conv.convert_image(image_path)
