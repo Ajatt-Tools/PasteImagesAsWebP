@@ -4,12 +4,20 @@ import os
 from tempfile import mkstemp
 
 
+class TempFileException(Exception):
+    pass
+
+
 class TempFile(os.PathLike):
     """A simple class for automatic management of temp file paths"""
 
-    def __init__(self):
-        self.fd, self.tmp_filepath = mkstemp()
-        self.opened = True
+    _tmp_filepath: str = ""
+    _fd: int = 0
+    _opened: bool = False
+
+    def __init__(self, suffix: str = ".png"):
+        self._fd, self._tmp_filepath = mkstemp(prefix="ajt__", suffix=suffix)
+        self._opened = True
 
     def __enter__(self):
         return self
@@ -30,12 +38,12 @@ class TempFile(os.PathLike):
         return self.path()
 
     def path(self) -> str:
-        if len(self.tmp_filepath) < 1:
-            raise Exception()
-        return self.tmp_filepath
+        if not (self._opened and self._tmp_filepath):
+            raise TempFileException("error creating temp file")
+        return self._tmp_filepath
 
     def close(self):
-        if self.opened is True:
-            os.close(self.fd)
-            os.remove(self.tmp_filepath)
-            self.opened = False
+        if self._opened is True:
+            os.close(self._fd)
+            os.remove(self._tmp_filepath)
+            self._opened = False
