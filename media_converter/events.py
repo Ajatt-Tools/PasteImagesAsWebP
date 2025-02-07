@@ -98,7 +98,7 @@ def on_setup_mask_editor(self: aqt.editor.Editor, image_path: str, _old: Callabl
     if config["copy_paste"] and not is_excluded_image_extension(os.path.basename(image_path)):
         conv = OnPasteConverter(self, action=ShowOptions.paste)
         try:
-            new_image_path = conv.convert_image(image_path)
+            image_path = conv.convert_image(image_path)
         except FFmpegNotFoundError:
             ffmpeg_not_found_dialog()
         except FileNotFoundError:
@@ -106,8 +106,7 @@ def on_setup_mask_editor(self: aqt.editor.Editor, image_path: str, _old: Callabl
         except Exception as ex:
             conv.tooltip(ex)
         else:
-            conv.result_tooltip(new_image_path)
-            image_path = new_image_path
+            conv.result_tooltip(image_path)
     return _old(self, image_path)
 
 
