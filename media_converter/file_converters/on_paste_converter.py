@@ -24,12 +24,11 @@ class ConverterPayload(typing.NamedTuple):
 def save_image(mime: QMimeData, tmp_path: str) -> ConverterPayload:
     for image in image_candidates(mime):
         if image and image.save(tmp_path, "png") is True:
-            dimensions = ImageDimensions(image.width(), image.height())
-            initial_filename = fetch_filename(mime)
-            break
-    else:
-        raise InvalidInput("Not an image file.")
-    return ConverterPayload(initial_filename, dimensions)
+            return ConverterPayload(
+                initial_filename=fetch_filename(mime),
+                dimensions=ImageDimensions(image.width(), image.height()),
+            )
+    raise InvalidInput("Not an image file.")
 
 
 class OnPasteConverter:
