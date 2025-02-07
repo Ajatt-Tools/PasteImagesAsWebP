@@ -13,16 +13,12 @@ from aqt.utils import KeyboardModifiersPressed
 from .common import has_local_file, image_html, is_excluded_image_extension, tooltip
 from .config import config
 from .file_converters.file_converter import FFmpegNotFoundError
-from .file_converters.image_converter import (
-    CanceledPaste,
-    InvalidInput,
-    ffmpeg_not_found_dialog,
-)
+from .file_converters.image_converter import CanceledPaste, ffmpeg_not_found_dialog
 from .file_converters.on_add_note_converter import OnAddNoteConverter
 from .file_converters.on_paste_converter import (
     TEMP_IMAGE_FORMAT,
     OnPasteConverter,
-    save_image,
+    mime_to_image_file,
 )
 from .utils.show_options import ShowOptions
 from .utils.temp_file import TempFile
@@ -35,29 +31,24 @@ def should_paste_raw() -> bool:
 def convert_mime(mime: QMimeData, editor: aqt.editor.Editor, action: ShowOptions) -> QMimeData:
     conv = OnPasteConverter(editor, action)
     with TempFile(suffix=f".{TEMP_IMAGE_FORMAT}") as tmp_file:
-        to_convert = save_image(mime, tmp_file.path())
-        if to_convert.initial_filename and is_excluded_image_extension(to_convert.initial_filename):
-            # Skip files with excluded extensions.
-            return mime
-        try:
-            new_file_path = conv.convert_mime(to_convert)
-        except FFmpegNotFoundError:
-            ffmpeg_not_found_dialog()
-        except InvalidInput:
-            pass
-        except CanceledPaste as ex:
-            conv.tooltip(ex)
-            # Treat "Cancel" as both "don't convert" and "don't paste". Erase mime data.
-            mime = QMimeData()
-        except FileNotFoundError:
-            conv.tooltip("File not found.")
-        except (RuntimeError, AttributeError) as ex:
-            conv.tooltip(ex)
-        else:
-            # File has been converted.
-            mime = QMimeData()
-            mime.setHtml(image_html(os.path.basename(new_file_path)))
-            conv.result_tooltip(new_file_path)
+        if to_convert := mime_to_image_file(mime, tmp_file.path()):
+            try:
+                new_file_path = conv.convert_mime(to_convert)
+            except FFmpegNotFoundError:
+                ffmpeg_not_found_dialog()
+            except CanceledPaste as ex:
+                conv.tooltip(ex)
+                # Treat "Cancel" as both "don't convert" and "don't paste". Erase mime data.
+                mime = QMimeData()
+            except FileNotFoundError:
+                conv.tooltip("File not found.")
+            except (RuntimeError, AttributeError) as ex:
+                conv.tooltip(ex)
+            else:
+                # File has been converted.
+                mime = QMimeData()
+                mime.setHtml(image_html(os.path.basename(new_file_path)))
+                conv.result_tooltip(new_file_path)
     return mime
 
 

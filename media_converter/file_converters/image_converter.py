@@ -32,11 +32,7 @@ class CanceledPaste(Warning):
     pass
 
 
-class InvalidInput(Warning):
-    pass
-
-
-class ImageNotLoaded(Exception):
+class MimeImageNotFound(Warning):
     pass
 
 

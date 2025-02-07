@@ -14,7 +14,12 @@ from ..utils.mime_helper import image_candidates
 from ..utils.show_options import ShowOptions
 from ..utils.temp_file import TempFile
 from .common import ImageDimensions
-from .image_converter import CanceledPaste, ImageConverter, InvalidInput, fetch_filename
+from .image_converter import (
+    CanceledPaste,
+    ImageConverter,
+    MimeImageNotFound,
+    fetch_filename,
+)
 
 TEMP_IMAGE_FORMAT = "png"
 
@@ -33,7 +38,22 @@ def save_image(mime: QMimeData, tmp_path: str) -> ConverterPayload:
                 initial_filename=fetch_filename(mime),
                 dimensions=ImageDimensions(image.width(), image.height()),
             )
-    raise InvalidInput("Not an image file.")
+    raise MimeImageNotFound("Not an image file.")
+
+
+def mime_to_image_file(mime: QMimeData, destination_path: str) -> typing.Optional[ConverterPayload]:
+    """
+    Try to save image file. Return None if the file can't be saved or the file type is excluded by the user.
+    """
+    try:
+        to_convert = save_image(mime, destination_path)
+    except MimeImageNotFound:
+        # Mime doesn't contain images or the images are not supported by Qt.
+        return None
+    if to_convert.initial_filename and is_excluded_image_extension(to_convert.initial_filename):
+        # Skip files with excluded extensions.
+        return None
+    return to_convert
 
 
 class OnPasteConverter:
@@ -68,14 +88,14 @@ class OnPasteConverter:
     def convert_mime(self, to_convert: ConverterPayload) -> str:
         self._maybe_show_settings(to_convert.dimensions)
         fpf = FilePathFactory(note=self._editor.note, editor=self._editor)
-        dest_file_path = fpf.make_unique_filepath(
-            self._dest_dir,
-            to_convert.initial_filename,
+        destination_path = fpf.make_unique_filepath(
+            dest_dir=self._dest_dir,
+            original_filename=to_convert.initial_filename,
             extension=config.image_extension,
         )
-        conv = ImageConverter(to_convert.tmp_path, dest_file_path)
+        conv = ImageConverter(to_convert.tmp_path, destination_path)
         conv.convert()
-        return dest_file_path
+        return destination_path
         # TODO handle audio
 
     def tooltip(self, msg: Union[Exception, str]) -> None:
