@@ -13,8 +13,13 @@ from .consts import ADDON_FULL_NAME, ADDON_NAME, ADDON_PATH
 from .dialogs.main_settings_dialog import AnkiMainSettingsDialog
 from .file_converters.file_converter import FFmpegNotFoundError
 from .file_converters.image_converter import ffmpeg_not_found_dialog
-from .file_converters.on_paste_converter import OnPasteConverter
+from .file_converters.on_paste_converter import (
+    TEMP_IMAGE_FORMAT,
+    OnPasteConverter,
+    save_image,
+)
 from .utils.show_options import ShowOptions
+from .utils.temp_file import TempFile
 
 
 def setup_mainwindow_menu():
@@ -40,18 +45,26 @@ def action_tooltip():
     )
 
 
-def convert_and_insert(editor: Editor, source: ShowOptions):
+def convert_and_insert(editor: Editor, source: ShowOptions) -> None:
     mime: QMimeData = editor.mw.app.clipboard().mimeData()
     conv = OnPasteConverter(editor, source)
-    try:
-        new_file_path = conv.convert_mime(mime)
-    except FFmpegNotFoundError:
-        ffmpeg_not_found_dialog()
-    except Exception as ex:
-        conv.tooltip(ex)
-    else:
-        insert_image_html(editor, os.path.basename(new_file_path))
-        conv.result_tooltip(new_file_path)
+    with TempFile(suffix=f".{TEMP_IMAGE_FORMAT}") as tmp_file:
+        to_convert = save_image(mime, tmp_file.path())
+        if to_convert.initial_filename and is_excluded_image_extension(to_convert.initial_filename):
+            # Skip files with excluded extensions.
+            return
+        try:
+            new_file_path = conv.convert_mime(to_convert)
+        except FFmpegNotFoundError:
+            ffmpeg_not_found_dialog()
+        except FileNotFoundError:
+            conv.tooltip("File not found.")
+        except Exception as ex:
+            conv.tooltip(ex)
+        else:
+            # File has been converted.
+            insert_image_html(editor, os.path.basename(new_file_path))
+            conv.result_tooltip(new_file_path)
 
 
 def on_editor_will_show_context_menu(webview: EditorWebView, menu: QMenu):

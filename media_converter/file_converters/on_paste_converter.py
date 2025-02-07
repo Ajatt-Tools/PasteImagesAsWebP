@@ -3,9 +3,10 @@
 import typing
 
 import aqt.editor
+from anki.utils import tmpfile
 from aqt.qt import *
 
-from ..common import filesize_kib, tooltip
+from ..common import filesize_kib, is_excluded_image_extension, tooltip
 from ..config import config
 from ..gui import maybe_show_settings
 from ..utils.file_paths_factory import FilePathFactory
@@ -15,18 +16,20 @@ from ..utils.temp_file import TempFile
 from .common import ImageDimensions
 from .image_converter import CanceledPaste, ImageConverter, InvalidInput, fetch_filename
 
-TEMP_SAVE_FORMAT = "png"
+TEMP_IMAGE_FORMAT = "png"
 
 
 class ConverterPayload(typing.NamedTuple):
-    initial_filename: typing.Optional[str]
+    tmp_path: str
     dimensions: ImageDimensions
+    initial_filename: typing.Optional[str]
 
 
 def save_image(mime: QMimeData, tmp_path: str) -> ConverterPayload:
     for image in image_candidates(mime):
-        if image and image.save(tmp_path, TEMP_SAVE_FORMAT) is True:
+        if image and image.save(tmp_path, TEMP_IMAGE_FORMAT) is True:
             return ConverterPayload(
+                tmp_path=tmp_path,
                 initial_filename=fetch_filename(mime),
                 dimensions=ImageDimensions(image.width(), image.height()),
             )
@@ -62,19 +65,17 @@ class OnPasteConverter:
         conv.convert()
         return destination_path
 
-    def convert_mime(self, mime: QMimeData) -> str:
-        with TempFile(suffix=f".{TEMP_SAVE_FORMAT}") as tmp_file:
-            to_convert = save_image(mime, tmp_file.path())
-            self._maybe_show_settings(to_convert.dimensions)
-            fpf = FilePathFactory(note=self._editor.note, editor=self._editor)
-            dest_file_path = fpf.make_unique_filepath(
-                self._dest_dir,
-                to_convert.initial_filename,
-                extension=config.image_extension,
-            )
-            conv = ImageConverter(tmp_file.path(), dest_file_path)
-            conv.convert()
-            return dest_file_path
+    def convert_mime(self, to_convert: ConverterPayload) -> str:
+        self._maybe_show_settings(to_convert.dimensions)
+        fpf = FilePathFactory(note=self._editor.note, editor=self._editor)
+        dest_file_path = fpf.make_unique_filepath(
+            self._dest_dir,
+            to_convert.initial_filename,
+            extension=config.image_extension,
+        )
+        conv = ImageConverter(to_convert.tmp_path, dest_file_path)
+        conv.convert()
+        return dest_file_path
         # TODO handle audio
 
     def tooltip(self, msg: Union[Exception, str]) -> None:
