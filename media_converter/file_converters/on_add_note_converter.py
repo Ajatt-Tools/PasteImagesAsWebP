@@ -43,7 +43,7 @@ class OnAddNoteConverter:
             return maybe_show_settings(dimensions, parent=self._parent, action=self._action)
         return QDialog.DialogCode.Accepted
 
-    def _convert_and_replace_stored_image(self, filename: str):
+    def _convert_and_replace_stored_image(self, filename: str) -> None:
         conv = InternalFileConverter(file=LocalFile.image(filename), editor=None, note=self._note)
         ans = self._maybe_show_settings(conv.initial_dimensions)
         if ans == QDialog.DialogCode.Rejected:
@@ -58,6 +58,6 @@ class OnAddNoteConverter:
                 self._convert_and_replace_stored_image(filename)
         # TODO handle audio files
 
-    def _update_note_fields(self, old_filename: str, new_filename: str):
+    def _update_note_fields(self, old_filename: str, new_filename: str) -> None:
         for field_name, field_value in self._note.items():
             self._note[field_name] = field_value.replace(f'src="{old_filename}"', f'src="{new_filename}"')
