@@ -15,6 +15,8 @@ from ..utils.temp_file import TempFile
 from .common import ImageDimensions
 from .image_converter import CanceledPaste, ImageConverter, InvalidInput, fetch_filename
 
+TEMP_SAVE_FORMAT = "png"
+
 
 class ConverterPayload(typing.NamedTuple):
     initial_filename: typing.Optional[str]
@@ -23,7 +25,7 @@ class ConverterPayload(typing.NamedTuple):
 
 def save_image(mime: QMimeData, tmp_path: str) -> ConverterPayload:
     for image in image_candidates(mime):
-        if image and image.save(tmp_path, "png") is True:
+        if image and image.save(tmp_path, TEMP_SAVE_FORMAT) is True:
             return ConverterPayload(
                 initial_filename=fetch_filename(mime),
                 dimensions=ImageDimensions(image.width(), image.height()),
@@ -61,7 +63,7 @@ class OnPasteConverter:
         return destination_path
 
     def convert_mime(self, mime: QMimeData) -> str:
-        with TempFile() as tmp_file:
+        with TempFile(suffix=f".{TEMP_SAVE_FORMAT}") as tmp_file:
             to_convert = save_image(mime, tmp_file.path())
             self._maybe_show_settings(to_convert.dimensions)
             fpf = FilePathFactory(note=self._editor.note, editor=self._editor)
