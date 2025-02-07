@@ -41,6 +41,7 @@ dependencies = [
   "isort",
   "pytest",
   "aqt[qt6]",
+  "pyupgrade",
 ]
 python = "3.9"
 
