@@ -9,17 +9,11 @@ from aqt.utils import showWarning
 
 from ..ajt_common.utils import find_executable as find_executable_ajt
 from ..common import get_file_extension
-from ..config import ImageFormat, config
+from ..config import ImageFormat, get_global_config, MediaConverterConfig
 from ..consts import ADDON_FULL_NAME, SUPPORT_DIR
 from ..utils.mime_helper import iter_files
-from .common import (
-    IS_MAC,
-    IS_WIN,
-    ConverterType,
-    ImageDimensions,
-    create_process,
-    run_process,
-)
+from ..utils.show_options import ImageDimensions
+from .common import IS_MAC, IS_WIN, ConverterType, create_process, run_process
 from .file_converter import FFmpegNotFoundError, FileConverter, find_ffmpeg_exe
 
 ANIMATED_OR_VIDEO_FORMATS = frozenset(
@@ -66,9 +60,6 @@ def find_cwebp_exe() -> str:
     # https://developers.google.com/speed/webp/download
     return find_executable_ajt("cwebp") or get_bundled_executable("cwebp")
 
-
-def smaller_than_requested(image: ImageDimensions) -> bool:
-    return 0 < image.width < config["image_width"] or 0 < image.height < config["image_height"]
 
 
 def fetch_filename(mime: QMimeData) -> Optional[str]:
@@ -117,8 +108,10 @@ class ImageConverter(FileConverter, mode=ConverterType.image):
     _source_path: str
     _dimensions: ImageDimensions
     _destination_path: str
+    _config: MediaConverterConfig
 
     def __init__(self, source_path: str, destination_path: str) -> None:
+        self._config = get_global_config()
         self._source_path = source_path
         self._destination_path = destination_path
         self._dimensions = find_image_dimensions(source_path)
@@ -127,19 +120,22 @@ class ImageConverter(FileConverter, mode=ConverterType.image):
     def initial_dimensions(self) -> ImageDimensions:
         return self._dimensions
 
+    def smaller_than_requested(self, image: ImageDimensions) -> bool:
+        return 0 < image.width < self._config["image_width"] or 0 < image.height < self._config["image_height"]
+
     def _get_resize_dimensions(self) -> Optional[ImageDimensions]:
-        if config["avoid_upscaling"] and smaller_than_requested(self._dimensions):
+        if self._config["avoid_upscaling"] and self.smaller_than_requested(self._dimensions):
             # skip resizing if the image is already smaller than the requested size
             return None
 
-        if config["image_width"] == 0 and config["image_height"] == 0:
+        if self._config["image_width"] == 0 and self._config["image_height"] == 0:
             # skip resizing if both width and height are set to 0
             return None
 
         # For cwebp, the resize arguments are directly "-resize width height"
         # For ffmpeg, the resize argument is part of the filtergraph: "scale=width:height"
         # The distinction will be made in the respective conversion functions
-        return ImageDimensions(config["image_width"], config["image_height"])
+        return ImageDimensions(self._config["image_width"], self._config["image_height"])
 
     def _get_ffmpeg_scale_arg(self) -> str:
         # Check if either width or height is 0 and adjust accordingly
@@ -159,8 +155,8 @@ class ImageConverter(FileConverter, mode=ConverterType.image):
             "-o",
             destination_path,
             "-q",
-            config.image_quality,
-            *config["cwebp_args"],
+            self._config.image_quality,
+            *self._config["cwebp_args"],
         ]
         if resize_args := self._get_resize_dimensions():
             args.extend(["-resize", resize_args.width, resize_args.height])
@@ -186,8 +182,8 @@ class ImageConverter(FileConverter, mode=ConverterType.image):
             "-vf",
             self._get_ffmpeg_scale_arg() + ":flags=sinc+accurate_rnd",
             "-crf",
-            quality_percent_to_avif_crf(config.image_quality),
-            *config["ffmpeg_args"],
+            quality_percent_to_avif_crf(self._config.image_quality),
+            *self._config["ffmpeg_args"],
         ]
         if not is_animation(source_path):
             args += [
@@ -200,7 +196,7 @@ class ImageConverter(FileConverter, mode=ConverterType.image):
         return args
 
     def convert(self) -> None:
-        if config.image_format == ImageFormat.webp:
+        if self._config.image_format == ImageFormat.webp:
             args = self._make_to_webp_args(self._source_path, self._destination_path)
         else:
             args = self._make_to_avif_args(self._source_path, self._destination_path)
