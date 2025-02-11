@@ -155,7 +155,7 @@ class ImageConverter(FileConverter, mode=ConverterType.image):
             destination_path,
             "-q",
             self._config.image_quality,
-            *self._config["cwebp_args"],
+            *self._config.cwebp_args,
         ]
         if resize_args := self._get_resize_dimensions():
             args.extend(["-resize", resize_args.width, resize_args.height])
