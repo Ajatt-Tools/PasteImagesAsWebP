@@ -1,9 +1,9 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+from ..config import get_global_config
 from .common import ConverterType, create_process, run_process
 from .file_converter import FFmpegNotFoundError, FileConverter, find_ffmpeg_exe
-from ..config import get_global_config
 
 
 class AudioConverter(FileConverter, mode=ConverterType.audio):

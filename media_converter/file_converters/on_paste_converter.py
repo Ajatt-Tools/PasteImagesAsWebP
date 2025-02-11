@@ -3,17 +3,14 @@
 import typing
 
 import aqt.editor
-from anki.utils import tmpfile
 from aqt.qt import *
 
 from ..common import filesize_kib, is_excluded_image_extension, tooltip
 from ..config import config
-from ..gui import maybe_show_settings
+from ..events import maybe_show_settings
 from ..utils.file_paths_factory import FilePathFactory
 from ..utils.mime_helper import image_candidates
-from ..utils.show_options import ShowOptions
-from ..utils.temp_file import TempFile
-from .common import ImageDimensions
+from ..utils.show_options import ImageDimensions, ShowOptions
 from .image_converter import (
     CanceledPaste,
     ImageConverter,

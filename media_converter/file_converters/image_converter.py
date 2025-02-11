@@ -9,7 +9,7 @@ from aqt.utils import showWarning
 
 from ..ajt_common.utils import find_executable as find_executable_ajt
 from ..common import get_file_extension
-from ..config import ImageFormat, get_global_config, MediaConverterConfig
+from ..config import ImageFormat, MediaConverterConfig, get_global_config
 from ..consts import ADDON_FULL_NAME, SUPPORT_DIR
 from ..utils.mime_helper import iter_files
 from ..utils.show_options import ImageDimensions
@@ -59,7 +59,6 @@ def get_bundled_executable(name: str) -> str:
 def find_cwebp_exe() -> str:
     # https://developers.google.com/speed/webp/download
     return find_executable_ajt("cwebp") or get_bundled_executable("cwebp")
-
 
 
 def fetch_filename(mime: QMimeData) -> Optional[str]:

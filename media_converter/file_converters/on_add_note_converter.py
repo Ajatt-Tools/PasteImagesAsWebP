@@ -7,9 +7,10 @@ from aqt import mw
 from aqt.qt import *
 
 from ..common import find_convertible_images
-from ..gui import maybe_show_settings
-from ..utils.show_options import ShowOptions
-from .common import ImageDimensions, LocalFile, should_show_settings
+from ..config import config
+from ..events import maybe_show_settings
+from ..utils.show_options import ImageDimensions, ShowOptions
+from .common import LocalFile
 from .image_converter import CanceledPaste
 from .internal_file_converter import InternalFileConverter
 
@@ -33,7 +34,7 @@ class OnAddNoteConverter:
     def _should_show_settings(self) -> bool:
         if self._settings_shown is False:
             self._settings_shown = True
-            return should_show_settings(self._action)
+            return config.should_show_settings(self._action)
         return False
 
     def _maybe_show_settings(self, dimensions: ImageDimensions) -> int:

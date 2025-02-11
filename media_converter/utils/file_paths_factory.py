@@ -16,7 +16,7 @@ from anki.utils import html_to_text_line
 from aqt.editor import Editor
 
 from ..common import get_file_extension
-from ..config import config
+from ..config import MediaConverterConfig, get_global_config
 from ..file_converters.common import COMMON_AUDIO_FORMATS, LocalFile
 from .converter_interfaces import FileNamePatterns
 
@@ -59,9 +59,11 @@ def note_sort_field_content(note: Note) -> str:
 class FilePathFactory(FileNamePatterns):
     _note: Optional[Note]
     _editor: Optional[Editor]
+    _config: MediaConverterConfig
 
     def __init__(self, note: Optional[Note], editor: Optional[Editor]) -> None:
         super().__init__()
+        self._config = get_global_config()
         self._note = note
         self._editor = editor
 
@@ -71,12 +73,12 @@ class FilePathFactory(FileNamePatterns):
 
     @compatible_filename
     def _make_filename_no_ext(self, original_filename: Optional[str]) -> str:
-        if original_filename and config.preserve_original_filenames:
+        if original_filename and self._config.preserve_original_filenames:
             return os.path.splitext(original_filename)[0]
 
         def get_pattern() -> str:
             try:
-                return self._patterns[config["filename_pattern_num"]]
+                return self._patterns[self._config["filename_pattern_num"]]
             except IndexError:
                 return self._patterns[0]
 
@@ -98,7 +100,7 @@ class FilePathFactory(FileNamePatterns):
     def _custom_field(self) -> str:
         if self._note:
             try:
-                return self._note[config["custom_name_field"]]
+                return self._note[self._config["custom_name_field"]]
             except (AttributeError, TypeError, KeyError):
                 pass
         return self._sort_field()

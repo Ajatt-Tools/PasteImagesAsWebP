@@ -5,10 +5,7 @@ import functools
 import subprocess
 import sys
 import typing
-from typing import Any, NamedTuple
-
-from ..config import config
-from ..utils.show_options import ShowOptions
+from typing import Any
 
 IS_MAC = sys.platform.startswith("darwin")
 IS_WIN = sys.platform.startswith("win32")
@@ -33,15 +30,6 @@ class LocalFile(typing.NamedTuple):
     @classmethod
     def audio(cls, file_name: str):
         return cls(file_name, ConverterType.audio)
-
-
-class ImageDimensions(NamedTuple):
-    width: int
-    height: int
-
-
-def should_show_settings(action: ShowOptions) -> bool:
-    return bool(action in config.show_settings())
 
 
 @functools.cache

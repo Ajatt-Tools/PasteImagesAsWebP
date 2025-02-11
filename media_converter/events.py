@@ -1,6 +1,7 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import os.path
+from typing import Optional
 
 import anki
 import aqt.editor
@@ -12,6 +13,7 @@ from aqt.utils import KeyboardModifiersPressed
 
 from .common import has_local_file, image_html, is_excluded_image_extension, tooltip
 from .config import config
+from .dialogs.paste_image_dialog import AnkiPasteImageDialog
 from .file_converters.file_converter import FFmpegNotFoundError
 from .file_converters.image_converter import CanceledPaste, ffmpeg_not_found_dialog
 from .file_converters.on_add_note_converter import OnAddNoteConverter
@@ -20,7 +22,7 @@ from .file_converters.on_paste_converter import (
     OnPasteConverter,
     mime_to_image_file,
 )
-from .utils.show_options import ShowOptions
+from .utils.show_options import ImageDimensions, ShowOptions
 from .utils.temp_file import TempFile
 
 
@@ -113,3 +115,10 @@ def init() -> None:
     gui_hooks.editor_will_process_mime.append(on_process_mime)
     hooks.note_will_be_added.append(on_add_note)
     aqt.editor.Editor.setup_mask_editor = wrap(aqt.editor.Editor.setup_mask_editor, on_setup_mask_editor, pos="around")
+
+
+def maybe_show_settings(dimensions: ImageDimensions, parent: Optional[QWidget], action: ShowOptions) -> int:
+    if config.should_show_settings(action):
+        dlg = AnkiPasteImageDialog(config=config, dimensions=dimensions, parent=parent)
+        return dlg.exec()
+    return QDialog.DialogCode.Accepted
