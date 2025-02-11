@@ -98,7 +98,7 @@ class FilePathFactory(FileNamePatterns):
     def _custom_field(self) -> str:
         if self._note:
             try:
-                return self._note[self._config["custom_name_field"]]
+                return self._note[self._config.custom_name_field]
             except (AttributeError, TypeError, KeyError):
                 pass
         return self._sort_field()

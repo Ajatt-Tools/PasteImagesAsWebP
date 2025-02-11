@@ -195,6 +195,10 @@ class MediaConverterConfig(AddonConfigManager):
     def shortcut(self) -> str:
         return self["shortcut"]
 
+    @property
+    def custom_name_field(self) -> str:
+        return self["custom_name_field"]
+
     def should_show_settings(self, action: ShowOptions) -> bool:
         return bool(action in self.show_settings())
 
