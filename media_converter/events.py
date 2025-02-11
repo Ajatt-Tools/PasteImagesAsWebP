@@ -96,7 +96,7 @@ def on_setup_mask_editor(self: aqt.editor.Editor, image_path: str, _old: Callabl
     Wrap Image Occlusion and convert the pasted image before Occlusion is used.
     https://docs.ankiweb.net/editing.html#image-occlusion
     """
-    if config["copy_paste"] and not is_excluded_image_extension(os.path.basename(image_path)):
+    if config.copy_paste and not is_excluded_image_extension(os.path.basename(image_path)):
         conv = OnPasteConverter(self, action=ShowOptions.paste)
         try:
             image_path = conv.convert_image(image_path)

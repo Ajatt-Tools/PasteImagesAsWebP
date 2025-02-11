@@ -120,21 +120,21 @@ class ImageConverter(FileConverter, mode=ConverterType.image):
         return self._dimensions
 
     def smaller_than_requested(self, image: ImageDimensions) -> bool:
-        return 0 < image.width < self._config["image_width"] or 0 < image.height < self._config["image_height"]
+        return 0 < image.width < self._config.image_width or 0 < image.height < self._config.image_height
 
     def _get_resize_dimensions(self) -> Optional[ImageDimensions]:
         if self._config.avoid_upscaling and self.smaller_than_requested(self._dimensions):
             # skip resizing if the image is already smaller than the requested size
             return None
 
-        if self._config["image_width"] == 0 and self._config["image_height"] == 0:
+        if self._config.image_width == 0 and self._config.image_height == 0:
             # skip resizing if both width and height are set to 0
             return None
 
         # For cwebp, the resize arguments are directly "-resize width height"
         # For ffmpeg, the resize argument is part of the filtergraph: "scale=width:height"
         # The distinction will be made in the respective conversion functions
-        return ImageDimensions(self._config["image_width"], self._config["image_height"])
+        return ImageDimensions(self._config.image_width, self._config.image_height)
 
     def _get_ffmpeg_scale_arg(self) -> str:
         # Check if either width or height is 0 and adjust accordingly

@@ -12,12 +12,11 @@ from .config import config
 from .consts import ADDON_FULL_NAME, ADDON_NAME, ADDON_PATH
 from .dialogs.main_settings_dialog import AnkiMainSettingsDialog
 from .file_converters.file_converter import FFmpegNotFoundError
-from .file_converters.image_converter import MimeImageNotFound, ffmpeg_not_found_dialog
+from .file_converters.image_converter import ffmpeg_not_found_dialog
 from .file_converters.on_paste_converter import (
     TEMP_IMAGE_FORMAT,
     OnPasteConverter,
     mime_to_image_file,
-    save_image,
 )
 from .utils.show_options import ShowOptions
 from .utils.temp_file import TempFile
@@ -82,7 +81,7 @@ def on_editor_did_init_buttons(buttons: list[str], editor: Editor):
                 cmd=f"ajt__{ADDON_FULL_NAME.lower().replace(' ', '_')}_button",
                 func=functools.partial(convert_and_insert, editor=editor, source=ShowOptions.toolbar),
                 tip=action_tooltip(),
-                keys=config["shortcut"] or None,
+                keys=config.shortcut or None,
             )
         )
 
