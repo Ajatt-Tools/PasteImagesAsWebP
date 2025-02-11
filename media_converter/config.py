@@ -199,6 +199,10 @@ class MediaConverterConfig(AddonConfigManager):
     def custom_name_field(self) -> str:
         return self["custom_name_field"]
 
+    @property
+    def avoid_upscaling(self) -> bool:
+        return bool(self["avoid_upscaling"])
+
     def should_show_settings(self, action: ShowOptions) -> bool:
         return bool(action in self.show_settings())
 

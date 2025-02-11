@@ -123,7 +123,7 @@ class ImageConverter(FileConverter, mode=ConverterType.image):
         return 0 < image.width < self._config["image_width"] or 0 < image.height < self._config["image_height"]
 
     def _get_resize_dimensions(self) -> Optional[ImageDimensions]:
-        if self._config["avoid_upscaling"] and self.smaller_than_requested(self._dimensions):
+        if self._config.avoid_upscaling and self.smaller_than_requested(self._dimensions):
             # skip resizing if the image is already smaller than the requested size
             return None
 
