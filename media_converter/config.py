@@ -156,6 +156,10 @@ class MediaConverterConfig(AddonConfigManager):
         return self["cwebp_args"]
 
     @property
+    def ffmpeg_args(self) -> list[Union[str, int]]:
+        return self["ffmpeg_args"]
+
+    @property
     def ffmpeg_audio_args(self) -> list[Union[str, int]]:
         return self["ffmpeg_audio_args"]
 

@@ -182,7 +182,7 @@ class ImageConverter(FileConverter, mode=ConverterType.image):
             self._get_ffmpeg_scale_arg() + ":flags=sinc+accurate_rnd",
             "-crf",
             quality_percent_to_avif_crf(self._config.image_quality),
-            *self._config["ffmpeg_args"],
+            *self._config.ffmpeg_args,
         ]
         if not is_animation(source_path):
             args += [
