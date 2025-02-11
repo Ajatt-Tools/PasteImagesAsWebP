@@ -73,7 +73,7 @@ def find_convertible_audio(html: str, include_converted: bool = False) -> Iterab
 def tooltip(msg: str, parent: Optional[QWidget] = None) -> None:
     from aqt.utils import tooltip as _tooltip
 
-    return _tooltip(msg=msg, period=int(config.get("tooltip_duration_seconds", 5)) * 1000, parent=parent)
+    return _tooltip(msg=msg, period=config.tooltip_duration_seconds * 1000, parent=parent)
 
 
 def filesize_kib(filepath: str) -> float:

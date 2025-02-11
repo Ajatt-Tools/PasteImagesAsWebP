@@ -151,6 +151,10 @@ class MediaConverterConfig(AddonConfigManager):
     def audio_bitrate_k(self, kbit_s: int) -> None:
         self["ffmpeg_audio_bitrate"] = kbit_s
 
+    @property
+    def tooltip_duration_seconds(self) -> int:
+        return int(self["tooltip_duration_seconds"])
+
 
 if mw:
     config = MediaConverterConfig()
