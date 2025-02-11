@@ -156,6 +156,14 @@ class MediaConverterConfig(AddonConfigManager):
     def tooltip_duration_seconds(self) -> int:
         return int(self["tooltip_duration_seconds"])
 
+    @property
+    def drag_and_drop(self) -> bool:
+        return bool(self["drag_and_drop"])
+
+    @property
+    def copy_paste(self) -> bool:
+        return bool(self["copy_paste"])
+
     def should_show_settings(self, action: ShowOptions) -> bool:
         return bool(action in self.show_settings())
 

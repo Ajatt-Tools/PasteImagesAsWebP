@@ -58,10 +58,10 @@ def on_process_mime(
     if internal or should_paste_raw():
         return mime
 
-    if config["drag_and_drop"] and drop_event:
+    if config.drag_and_drop and drop_event:
         return convert_mime(mime, editor_web_view.editor, action=ShowOptions.drag_and_drop)
 
-    if config["copy_paste"] and not drop_event and (mime.hasImage() or has_local_file(mime)):
+    if config.copy_paste and not drop_event and (mime.hasImage() or has_local_file(mime)):
         return convert_mime(mime, editor_web_view.editor, action=ShowOptions.paste)
 
     return mime
