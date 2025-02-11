@@ -75,7 +75,7 @@ def should_convert_images_in_new_note(note: anki.notes.Note) -> bool:
     Skip notes added using the Add dialog.
     """
     assert mw
-    return config["convert_on_note_add"] is True and mw.app.activeWindow() is None and note.id == 0
+    return config.convert_on_note_add is True and mw.app.activeWindow() is None and note.id == 0
 
 
 def on_add_note(_self: anki.collection.Collection, note: anki.notes.Note, _deck_id: anki.decks.DeckId) -> None:

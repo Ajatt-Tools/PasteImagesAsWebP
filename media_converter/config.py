@@ -96,7 +96,7 @@ class MediaConverterConfig(AddonConfigManager):
 
     @property
     def convert_on_note_add(self) -> bool:
-        return self["convert_on_note_add"]
+        return bool(self["convert_on_note_add"])
 
     def get_excluded_image_extensions(self, include_converted: bool) -> frozenset[str]:
         """
