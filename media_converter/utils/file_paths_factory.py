@@ -76,7 +76,7 @@ class FilePathFactory(FileNamePatterns):
 
         def get_pattern() -> str:
             try:
-                return self._patterns[self._config["filename_pattern_num"]]
+                return self._patterns[self._config.filename_pattern_num]
             except IndexError:
                 return self._patterns[0]
 

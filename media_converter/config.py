@@ -102,6 +102,13 @@ class MediaConverterConfig(AddonConfigManager):
     def show_editor_button(self) -> bool:
         return bool(self["show_editor_button"])
 
+    @property
+    def filename_pattern_num(self) -> int:
+        """
+        Index in list FileNamePatterns
+        """
+        return int(self["filename_pattern_num"])
+
     def get_excluded_image_extensions(self, include_converted: bool) -> frozenset[str]:
         """
         Return excluded formats and prepend a dot to each format.
