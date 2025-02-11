@@ -9,6 +9,8 @@ from aqt.editor import Editor
 from aqt.qt import *
 
 from .config import config
+from .dialogs.paste_image_dialog import AnkiPasteImageDialog
+from .utils.show_options import ImageDimensions, ShowOptions
 
 RE_IMAGE_HTML_TAG = re.compile(r'<img[^<>]*src="([^"]+)"[^<>]*>', flags=re.IGNORECASE)
 RE_AUDIO_HTML_TAG = re.compile(r"\[sound:([^\]]+)\]", flags=re.IGNORECASE)
@@ -97,3 +99,10 @@ def has_local_file(mime: QMimeData) -> bool:
 
 def key_to_str(shortcut: str) -> str:
     return QKeySequence(shortcut).toString(QKeySequence.SequenceFormat.NativeText)
+
+
+def maybe_show_settings(dimensions: ImageDimensions, parent: Optional[QWidget], action: ShowOptions) -> int:
+    if config.should_show_settings(action):
+        dlg = AnkiPasteImageDialog(config=config, dimensions=dimensions, parent=parent)
+        return dlg.exec()
+    return QDialog.DialogCode.Accepted

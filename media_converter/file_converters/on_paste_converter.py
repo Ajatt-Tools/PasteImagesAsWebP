@@ -5,9 +5,8 @@ import typing
 import aqt.editor
 from aqt.qt import *
 
-from ..common import filesize_kib, is_excluded_image_extension, tooltip
+from ..common import filesize_kib, is_excluded_image_extension, tooltip, maybe_show_settings
 from ..config import config
-from ..events import maybe_show_settings
 from ..utils.file_paths_factory import FilePathFactory
 from ..utils.mime_helper import image_candidates
 from ..utils.show_options import ImageDimensions, ShowOptions

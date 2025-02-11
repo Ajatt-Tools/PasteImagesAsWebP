@@ -6,9 +6,8 @@ from anki.notes import Note
 from aqt import mw
 from aqt.qt import *
 
-from ..common import find_convertible_images
+from ..common import find_convertible_images, maybe_show_settings
 from ..config import config
-from ..events import maybe_show_settings
 from ..utils.show_options import ImageDimensions, ShowOptions
 from .common import LocalFile
 from .image_converter import CanceledPaste
