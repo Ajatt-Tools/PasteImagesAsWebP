@@ -9,7 +9,8 @@ from playground.no_anki_config import NoAnkiConfigView
 
 @pytest.fixture(autouse=True)
 def no_anki_config(monkeypatch):
-    monkeypatch.setattr(media_converter.config, "config", NoAnkiConfigView(), raising=False)
-    from media_converter.config import config
-
+    config = NoAnkiConfigView()
+    monkeypatch.setattr(media_converter.config, "config", config, raising=False)
+    monkeypatch.setattr(media_converter.config, "get_global_config", lambda: config, raising=False)
     assert config.image_extension == ".webp"
+    return config
