@@ -8,7 +8,7 @@ from anki.notes import Note
 from aqt import mw
 from aqt.qt import *
 
-from ..config import get_global_config
+from ..config import config
 from ..utils.file_paths_factory import FilePathFactory
 from ..utils.show_options import ImageDimensions
 from .common import ConverterType, LocalFile
@@ -20,7 +20,6 @@ def get_target_extension(file: LocalFile) -> str:
     """
     If image file, convert to avif or webp. If audio file, convert to opus.
     """
-    config = get_global_config()
     if file.type == ConverterType.audio:
         return config.audio_extension
     return config.image_extension
