@@ -3,6 +3,7 @@
 
 import enum
 from collections.abc import Iterable, Sequence
+from typing import Union
 
 from aqt import mw
 
@@ -140,7 +141,7 @@ class MediaConverterConfig(AddonConfigManager):
         return bool(self["enable_audio_conversion"])
 
     @property
-    def ffmpeg_audio_args(self) -> list[str]:
+    def ffmpeg_audio_args(self) -> list[Union[str, int]]:
         return self["ffmpeg_audio_args"]
 
     @property
