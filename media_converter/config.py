@@ -172,6 +172,10 @@ class MediaConverterConfig(AddonConfigManager):
     def excluded_image_containers(self, value: str) -> None:
         self["excluded_image_containers"] = value
 
+    @property
+    def shortcut(self) -> str:
+        return self["shortcut"]
+
     def should_show_settings(self, action: ShowOptions) -> bool:
         return bool(action in self.show_settings())
 

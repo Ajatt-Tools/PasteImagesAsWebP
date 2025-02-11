@@ -41,8 +41,8 @@ def setup_mainwindow_menu():
 def action_tooltip():
     return (
         f"{ADDON_FULL_NAME}: Paste"
-        if not config["shortcut"]
-        else f"{ADDON_FULL_NAME}: Paste ({key_to_str(config['shortcut'])})"
+        if not config.shortcut
+        else f"{ADDON_FULL_NAME}: Paste ({key_to_str(config.shortcut)})"
     )
 
 
