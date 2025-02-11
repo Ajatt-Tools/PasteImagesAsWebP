@@ -40,10 +40,12 @@ class FileConverter:
 
     def __new__(cls, source_path: str, destination_path: str) -> "FileConverter":
         if is_audio_file(source_path):
-            subclass = cls._subclasses_map[ConverterType.audio]
+            mode = ConverterType.audio
         else:
-            subclass = cls._subclasses_map[ConverterType.image]
-        return object.__new__(subclass)
+            mode = ConverterType.image
+        obj = object.__new__(cls._subclasses_map[mode])
+        assert obj.mode == mode, f"{obj.mode} should be equal to {mode}"
+        return obj
 
     @property
     def mode(self) -> ConverterType:
