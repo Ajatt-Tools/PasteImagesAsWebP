@@ -38,6 +38,12 @@ class ImageSettings(WidgetHasName, ConfigPropMixIn):
             "If running Arch, run `sudo pacman -S ffmpeg` to install it."
         )
 
+    def set_dimensions(self, width: int, height: int) -> None:
+        if self._img_sliders.image_width > 0:
+            self._img_sliders.image_width = width
+        if self._img_sliders.image_height > 0:
+            self._img_sliders.image_height = height
+
     def set_initial_values(self) -> None:
         self._enable_checkbox.setChecked(self.config.enable_image_conversion)
         self._img_sliders.set_limits(self.config["max_image_width"], self.config["max_image_height"])
