@@ -75,7 +75,7 @@ def on_editor_did_init_buttons(buttons: list[str], editor: Editor):
     """
     Append a new editor button if it's enabled.
     """
-    if config["show_editor_button"] is True:
+    if config.show_editor_button is True:
         buttons.append(
             editor.addButton(
                 icon=os.path.join(ADDON_PATH, "icons", "webp.png"),
@@ -92,8 +92,8 @@ def on_editor_did_init_shortcuts(cuts: list[tuple], self: Editor):
     Add keyboard shortcut if it is set and if editor button is disabled.
     If editor button is enabled, it has its own keyboard shortcut.
     """
-    if config["show_editor_button"] is False and config["shortcut"]:
-        cuts.append((config["shortcut"], lambda e=self: convert_and_insert(e, source=ShowOptions.paste)))
+    if config.show_editor_button is False and config.shortcut:
+        cuts.append((config.shortcut, lambda e=self: convert_and_insert(e, source=ShowOptions.paste)))
 
 
 def setup_editor_menus():
