@@ -108,7 +108,7 @@ class MediaConverterConfig(AddonConfigManager):
                thus webp/avif files will be reconverted.
         :return: Image extensions.
         """
-        excluded_extensions = cfg_comma_sep_str_to_file_ext_set(self["excluded_image_containers"])
+        excluded_extensions = cfg_comma_sep_str_to_file_ext_set(self.excluded_image_containers)
         if include_converted:
             excluded_extensions.discard(self.image_extension)
         else:
@@ -163,6 +163,14 @@ class MediaConverterConfig(AddonConfigManager):
     @property
     def copy_paste(self) -> bool:
         return bool(self["copy_paste"])
+
+    @property
+    def excluded_image_containers(self) -> str:
+        return self["excluded_image_containers"]
+
+    @excluded_image_containers.setter
+    def excluded_image_containers(self, value: str) -> None:
+        self["excluded_image_containers"] = value
 
     def should_show_settings(self, action: ShowOptions) -> bool:
         return bool(action in self.show_settings())

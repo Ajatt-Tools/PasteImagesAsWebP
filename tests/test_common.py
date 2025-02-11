@@ -18,7 +18,7 @@ def test_find_convertible_images(no_anki_config) -> None:
     assert frozenset(find_convertible_images(HTML, include_converted=True)) == frozenset(("1.webp", "2.jpg", "4.png"))
 
     # The config should be idiot-proof.
-    no_anki_config["excluded_image_containers"] = ""
+    no_anki_config.excluded_image_containers = ""
     # The target extension is still excluded.
     assert frozenset(find_convertible_images(HTML)) == frozenset(("2.jpg", "3.avif", "4.png", "5.svg"))
     # Reconvert enabled.

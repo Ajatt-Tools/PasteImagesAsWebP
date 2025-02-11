@@ -15,10 +15,8 @@ from anki.notes import Note
 from anki.utils import html_to_text_line
 from aqt.editor import Editor
 
-from ..common import get_file_extension
-from ..config import MediaConverterConfig, get_global_config
-from ..file_converters.common import COMMON_AUDIO_FORMATS, LocalFile
 from .converter_interfaces import FileNamePatterns
+from ..config import MediaConverterConfig, get_global_config
 
 
 def compatible_filename(f: Callable[..., str]):
