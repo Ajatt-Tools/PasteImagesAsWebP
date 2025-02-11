@@ -159,6 +159,11 @@ class MediaConverterConfig(AddonConfigManager):
         return bool(action in self.show_settings())
 
 
+def get_global_config() -> MediaConverterConfig:
+    assert mw, "anki must be running"
+    return config
+
+
 if mw:
     config = MediaConverterConfig()
     set_config_update_action(config.update_from_addon_manager)
