@@ -124,7 +124,7 @@ class ConvertTask:
         return to_convert
 
     def _convert_stored_file(self, file: LocalFile) -> str:
-        conv = InternalFileConverter(self._browser.editor, file, self._first_referenced(file),  delete_original_file=config.delete_original_file_on_convert)
+        conv = InternalFileConverter(self._browser.editor, file, self._first_referenced(file))
         conv.convert_internal()
         return conv.new_filename
 

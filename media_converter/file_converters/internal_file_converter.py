@@ -35,7 +35,7 @@ class InternalFileConverter:
     _conversion_finished: bool
     _converter: FileConverter
 
-    def __init__(self, editor: Optional[aqt.editor.Editor], file: LocalFile, note: Note, delete_original_file: bool):
+    def __init__(self, editor: Optional[aqt.editor.Editor], file: LocalFile, note: Note):
         self._conversion_finished = False
         self._fpf = FilePathFactory(note=note, editor=editor)
         self._initial_file_path = os.path.join(self._dest_dir, file.file_name)
@@ -45,7 +45,6 @@ class InternalFileConverter:
             extension=get_target_extension(file),
         )
         self._converter = FileConverter(self._initial_file_path, self._destination_file_path)
-        self._delete_original_file = delete_original_file
 
     @property
     def _dest_dir(self) -> str:
@@ -77,6 +76,6 @@ class InternalFileConverter:
     def convert_internal(self) -> None:
         self._converter.convert()
         self._conversion_finished = True
-        if self._delete_original_file:
+        if config.delete_original_file_on_convert:
             print("Removing original file.")
             os.remove(self._initial_file_path)

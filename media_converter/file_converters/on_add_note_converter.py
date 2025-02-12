@@ -24,12 +24,11 @@ class OnAddNoteConverter:
     _note: Note
     _parent: Optional[QWidget] = None
 
-    def __init__(self, note: Note, action: ShowOptions, parent: Optional[QWidget],  delete_original_file: bool) -> None:
+    def __init__(self, note: Note, action: ShowOptions, parent: Optional[QWidget]) -> None:
         self._settings_shown = False
         self._action = action
         self._note = note
         self._parent = parent
-        self._delete_original_file = delete_original_file
 
     def _should_show_settings(self) -> bool:
         if self._settings_shown is False:
@@ -45,7 +44,7 @@ class OnAddNoteConverter:
         return QDialog.DialogCode.Accepted
 
     def _convert_and_replace_stored_image(self, filename: str) -> None:
-        conv = InternalFileConverter(file=LocalFile.image(filename), editor=None, note=self._note, delete_original_file=self._delete_original_file)
+        conv = InternalFileConverter(file=LocalFile.image(filename), editor=None, note=self._note)
         ans = self._maybe_show_settings(conv.initial_dimensions)
         if ans == QDialog.DialogCode.Rejected:
             raise CanceledPaste("Cancelled.")
