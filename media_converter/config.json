@@ -6,10 +6,13 @@
     "delete_original_file_on_convert": false,
     "shortcut": "Ctrl+Meta+v",
     "image_width": 0,
-    "image_height": 200,
-    "max_image_width": 800,
-    "max_image_height": 600,
+    "image_height": 250,
+    "max_image_width": 1000,
+    "max_image_height": 1000,
     "image_format": "webp",
+    "audio_container": "ogg",
+    "excluded_image_containers": "svg,webp,avif",
+    "excluded_audio_containers": "mid,aac,opus,ogg",
     "image_quality": 20,
     "show_settings": "toolbar",
     "drag_and_drop": true,
@@ -39,5 +42,10 @@
     "bulk_convert_fields": [],
     "bulk_reconvert": false,
     "custom_name_field": "VocabKanji",
-    "saved_presets": []
+    "saved_presets": [],
+    "enable_image_conversion": true,
+    "enable_audio_conversion": false,
+    "ffmpeg_audio_args": [
+    ],
+    "ffmpeg_audio_bitrate": 32
 }

@@ -2,20 +2,20 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import functools
-import subprocess
-from typing import Any, Optional
+from typing import Optional
 
 from aqt.qt import *
 from aqt.utils import showWarning
 
 from ..ajt_common.utils import find_executable as find_executable_ajt
-from ..config import ImageFormat, config
+from ..common import get_file_extension
+from ..config import ImageFormat, MediaConverterConfig, get_global_config
 from ..consts import ADDON_FULL_NAME, SUPPORT_DIR
 from ..utils.mime_helper import iter_files
-from .common import ImageDimensions
+from ..utils.show_options import ImageDimensions
+from .common import IS_MAC, IS_WIN, ConverterType, create_process, run_process
+from .file_converter import FFmpegNotFoundError, FileConverter, find_ffmpeg_exe
 
-IS_MAC = sys.platform.startswith("darwin")
-IS_WIN = sys.platform.startswith("win32")
 ANIMATED_OR_VIDEO_FORMATS = frozenset(
     [".apng", ".gif", ".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv", ".webm", ".m4v", ".mpg", ".mpeg"]
 )
@@ -26,27 +26,8 @@ class CanceledPaste(Warning):
     pass
 
 
-class InvalidInput(Warning):
+class MimeImageNotFound(Warning):
     pass
-
-
-class ImageNotLoaded(Exception):
-    pass
-
-
-class FFmpegNotFoundError(FileNotFoundError):
-    pass
-
-
-@functools.cache
-def startup_info():
-    if IS_WIN:
-        # Prevents a console window from popping up on Windows
-        si = subprocess.STARTUPINFO()
-        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-    else:
-        si = None
-    return si
 
 
 @functools.cache
@@ -75,23 +56,9 @@ def get_bundled_executable(name: str) -> str:
 
 
 @functools.cache
-def find_ffmpeg_exe() -> Optional[str]:
-    # https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-essentials.7z
-    return find_executable_ajt("ffmpeg")
-
-
-@functools.cache
 def find_cwebp_exe() -> str:
     # https://developers.google.com/speed/webp/download
     return find_executable_ajt("cwebp") or get_bundled_executable("cwebp")
-
-
-def stringify_args(args: list[Any]) -> list[str]:
-    return list(map(str, args))
-
-
-def smaller_than_requested(image: ImageDimensions) -> bool:
-    return 0 < image.width < config["image_width"] or 0 < image.height < config["image_height"]
 
 
 def fetch_filename(mime: QMimeData) -> Optional[str]:
@@ -107,7 +74,7 @@ def quality_percent_to_avif_crf(q: int) -> int:
 
 
 def is_animation(source_path: str) -> bool:
-    return os.path.splitext(source_path)[1].lower() in ANIMATED_OR_VIDEO_FORMATS
+    return get_file_extension(source_path) in ANIMATED_OR_VIDEO_FORMATS
 
 
 def ffmpeg_not_found_dialog(parent=None):
@@ -130,25 +97,44 @@ def ffmpeg_not_found_dialog(parent=None):
     )
 
 
-class ImageConverter:
-    _dimensions: ImageDimensions
+def find_image_dimensions(file_path: str) -> ImageDimensions:
+    with open(file_path, "rb") as f:
+        image = QImage.fromData(f.read())  # type: ignore
+    return ImageDimensions(image.width(), image.height())
 
-    def __init__(self, dimensions: ImageDimensions) -> None:
-        self._dimensions = dimensions
+
+class ImageConverter(FileConverter, mode=ConverterType.image):
+    _source_path: str
+    _dimensions: ImageDimensions
+    _destination_path: str
+    _config: MediaConverterConfig
+
+    def __init__(self, source_path: str, destination_path: str) -> None:
+        self._config = get_global_config()
+        self._source_path = source_path
+        self._destination_path = destination_path
+        self._dimensions = find_image_dimensions(source_path)
+
+    @property
+    def initial_dimensions(self) -> ImageDimensions:
+        return self._dimensions
+
+    def smaller_than_requested(self, image: ImageDimensions) -> bool:
+        return 0 < image.width < self._config.image_width or 0 < image.height < self._config.image_height
 
     def _get_resize_dimensions(self) -> Optional[ImageDimensions]:
-        if config["avoid_upscaling"] and smaller_than_requested(self._dimensions):
+        if self._config.avoid_upscaling and self.smaller_than_requested(self._dimensions):
             # skip resizing if the image is already smaller than the requested size
             return None
 
-        if config["image_width"] == 0 and config["image_height"] == 0:
+        if self._config.image_width == 0 and self._config.image_height == 0:
             # skip resizing if both width and height are set to 0
             return None
 
         # For cwebp, the resize arguments are directly "-resize width height"
         # For ffmpeg, the resize argument is part of the filtergraph: "scale=width:height"
         # The distinction will be made in the respective conversion functions
-        return ImageDimensions(config["image_width"], config["image_height"])
+        return ImageDimensions(self._config.image_width, self._config.image_height)
 
     def _get_ffmpeg_scale_arg(self) -> str:
         # Check if either width or height is 0 and adjust accordingly
@@ -168,8 +154,8 @@ class ImageConverter:
             "-o",
             destination_path,
             "-q",
-            config.image_quality,
-            *config["cwebp_args"],
+            self._config.image_quality,
+            *self._config.cwebp_args,
         ]
         if resize_args := self._get_resize_dimensions():
             args.extend(["-resize", resize_args.width, resize_args.height])
@@ -195,8 +181,8 @@ class ImageConverter:
             "-vf",
             self._get_ffmpeg_scale_arg() + ":flags=sinc+accurate_rnd",
             "-crf",
-            quality_percent_to_avif_crf(config.image_quality),
-            *config["ffmpeg_args"],
+            quality_percent_to_avif_crf(self._config.image_quality),
+            *self._config.ffmpeg_args,
         ]
         if not is_animation(source_path):
             args += [
@@ -208,28 +194,12 @@ class ImageConverter:
         args.append(destination_path)
         return args
 
-    def convert_image(self, source_path: str, destination_path: str) -> None:
-        if config.image_format == ImageFormat.webp:
-            args = self._make_to_webp_args(source_path, destination_path)
+    def convert(self) -> None:
+        if self._config.image_format == ImageFormat.webp:
+            args = self._make_to_webp_args(self._source_path, self._destination_path)
         else:
-            args = self._make_to_avif_args(source_path, destination_path)
+            args = self._make_to_avif_args(self._source_path, self._destination_path)
 
         print(f"executing args: {args}")
-        p = subprocess.Popen(
-            stringify_args(args),
-            shell=False,
-            bufsize=-1,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            startupinfo=startup_info(),
-            universal_newlines=True,
-            encoding="utf8",
-        )
-
-        stdout, stderr = p.communicate()
-
-        if p.wait() != 0:
-            print("Conversion failed.")
-            print(f"exit code = {p.returncode}")
-            print(stdout)
-            raise RuntimeError(f"Conversion failed with code {p.returncode}.")
+        p = create_process(args)
+        run_process(p)

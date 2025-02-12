@@ -15,7 +15,7 @@ from anki.notes import Note
 from anki.utils import html_to_text_line
 from aqt.editor import Editor
 
-from ..config import config
+from ..config import MediaConverterConfig, get_global_config
 from .converter_interfaces import FileNamePatterns
 
 
@@ -57,25 +57,26 @@ def note_sort_field_content(note: Note) -> str:
 class FilePathFactory(FileNamePatterns):
     _note: Optional[Note]
     _editor: Optional[Editor]
+    _config: MediaConverterConfig
 
     def __init__(self, note: Optional[Note], editor: Optional[Editor]) -> None:
         super().__init__()
+        self._config = get_global_config()
         self._note = note
         self._editor = editor
 
-    def make_unique_filepath(self, dest_dir: str, original_filename: Optional[str]) -> str:
-        return ensure_unique(
-            os.path.join(dest_dir, self._make_filename_no_ext(original_filename) + config.image_extension)
-        )
+    def make_unique_filepath(self, dest_dir: str, original_filename: Optional[str], extension: str) -> str:
+        new_file_path = os.path.join(dest_dir, self._make_filename_no_ext(original_filename) + extension)
+        return ensure_unique(new_file_path)
 
     @compatible_filename
     def _make_filename_no_ext(self, original_filename: Optional[str]) -> str:
-        if original_filename and config.preserve_original_filenames:
+        if original_filename and self._config.preserve_original_filenames:
             return os.path.splitext(original_filename)[0]
 
         def get_pattern() -> str:
             try:
-                return self._patterns[config["filename_pattern_num"]]
+                return self._patterns[self._config.filename_pattern_num]
             except IndexError:
                 return self._patterns[0]
 
@@ -97,7 +98,7 @@ class FilePathFactory(FileNamePatterns):
     def _custom_field(self) -> str:
         if self._note:
             try:
-                return self._note[config["custom_name_field"]]
+                return self._note[self._config.custom_name_field]
             except (AttributeError, TypeError, KeyError):
                 pass
         return self._sort_field()
