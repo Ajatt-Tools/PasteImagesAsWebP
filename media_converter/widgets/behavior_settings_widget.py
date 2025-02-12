@@ -20,6 +20,7 @@ VISIBLE_BOOL_CONFIG_KEYS = {
     "avoid_upscaling": "Avoid upscaling",
     "show_editor_button": "Show a Converter button on the Editor Toolbar",
     "show_context_menu_entry": "Show a separate context menu item",
+    "delete_original_file_on_convert": "Delete original file after conversion",
 }
 
 
