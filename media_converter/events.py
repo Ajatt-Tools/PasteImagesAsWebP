@@ -113,5 +113,3 @@ def init() -> None:
     gui_hooks.editor_will_process_mime.append(on_process_mime)
     hooks.note_will_be_added.append(on_add_note)
     aqt.editor.Editor.setup_mask_editor = wrap(aqt.editor.Editor.setup_mask_editor, on_setup_mask_editor, pos="around")
-
-

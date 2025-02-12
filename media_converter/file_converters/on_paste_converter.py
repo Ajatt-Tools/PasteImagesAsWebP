@@ -5,7 +5,12 @@ import typing
 import aqt.editor
 from aqt.qt import *
 
-from ..common import filesize_kib, is_excluded_image_extension, tooltip, maybe_show_settings
+from ..common import (
+    filesize_kib,
+    is_excluded_image_extension,
+    maybe_show_settings,
+    tooltip,
+)
 from ..config import config
 from ..utils.file_paths_factory import FilePathFactory
 from ..utils.mime_helper import image_candidates

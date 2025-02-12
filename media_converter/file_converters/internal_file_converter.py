@@ -1,5 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+import os
 import os.path
 from typing import Optional
 
@@ -14,7 +15,7 @@ from ..utils.show_options import ImageDimensions
 from .common import ConverterType, LocalFile
 from .file_converter import FileConverter
 from .image_converter import ImageConverter
-import os
+
 
 def get_target_extension(file: LocalFile) -> str:
     """
