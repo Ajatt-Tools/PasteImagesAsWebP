@@ -3,6 +3,7 @@
     "show_context_menu_entry": false,
     "show_editor_button": true,
     "convert_on_note_add": true,
+    "delete_original_file_on_convert": false,
     "shortcut": "Ctrl+Meta+v",
     "image_width": 0,
     "image_height": 250,

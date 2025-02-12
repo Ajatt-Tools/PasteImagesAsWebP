@@ -101,7 +101,11 @@ class MediaConverterConfig(AddonConfigManager):
     @property
     def show_editor_button(self) -> bool:
         return bool(self["show_editor_button"])
-
+    
+    @property
+    def delete_original_file_on_convert(self) -> bool:
+        return self["delete_original_file_on_convert"]
+    
     @property
     def filename_pattern_num(self) -> int:
         """

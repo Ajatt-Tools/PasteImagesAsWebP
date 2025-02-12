@@ -14,7 +14,7 @@ from ..utils.show_options import ImageDimensions
 from .common import ConverterType, LocalFile
 from .file_converter import FileConverter
 from .image_converter import ImageConverter
-
+import os
 
 def get_target_extension(file: LocalFile) -> str:
     """
@@ -76,3 +76,6 @@ class InternalFileConverter:
     def convert_internal(self) -> None:
         self._converter.convert()
         self._conversion_finished = True
+        if config.delete_original_file_on_convert:
+            print("Removing original file.")
+            os.remove(self._initial_file_path)
