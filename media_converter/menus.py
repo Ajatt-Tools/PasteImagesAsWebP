@@ -67,7 +67,7 @@ def convert_and_insert(editor: Editor, source: ShowOptions) -> None:
 def on_editor_will_show_context_menu(webview: EditorWebView, menu: QMenu):
     if config.get("show_context_menu_entry") is True:
         action: QAction = menu.addAction(action_tooltip())
-        qconnect(action.triggered, lambda _, e=webview.editor: convert_and_insert(e, source=ShowOptions.paste))
+        qconnect(action.triggered, functools.partial(convert_and_insert, editor=webview.editor, source=ShowOptions.paste))
 
 
 def on_editor_did_init_buttons(buttons: list[str], editor: Editor):
@@ -92,7 +92,7 @@ def on_editor_did_init_shortcuts(cuts: list[tuple], self: Editor):
     If editor button is enabled, it has its own keyboard shortcut.
     """
     if config.show_editor_button is False and config.shortcut:
-        cuts.append((config.shortcut, lambda e=self: convert_and_insert(e, source=ShowOptions.paste)))
+        cuts.append((config.shortcut, functools.partial(convert_and_insert, editor=self, source=ShowOptions.paste)))
 
 
 def setup_editor_menus():
