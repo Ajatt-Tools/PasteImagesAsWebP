@@ -4,7 +4,7 @@
 from aqt.qt import *
 
 from media_converter.dialogs.bulk_convert_result_dialog import BulkConvertResultDialog
-from media_converter.file_converters.common import LocalFile, ConverterType
+from media_converter.file_converters.common import ConverterType, LocalFile
 from media_converter.file_converters.convert_result import ConvertResult
 
 

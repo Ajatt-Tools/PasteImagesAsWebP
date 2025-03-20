@@ -27,6 +27,7 @@ def is_excluded_image_extension(filename: str, include_converted: bool = False) 
     :param include_converted: Allow reconversion. The target extension (webp, avif) will not be excluded.
     """
     from .config import config
+
     return get_file_extension(filename) in config.get_excluded_image_extensions(include_converted)
 
 
@@ -38,6 +39,7 @@ def is_excluded_audio_extension(filename: str, include_converted: bool = False) 
     :param include_converted: Allow reconversion. The target extension (webp, avif) will not be excluded.
     """
     from .config import config
+
     return get_file_extension(filename) in config.get_excluded_audio_extensions(include_converted)
 
 

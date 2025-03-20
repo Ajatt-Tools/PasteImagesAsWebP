@@ -3,7 +3,6 @@
 
 import collections
 import functools
-import io
 from collections.abc import Iterable, Sequence
 from typing import cast
 
@@ -14,16 +13,16 @@ from aqt import gui_hooks, mw
 from aqt.browser import Browser
 from aqt.operations import CollectionOp, ResultWithChanges
 from aqt.qt import *
-from aqt.utils import showInfo
 
 from .common import find_convertible_audio, find_convertible_images, tooltip
 from .config import config
 from .consts import ADDON_FULL_NAME, ADDON_NAME_SNAKE
 from .dialogs.bulk_convert_dialog import AnkiBulkConvertDialog
+from .dialogs.bulk_convert_result_dialog import BulkConvertResultDialog
 from .dialogs.settings_dialog_base import AnkiSaveAndRestoreGeomDialog
 from .file_converters.common import LocalFile
-from .file_converters.internal_file_converter import InternalFileConverter
 from .file_converters.convert_result import ConvertResult
+from .file_converters.internal_file_converter import InternalFileConverter
 
 ACTION_NAME = f"{ADDON_FULL_NAME}: Bulk-convert"
 
@@ -57,8 +56,10 @@ class ConvertTask:
                 self._result.add_converted(file, converted_filename)
 
     def update_notes(self):
-        def show_report_message() -> None:
-            showInfo(parent=self._browser, title="Task done", textFormat="rich", text=self._form_report_message())
+        def show_report_message() -> int:
+            dialog = BulkConvertResultDialog(self._browser)
+            dialog.set_result(self._result)
+            return dialog.exec()
 
         def on_finish() -> None:
             assert self._browser.editor
@@ -118,17 +119,6 @@ class ConvertTask:
 
         col.update_notes(list(to_update.values()))
         return col.merge_undo_entries(pos)
-
-    def _form_report_message(self) -> str:
-        buffer = io.StringIO()
-        buffer.write(f"<p>Converted <code>{len(self._result.converted)}</code> files.</p>")
-        if self._result.failed:
-            buffer.write(f"<p>Failed <code>{len(self._result.failed)}</code> files:</p>")
-            buffer.write("<ol>")
-            for filename, reason in self._result.failed.items():
-                buffer.write(f"<li><code>{filename}</code>: {reason}</li>")
-            buffer.write("</ol>")
-        return buffer.getvalue()
 
 
 class ConvertSignals(QObject):

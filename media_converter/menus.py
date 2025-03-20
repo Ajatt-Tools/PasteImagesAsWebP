@@ -67,7 +67,9 @@ def convert_and_insert(editor: Editor, source: ShowOptions) -> None:
 def on_editor_will_show_context_menu(webview: EditorWebView, menu: QMenu):
     if config.get("show_context_menu_entry") is True:
         action: QAction = menu.addAction(action_tooltip())
-        qconnect(action.triggered, functools.partial(convert_and_insert, editor=webview.editor, source=ShowOptions.paste))
+        qconnect(
+            action.triggered, functools.partial(convert_and_insert, editor=webview.editor, source=ShowOptions.paste)
+        )
 
 
 def on_editor_did_init_buttons(buttons: list[str], editor: Editor):
