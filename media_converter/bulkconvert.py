@@ -5,7 +5,7 @@ import collections
 import functools
 import io
 from collections.abc import Iterable, Sequence
-from typing import Optional, cast
+from typing import cast
 
 from anki.collection import Collection
 from anki.notes import Note, NoteId
@@ -23,31 +23,9 @@ from .dialogs.bulk_convert_dialog import AnkiBulkConvertDialog
 from .dialogs.settings_dialog_base import AnkiSaveAndRestoreGeomDialog
 from .file_converters.common import LocalFile
 from .file_converters.internal_file_converter import InternalFileConverter
+from .file_converters.convert_result import ConvertResult
 
 ACTION_NAME = f"{ADDON_FULL_NAME}: Bulk-convert"
-
-
-class ConvertResult:
-    def __init__(self) -> None:
-        self._converted: dict[LocalFile, str] = {}
-        self._failed: dict[LocalFile, Optional[Exception]] = {}
-
-    def add_converted(self, old_file: LocalFile, new_filename: str) -> None:
-        self._converted[old_file] = new_filename
-
-    def add_failed(self, file: LocalFile, exception: Optional[Exception] = None):
-        self._failed[file] = exception
-
-    @property
-    def converted(self) -> dict[LocalFile, str]:
-        return self._converted
-
-    @property
-    def failed(self) -> dict[LocalFile, Optional[Exception]]:
-        return self._failed
-
-    def is_dirty(self) -> bool:
-        return bool(self._converted or self._failed)
 
 
 class ConvertTask:

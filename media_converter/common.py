@@ -8,7 +8,6 @@ from typing import Optional
 from aqt.editor import Editor
 from aqt.qt import *
 
-from .config import config
 from .dialogs.paste_image_dialog import AnkiPasteImageDialog
 from .utils.show_options import ImageDimensions, ShowOptions
 
@@ -27,6 +26,7 @@ def is_excluded_image_extension(filename: str, include_converted: bool = False) 
     :param filename: Name of the file.
     :param include_converted: Allow reconversion. The target extension (webp, avif) will not be excluded.
     """
+    from .config import config
     return get_file_extension(filename) in config.get_excluded_image_extensions(include_converted)
 
 
@@ -37,6 +37,7 @@ def is_excluded_audio_extension(filename: str, include_converted: bool = False) 
     :param filename: Name of the file.
     :param include_converted: Allow reconversion. The target extension (webp, avif) will not be excluded.
     """
+    from .config import config
     return get_file_extension(filename) in config.get_excluded_audio_extensions(include_converted)
 
 

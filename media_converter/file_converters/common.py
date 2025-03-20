@@ -23,6 +23,9 @@ class LocalFile(typing.NamedTuple):
     file_name: str
     type: ConverterType
 
+    def __repr__(self) -> str:
+        return f"{self.type.name} '{self.file_name}'"
+
     @classmethod
     def image(cls, file_name: str):
         return cls(file_name, ConverterType.image)
