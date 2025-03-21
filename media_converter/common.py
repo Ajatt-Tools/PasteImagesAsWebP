@@ -77,6 +77,7 @@ def find_convertible_audio(html: str, include_converted: bool = False) -> Iterab
 
 def tooltip(msg: str, parent: Optional[QWidget] = None) -> None:
     from aqt.utils import tooltip as _tooltip
+    from .config import config
 
     return _tooltip(msg=msg, period=config.tooltip_duration_seconds * 1000, parent=parent)
 
@@ -86,6 +87,8 @@ def filesize_kib(filepath: str) -> float:
 
 
 def image_html(image_filename: str) -> str:
+    from .config import config
+    
     return f'<img alt="{config.image_format.name} image" src="{image_filename}">'
 
 
@@ -105,6 +108,8 @@ def key_to_str(shortcut: str) -> str:
 
 
 def maybe_show_settings(dimensions: ImageDimensions, parent: Optional[QWidget], action: ShowOptions) -> int:
+    from .config import config
+
     if config.should_show_settings(action):
         dlg = AnkiPasteImageDialog(config=config, dimensions=dimensions, parent=parent)
         return dlg.exec()
