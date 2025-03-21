@@ -8,12 +8,18 @@ from aqt.qt import *
 from aqt.utils import showWarning
 
 from ..ajt_common.utils import find_executable as find_executable_ajt
-from ..common import get_file_extension
 from ..config import ImageFormat, MediaConverterConfig, get_global_config
 from ..consts import ADDON_FULL_NAME, SUPPORT_DIR
 from ..utils.mime_helper import iter_files
 from ..utils.show_options import ImageDimensions
-from .common import IS_MAC, IS_WIN, ConverterType, create_process, run_process
+from .common import (
+    IS_MAC,
+    IS_WIN,
+    ConverterType,
+    create_process,
+    get_file_extension,
+    run_process,
+)
 from .file_converter import FFmpegNotFoundError, FileConverter, find_ffmpeg_exe
 
 ANIMATED_OR_VIDEO_FORMATS = frozenset(

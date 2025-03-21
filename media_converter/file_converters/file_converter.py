@@ -5,8 +5,7 @@ import functools
 from typing import Optional
 
 from ..ajt_common.utils import find_executable as find_executable_ajt
-from ..common import get_file_extension
-from .common import COMMON_AUDIO_FORMATS, ConverterType
+from .common import COMMON_AUDIO_FORMATS, ConverterType, get_file_extension
 
 
 class FFmpegNotFoundError(FileNotFoundError):

@@ -2,6 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import enum
 import functools
+import os
 import subprocess
 import sys
 import typing
@@ -70,3 +71,7 @@ def run_process(p: subprocess.Popen) -> None:
         print(f"exit code = {p.returncode}")
         print(stdout)
         raise RuntimeError(f"Conversion failed with code {p.returncode}.")
+
+
+def get_file_extension(file_path: str) -> str:
+    return os.path.splitext(file_path)[1].lower()
