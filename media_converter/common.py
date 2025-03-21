@@ -7,6 +7,7 @@ from typing import Optional
 
 from aqt.editor import Editor
 from aqt.qt import *
+
 from .config import config
 from .dialogs.paste_image_dialog import AnkiPasteImageDialog
 from .utils.show_options import ImageDimensions, ShowOptions
@@ -75,7 +76,6 @@ def find_convertible_audio(html: str, include_converted: bool = False) -> Iterab
 
 def tooltip(msg: str, parent: Optional[QWidget] = None) -> None:
     from aqt.utils import tooltip as _tooltip
-
 
     return _tooltip(msg=msg, period=config.tooltip_duration_seconds * 1000, parent=parent)
 

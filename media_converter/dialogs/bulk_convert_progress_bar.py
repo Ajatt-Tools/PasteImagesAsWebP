@@ -2,12 +2,12 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 from typing import cast
 
-from PyQt6.QtWidgets import QWidget
-from aqt.qt import *
 from aqt import qconnect
+from aqt.qt import *
+from PyQt6.QtWidgets import QWidget
 
 from ..bulk_convert.convert_task import ConvertTask
-from ..bulk_convert.runnable import ConvertSignals, ConvertRunnable
+from ..bulk_convert.runnable import ConvertRunnable, ConvertSignals
 from ..consts import ADDON_NAME_SNAKE
 from .settings_dialog_base import AnkiSaveAndRestoreGeomDialog
 

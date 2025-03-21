@@ -1,17 +1,17 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import collections
-from typing import Sequence, Iterable
+from collections.abc import Iterable, Sequence
 
 from anki.collection import Collection
-from anki.notes import NoteId, Note
+from anki.notes import Note, NoteId
 from anki.utils import join_fields
 from aqt import mw
 from aqt.browser import Browser
 from aqt.operations import CollectionOp, ResultWithChanges
 
 from ..bulk_convert.convert_result import ConvertResult
-from ..common import find_convertible_images, find_convertible_audio
+from ..common import find_convertible_audio, find_convertible_images
 from ..config import config
 from ..dialogs.bulk_convert_result_dialog import BulkConvertResultDialog
 from ..file_converters.common import LocalFile

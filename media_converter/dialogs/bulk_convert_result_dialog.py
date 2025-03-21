@@ -7,8 +7,8 @@ import aqt
 from aqt.qt import *
 
 from ..ajt_common.about_menu import tweak_window
-from ..consts import ADDON_FULL_NAME
 from ..bulk_convert.convert_result import ConvertResult
+from ..consts import ADDON_FULL_NAME
 
 
 def fallback_parent(parent) -> Optional[QWidget]:

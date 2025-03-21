@@ -1,8 +1,8 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt.qt import QObject, pyqtSignal, QRunnable
 from aqt import qconnect
+from aqt.qt import QObject, QRunnable, pyqtSignal
 
 from .convert_task import ConvertTask
 
