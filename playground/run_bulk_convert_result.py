@@ -5,7 +5,7 @@ from aqt.qt import *
 
 from media_converter.dialogs.bulk_convert_result_dialog import BulkConvertResultDialog
 from media_converter.file_converters.common import ConverterType, LocalFile
-from media_converter.file_converters.convert_result import ConvertResult
+from media_converter.bulk_convert.convert_result import ConvertResult
 
 
 def fill_fake_results(result: ConvertResult):
