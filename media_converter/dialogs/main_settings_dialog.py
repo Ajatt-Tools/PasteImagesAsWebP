@@ -5,13 +5,13 @@ from typing import cast
 from aqt.addons import AddonsDialog, ConfigEditor
 from aqt.qt import *
 
+from ..ajt_common.restore_geom_dialog import AnkiSaveAndRestoreGeomDialog
 from ..config import MediaConverterConfig
 from ..consts import ADDON_NAME_SNAKE, THIS_ADDON_MODULE
 from ..widgets.audio_settings_widget import AudioSettings
 from ..widgets.behavior_settings_widget import BehaviorSettings
 from ..widgets.image_settings_widget import ImageSettings
 from .settings_dialog_base import (
-    AnkiSaveAndRestoreGeomDialog,
     SettingsDialogBase,
     SettingsTabs,
 )

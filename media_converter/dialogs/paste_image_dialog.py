@@ -3,12 +3,13 @@
 
 from aqt import qconnect
 
+from ..ajt_common.restore_geom_dialog import AnkiSaveAndRestoreGeomDialog
 from ..config import MediaConverterConfig
 from ..consts import ADDON_NAME_SNAKE
 from ..utils.show_options import ImageDimensions
 from ..widgets.image_settings_widget import ImageSettings
 from ..widgets.scale_settings_widget import ScaleSettings
-from .settings_dialog_base import AnkiSaveAndRestoreGeomDialog, SettingsDialogBase
+from .settings_dialog_base import SettingsDialogBase
 
 
 class PasteImageDialog(SettingsDialogBase):

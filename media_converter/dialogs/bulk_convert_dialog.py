@@ -8,13 +8,13 @@ from aqt import mw
 from aqt.browser import Browser
 from aqt.utils import showInfo
 
+from ..ajt_common.restore_geom_dialog import AnkiSaveAndRestoreGeomDialog
 from ..config import MediaConverterConfig
 from ..consts import ADDON_NAME_SNAKE
 from ..widgets.audio_settings_widget import AudioSettings
 from ..widgets.bulk_convert_settings_widget import BulkConvertSettings
 from ..widgets.image_settings_widget import ImageSettings
 from .settings_dialog_base import (
-    AnkiSaveAndRestoreGeomDialog,
     SettingsDialogBase,
     SettingsTabs,
 )

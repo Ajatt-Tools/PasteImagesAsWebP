@@ -55,7 +55,7 @@ class BehaviorSettings(WidgetHasName, ConfigPropMixIn):
         self._image_format_combo_box = EnumSelectCombo(ImageFormat)
         self._when_show_dialog_combo_box = create_when_show_dialog_combo_box()
         self._filename_pattern_combo_box = create_filename_pattern_combo_box()
-        self._custom_name_field_combo_box = AnkiFieldSelector(self)
+        self._custom_name_field_combo_box = AnkiFieldSelector()
         self._excluded_image_containers_edit = QLineEdit()
         self._excluded_audio_containers_edit = QLineEdit()
         self._checkboxes = {key: QCheckBox(text) for key, text in VISIBLE_BOOL_CONFIG_KEYS.items()}
