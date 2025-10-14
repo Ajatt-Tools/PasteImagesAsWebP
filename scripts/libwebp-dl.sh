@@ -8,7 +8,7 @@ readonly NC='\033[0m'
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
 
-readonly version=1.5.0
+readonly version=1.6.0
 readonly webp_windows="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${version}-windows-x64.zip"
 readonly webp_linux="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${version}-linux-x86-64.tar.gz"
 readonly webp_mac="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${version}-mac-x86-64.tar.gz"
