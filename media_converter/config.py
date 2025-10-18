@@ -140,7 +140,7 @@ class MediaConverterConfig(AddonConfigManager):
                thus ogg/opus files will be reconverted.
         :return: Audio extensions.
         """
-        excluded_extensions = cfg_comma_sep_str_to_file_ext_set(self["excluded_audio_containers"])
+        excluded_extensions = cfg_comma_sep_str_to_file_ext_set(self.excluded_audio_containers)
         if include_converted:
             excluded_extensions.discard(self.audio_extension)
         else:
@@ -194,6 +194,14 @@ class MediaConverterConfig(AddonConfigManager):
     @excluded_image_containers.setter
     def excluded_image_containers(self, value: str) -> None:
         self["excluded_image_containers"] = value
+
+    @property
+    def excluded_audio_containers(self) -> str:
+        return self["excluded_audio_containers"]
+
+    @excluded_audio_containers.setter
+    def excluded_audio_containers(self, value: str) -> None:
+        self["excluded_audio_containers"] = value
 
     @property
     def shortcut(self) -> str:
