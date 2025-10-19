@@ -13,8 +13,8 @@ from .dialogs.paste_image_dialog import AnkiPasteImageDialog
 from .file_converters.common import get_file_extension
 from .utils.show_options import ImageDimensions, ShowOptions
 
-RE_IMAGE_HTML_TAG = re.compile(r'<img[^<>]*src="([^"]+)"[^<>]*>', flags=re.IGNORECASE)
-RE_AUDIO_HTML_TAG = re.compile(r"\[sound:([^\]]+)\]", flags=re.IGNORECASE)
+RE_IMAGE_HTML_TAG = re.compile(r'<img[^<>]*src="(?P<name>[^"]+)"[^<>]*>', flags=re.IGNORECASE)
+RE_AUDIO_HTML_TAG = re.compile(r"\[sound:(?P<name>[^]]+)]", flags=re.IGNORECASE)
 
 
 def is_excluded_image_extension(filename: str, include_converted: bool = False) -> bool:
