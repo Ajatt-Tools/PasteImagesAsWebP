@@ -60,7 +60,8 @@ class MediaConverterConfig(AddonConfigManager):
 
     @bulk_reconvert.setter
     def bulk_reconvert(self, value: bool) -> None:
-        self["bulk_reconvert"] = value
+        assert isinstance(value, bool), "value should be bool"
+        self["bulk_reconvert"] = bool(value)
 
     @property
     def image_quality(self) -> int:
@@ -157,7 +158,8 @@ class MediaConverterConfig(AddonConfigManager):
 
     @audio_bitrate_k.setter
     def audio_bitrate_k(self, kbit_s: int) -> None:
-        self["ffmpeg_audio_bitrate"] = kbit_s
+        assert isinstance(kbit_s, int), "kbit/s should be int"
+        self["ffmpeg_audio_bitrate"] = int(kbit_s)
 
     @property
     def tooltip_duration_seconds(self) -> int:
@@ -177,7 +179,8 @@ class MediaConverterConfig(AddonConfigManager):
 
     @excluded_image_containers.setter
     def excluded_image_containers(self, value: str) -> None:
-        self["excluded_image_containers"] = value
+        assert isinstance(value, str), "value should be a string"
+        self["excluded_image_containers"] = str(value)
 
     @property
     def excluded_audio_containers(self) -> str:
@@ -185,7 +188,8 @@ class MediaConverterConfig(AddonConfigManager):
 
     @excluded_audio_containers.setter
     def excluded_audio_containers(self, value: str) -> None:
-        self["excluded_audio_containers"] = value
+        assert isinstance(value, str), "value should be a string"
+        self["excluded_audio_containers"] = str(value)
 
     @property
     def shortcut(self) -> str:
