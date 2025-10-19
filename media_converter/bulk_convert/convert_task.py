@@ -1,7 +1,10 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import collections
+import os
+import concurrent.futures
 from collections.abc import Iterable, Sequence
+from typing import Optional
 
 from anki.collection import Collection
 from anki.notes import Note, NoteId
@@ -23,28 +26,71 @@ class ConvertTask:
     _selected_fields: list[str]
     _result: ConvertResult
     _to_convert: dict[LocalFile, dict[NoteId, Note]]
+    canceled: bool
 
     def __init__(self, browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str]):
         self._browser = browser
         self._selected_fields = selected_fields
         self._result = ConvertResult()
         self._to_convert = self._find_files_to_convert_and_notes(note_ids)
+        self.canceled = False
 
     @property
     def size(self) -> int:
         return len(self._to_convert)
 
+    def set_canceled(self) -> None:
+        self.canceled = True
+
     def __call__(self):
+        """
+        Execute the conversion using ThreadPoolExecutor for parallelism while reporting progress.
+        The conversion is performed in parallel; the order of completion is not guaranteed.
+        If the task is canceled, all pending jobs are cancelled and no further
+        conversions are started.  Running conversions are allowed to finish but
+        their results are ignored.
+        """
         if self._result.is_dirty():
             raise RuntimeError("Already converted.")
-        for progress_idx, file in enumerate(self._to_convert):
-            yield progress_idx
+        files = list(self._to_convert.keys())
+        max_workers = os.cpu_count() // 2 or 1
+
+        def convert_file(file: LocalFile) -> tuple[LocalFile, Optional[str], Optional[Exception]]:
+            """
+            Convert a single file.  Returns a tuple of (file, new_filename, exception).
+            If the task has been canceled, returns (file, None, None) immediately.
+            """
+            if self.canceled:
+                return (file, None, None)
             try:
                 converted_filename = self._convert_stored_file(file)
-            except (OSError, RuntimeError, FileNotFoundError) as ex:
-                self._result.add_failed(file, exception=ex)
-            else:
-                self._result.add_converted(file, converted_filename)
+                return (file, converted_filename, None)
+            except Exception as ex:
+                return (file, None, ex)
+
+        completed = 0
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_file = {executor.submit(convert_file, f): f for f in files}
+            for future in concurrent.futures.as_completed(future_to_file):
+                if self.canceled:
+                    # Cancel all remaining futures that have not started yet
+                    for f in future_to_file:
+                        if not f.done():
+                            f.cancel()
+                    break
+                file = future_to_file[future]
+                try:
+                    f, converted, exc = future.result()
+                except Exception as ex:
+                    # This should not happen because convert_file catches all exceptions
+                    exc = ex
+                    converted = None
+                if exc:
+                    self._result.add_failed(file, exception=exc)
+                elif converted is not None:
+                    self._result.add_converted(file, converted)
+                completed += 1
+                yield completed
 
     def update_notes(self):
         def show_report_message() -> int:
@@ -94,6 +140,14 @@ class ConvertTask:
         return to_convert
 
     def _convert_stored_file(self, file: LocalFile) -> str:
+        """
+        Convert a single file.  If the task has been canceled, the conversion
+        is skipped and a dummy filename is returned.  This allows the worker
+        threads to exit quickly without performing any work.
+        """
+        if self.canceled:
+            # Return the original filename to avoid changing the note
+            return file.file_name
         conv = InternalFileConverter(self._browser.editor, file, self._first_referenced(file))
         conv.convert_internal()
         return conv.new_filename

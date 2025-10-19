@@ -25,6 +25,7 @@ class ConvertRunnable(QRunnable):
 
     def set_canceled(self):
         self.canceled = True
+        self.task.set_canceled()
 
     def run(self):
         for progress_value in self.task():
