@@ -1,7 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import enum
 from collections.abc import Iterable, Sequence
 from typing import Union
 
@@ -10,23 +9,8 @@ from aqt import mw
 from .ajt_common.addon_config import AddonConfigManager, set_config_update_action
 from .ajt_common.utils import clamp
 from .utils.show_options import ShowOptions
+from .utils.config_types import ImageFormat, SUPPORTED_IMAGE_FORMATS, AudioContainer
 from .widgets.audio_slider_box import MAX_AUDIO_BITRATE_K, MIN_AUDIO_BITRATE_K
-
-
-@enum.unique
-class ImageFormat(enum.Enum):
-    webp = enum.auto()
-    avif = enum.auto()
-
-
-@enum.unique
-class AudioContainer(enum.Enum):
-    opus = "opus"
-    ogg = "ogg"
-
-    @classmethod
-    def _missing_(cls, _value):
-        return cls.ogg
 
 
 def cfg_comma_sep_str_to_file_ext_set(cfg_str: str) -> set[str]:
