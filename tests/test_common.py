@@ -3,7 +3,6 @@
 
 import re
 
-
 HTML = """
 <img src="1.webp">[sound:file1.ogg]
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -45,28 +44,24 @@ def test_find_convertible_audio(no_anki_config) -> None:
     from media_converter.common import find_convertible_audio
 
     assert frozenset(find_convertible_audio(HTML)) == frozenset(("極貧_ゴクヒン━_0_NHK-2016.mp3",))
-    assert frozenset(find_convertible_audio(HTML, include_converted=True)) == frozenset(
-        (
-            "file1.ogg",
-            "臣民_シンミ＼ン_3_NHK-2016.ogg",
-            "極貧_ゴクヒン━_0_NHK-2016.mp3",
-            "極貧_ゴクヒン━_0_NHK-2016.ogg",
-        )
-    )
+    assert frozenset(find_convertible_audio(HTML, include_converted=True)) == frozenset((
+        "file1.ogg",
+        "臣民_シンミ＼ン_3_NHK-2016.ogg",
+        "極貧_ゴクヒン━_0_NHK-2016.mp3",
+        "極貧_ゴクヒン━_0_NHK-2016.ogg",
+    ))
 
     # The config should be idiot-proof.
     no_anki_config.excluded_audio_containers = ""
     # The target extension is still excluded.
     assert frozenset(find_convertible_audio(HTML)) == frozenset(("極貧_ゴクヒン━_0_NHK-2016.mp3",))
     # Reconvert enabled.
-    assert frozenset(find_convertible_audio(HTML, include_converted=True)) == frozenset(
-        (
-            "file1.ogg",
-            "臣民_シンミ＼ン_3_NHK-2016.ogg",
-            "極貧_ゴクヒン━_0_NHK-2016.mp3",
-            "極貧_ゴクヒン━_0_NHK-2016.ogg",
-        )
-    )
+    assert frozenset(find_convertible_audio(HTML, include_converted=True)) == frozenset((
+        "file1.ogg",
+        "臣民_シンミ＼ン_3_NHK-2016.ogg",
+        "極貧_ゴクヒン━_0_NHK-2016.mp3",
+        "極貧_ゴクヒン━_0_NHK-2016.ogg",
+    ))
 
 
 def test_find_regex() -> None:

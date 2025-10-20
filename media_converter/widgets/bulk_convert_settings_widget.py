@@ -39,7 +39,7 @@ class BulkConvertSettings(WidgetHasName, ConfigPropMixIn):
 
     def _add_tooltips(self) -> None:
         self._field_selector.setToolTip(
-            "When enabled, search for image files only in selected fields.\n" "When disabled, search in all fields."
+            "When enabled, search for image files only in selected fields.\nWhen disabled, search in all fields."
         )
         self._reconvert_checkbox.setToolTip(
             "If an image was converted to the target format before,\n"
