@@ -7,7 +7,7 @@ import media_converter.config
 from playground.no_anki_config import NoAnkiConfigView
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="function")
 def no_anki_config(monkeypatch):
     config = NoAnkiConfigView()
     monkeypatch.setattr(media_converter.config, "config", config, raising=False)
