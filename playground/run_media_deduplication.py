@@ -15,6 +15,7 @@ def main() -> None:
         dedup = MediaDedup(col=col)
         print("collecting files...")
         files = dedup.collect_files()
+        print(f"found {len(files)} duplicates")
         for dup, orig in files.items():
             print(f"{dup.name} => {orig.name}")
         print("replacing links...")
