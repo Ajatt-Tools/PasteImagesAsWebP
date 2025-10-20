@@ -108,6 +108,14 @@ class MediaConverterConfig(AddonConfigManager):
         """
         return int(self["filename_pattern_num"])
 
+    @filename_pattern_num.setter
+    def filename_pattern_num(self, filename_pattern_num: int) -> None:
+        """
+        Index in list FileNamePatterns
+        """
+        assert isinstance(filename_pattern_num, int), "filename_pattern_num should be int"
+        self["filename_pattern_num"] = int(filename_pattern_num)
+
     def get_excluded_image_extensions(self, include_converted: bool) -> frozenset[str]:
         """
         Return excluded formats and prepend a dot to each format.
