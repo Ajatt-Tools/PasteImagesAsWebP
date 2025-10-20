@@ -217,6 +217,11 @@ class MediaConverterConfig(AddonConfigManager):
     def custom_name_field(self) -> str:
         return self["custom_name_field"]
 
+    @custom_name_field.setter
+    def custom_name_field(self, custom_name_field: str) -> None:
+        assert isinstance(custom_name_field, str), "custom_name_field should be a string"
+        self["custom_name_field"] = str(custom_name_field)
+
     @property
     def avoid_upscaling(self) -> bool:
         return bool(self["avoid_upscaling"])
