@@ -101,7 +101,7 @@ class BehaviorSettings(WidgetHasName, ConfigPropMixIn):
 
     def pass_settings_to_config(self) -> None:
         self.config.set_show_options(self._when_show_dialog_combo_box.checkedData())
-        self.config["image_format"] = self._image_format_combo_box.currentName()
+        self.config.image_format = self._image_format_combo_box.currentName()
         self.config["filename_pattern_num"] = self._filename_pattern_combo_box.currentIndex()
         self.config["custom_name_field"] = self._custom_name_field_combo_box.currentText()
         self.config["excluded_image_containers"] = self._excluded_image_containers_edit.text().lower().strip()

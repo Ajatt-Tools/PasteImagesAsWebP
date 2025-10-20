@@ -42,6 +42,16 @@ class MediaConverterConfig(AddonConfigManager):
     def image_format(self) -> ImageFormat:
         return ImageFormat[self["image_format"].lower()]
 
+    @image_format.setter
+    def image_format(self, image_format: Union[ImageFormat, str]) -> None:
+        if isinstance(image_format, str):
+            assert image_format in SUPPORTED_IMAGE_FORMATS, "image format should be supported."
+            self["image_format"] = image_format.lower()
+        elif isinstance(image_format, ImageFormat):
+            self["image_format"] = image_format.name.lower()
+        else:
+            raise ValueError(f"invalid type passed: {type(image_format)}")
+
     @property
     def audio_container(self) -> AudioContainer:
         return AudioContainer(self["audio_container"].lower())
