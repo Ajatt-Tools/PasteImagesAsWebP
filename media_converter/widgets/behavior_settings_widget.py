@@ -92,10 +92,10 @@ class BehaviorSettings(WidgetHasName, ConfigPropMixIn):
     def set_initial_values(self) -> None:
         self._image_format_combo_box.setCurrentName(self.config.image_format)
         self._when_show_dialog_combo_box.setCheckedData(self.config.show_settings())
-        self._filename_pattern_combo_box.setCurrentIndex(self.config["filename_pattern_num"])
+        self._filename_pattern_combo_box.setCurrentIndex(self.config.filename_pattern_num)
         self._custom_name_field_combo_box.setCurrentText(self.config.custom_name_field)
-        self._excluded_image_containers_edit.setText(self.config["excluded_image_containers"].lower())
-        self._excluded_audio_containers_edit.setText(self.config["excluded_audio_containers"].lower())
+        self._excluded_image_containers_edit.setText(self.config.excluded_image_containers.lower())
+        self._excluded_audio_containers_edit.setText(self.config.excluded_audio_containers.lower())
         for key, widget in self._checkboxes.items():
             widget.setChecked(self.config[key])
 
@@ -104,7 +104,7 @@ class BehaviorSettings(WidgetHasName, ConfigPropMixIn):
         self.config.image_format = self._image_format_combo_box.currentName()
         self.config.filename_pattern_num = self._filename_pattern_combo_box.currentIndex()
         self.config.custom_name_field = self._custom_name_field_combo_box.currentText()
-        self.config["excluded_image_containers"] = self._excluded_image_containers_edit.text().lower().strip()
-        self.config["excluded_audio_containers"] = self._excluded_audio_containers_edit.text().lower().strip()
+        self.config.excluded_image_containers = self._excluded_image_containers_edit.text().lower().strip()
+        self.config.excluded_audio_containers = self._excluded_audio_containers_edit.text().lower().strip()
         for key, widget in self._checkboxes.items():
             self.config[key] = widget.isChecked()
