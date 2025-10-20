@@ -5,10 +5,13 @@ from typing import Sequence
 from aqt.qt import *
 
 from media_converter.dialogs.deduplicate_dialog import DeduplicateMediaConfirmDialog, DeduplicateTableColumns
+from media_converter.media_deduplication.deduplication import DeduplicationError
 
 
 def show_deduplication_confirm_dialog(files: Sequence[DeduplicateTableColumns]) -> DeduplicateMediaConfirmDialog:
-    dialog = DeduplicateMediaConfirmDialog(column_names=DeduplicateTableColumns.column_names())
+    if not files:
+        raise DeduplicationError("no files passed")
+    dialog = DeduplicateMediaConfirmDialog(column_names=files[0].column_names())
     dialog.load_data(files)
     return dialog
 
