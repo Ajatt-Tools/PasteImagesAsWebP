@@ -9,6 +9,8 @@ from media_converter.file_converters.common import ConverterType, LocalFile
 
 
 def fill_fake_results(result: ConvertResult):
+    for idx in range(1, 10):
+        result.add_converted(LocalFile(f"image_{idx}.jpg", ConverterType.image), f"new_image_{idx}.webp")
     for idx in range(1, 1000):
         result.add_failed(LocalFile(f"image_{idx}.jpg", ConverterType.image), RuntimeError("runtime error"))
 
