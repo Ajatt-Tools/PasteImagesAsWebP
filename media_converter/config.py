@@ -8,8 +8,8 @@ from aqt import mw
 
 from .ajt_common.addon_config import AddonConfigManager, set_config_update_action
 from .ajt_common.utils import clamp
+from .utils.config_types import SUPPORTED_IMAGE_FORMATS, AudioContainer, ImageFormat
 from .utils.show_options import ShowOptions
-from .utils.config_types import ImageFormat, SUPPORTED_IMAGE_FORMATS, AudioContainer
 from .widgets.audio_slider_box import MAX_AUDIO_BITRATE_K, MIN_AUDIO_BITRATE_K
 
 

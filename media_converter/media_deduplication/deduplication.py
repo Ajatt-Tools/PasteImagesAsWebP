@@ -7,11 +7,9 @@ import typing
 
 import anki.errors
 from anki.collection import Collection, OpChanges
-from anki.notes import NoteId, Note
+from anki.notes import Note, NoteId
 from aqt.operations import ResultWithChanges
 from aqt.qt import *
-
-from media_converter.dialogs.deduplicate_dialog import DeduplicateMediaConfirmDialog, DeduplicateTableColumns
 
 HASH_FUNC = hashlib.sha512
 CHUNK_SIZE: int = 8192
@@ -55,7 +53,7 @@ class MediaDedup:
                 continue
             try:
                 file_hash = compute_file_hash(entry)
-            except (OSError, IOError) as ex:
+            except OSError as ex:
                 print(f"error when computing hash: {ex}")
                 continue
             if file_hash not in hash_to_name:
@@ -65,7 +63,7 @@ class MediaDedup:
             duplicates[entry] = hash_to_name[file_hash]
         return duplicates
 
-    def update_notes_op(self, files: dict[pathlib.Path, pathlib.Path]) -> ResultWithChanges:
+    def deduplicate_notes_op(self, files: dict[pathlib.Path, pathlib.Path]) -> ResultWithChanges:
         pos = self._col.add_custom_undo_entry(f"Replace media links to {len(files)} in notes")
         self.deduplicate(files)
         return self._col.merge_undo_entries(pos)
@@ -88,10 +86,3 @@ class MediaDedup:
                 except anki.errors.NotFoundError:
                     print(f"note id={note_id} not found")
         return self._col.update_notes(list(to_update.values()))
-
-
-def show_deduplication_confirm_dialog(files: dict[pathlib.Path, pathlib.Path]) -> DeduplicateMediaConfirmDialog:
-    dialog = DeduplicateMediaConfirmDialog(column_names=DeduplicateTableColumns.column_names())
-    dialog.load_data([DeduplicateTableColumns(dup.name, orig.name) for dup, orig in files.items()])
-    dialog.show()
-    return dialog

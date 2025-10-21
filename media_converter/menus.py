@@ -18,6 +18,7 @@ from .file_converters.on_paste_converter import (
     OnPasteConverter,
     mime_to_image_file,
 )
+from .media_deduplication.anki_collection_op import run_media_deduplication
 from .utils.show_options import ShowOptions
 from .utils.temp_file import TempFile
 
@@ -34,6 +35,10 @@ def setup_mainwindow_menu():
 
     action = QAction(f"{ADDON_NAME} Options...", root_menu)
     qconnect(action.triggered, open_settings)
+    root_menu.addAction(action)
+
+    action = QAction(f"Deduplicate media...", root_menu)
+    qconnect(action.triggered, run_media_deduplication)
     root_menu.addAction(action)
 
 

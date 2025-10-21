@@ -65,8 +65,7 @@ def test_find_convertible_audio(no_anki_config) -> None:
 
 
 def test_find_regex() -> None:
-    from media_converter.common import RE_IMAGE_HTML_TAG
-    from media_converter.common import RE_AUDIO_HTML_TAG
+    from media_converter.common import RE_AUDIO_HTML_TAG, RE_IMAGE_HTML_TAG
 
     assert re.findall(RE_IMAGE_HTML_TAG, HTML) == [
         "1.webp",
