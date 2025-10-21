@@ -22,4 +22,6 @@ class DeduplicateTableColumns(typing.NamedTuple):
 class DeduplicateMediaConfirmDialog(StatsDialog):
     name: str = "ajt__deduplicate_media_confirm_dialog"
     win_title: str = "Deduplicate media files"
-    button_box_buttons: QDialogButtonBox.StandardButton = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+    button_box_buttons: QDialogButtonBox.StandardButton = (
+        QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+    )
