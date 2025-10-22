@@ -12,12 +12,16 @@ from ..dialogs.deduplicate_dialog import (
     DeduplicateMediaConfirmDialog,
     DeduplicateTableColumns,
 )
-from .deduplication import MediaDedup
+from .deduplication import DuplicatesGroup, MediaDedup
 
 
-def show_deduplication_confirm_dialog(files: dict[pathlib.Path, pathlib.Path]) -> DeduplicateMediaConfirmDialog:
+def show_deduplication_confirm_dialog(files: list[DuplicatesGroup]) -> DeduplicateMediaConfirmDialog:
     dialog = DeduplicateMediaConfirmDialog(column_names=DeduplicateTableColumns.column_names(), parent=mw)
-    dialog.load_data([DeduplicateTableColumns(dup.name, orig.name) for dup, orig in files.items()])
+    dialog.load_data([
+        DeduplicateTableColumns(duplicate_name=dup.name, original_name=group.original.name)
+        for group in files
+        for dup in group.copies
+    ])
     return dialog
 
 
@@ -25,7 +29,7 @@ def deduplication_result_msg(n_files: int) -> str:
     return f'Deduplicated {n_files} files. Don\'t forget to run "Tools" -> "Check Media".'
 
 
-def deduplicate_media_files(dedup: MediaDedup, files: dict[pathlib.Path, pathlib.Path]) -> None:
+def deduplicate_media_files(dedup: MediaDedup, files: list[DuplicatesGroup]) -> None:
     CollectionOp(
         parent=mw,
         op=lambda col: dedup.deduplicate_notes_op(files),
@@ -37,7 +41,7 @@ def deduplicate_media_files(dedup: MediaDedup, files: dict[pathlib.Path, pathlib
     ).run_in_background()
 
 
-def process_duplicates_search_results(dedup: MediaDedup, files: dict[pathlib.Path, pathlib.Path]) -> None:
+def process_duplicates_search_results(dedup: MediaDedup, files: list[DuplicatesGroup]) -> None:
     if not files:
         show_info("No duplicate media files found.", parent=mw)
         return

@@ -6,7 +6,7 @@ from anki.collection import Collection
 
 from media_converter.media_deduplication.deduplication import MediaDedup
 
-COL_PATH = pathlib.Path.home() / ".local/share/Anki2/shared decks [Ankiweb]/collection.anki2"
+COL_PATH = pathlib.Path.home() / ".local/share/Anki2/subs2srs/collection.anki2"
 
 
 def main() -> None:
@@ -16,8 +16,9 @@ def main() -> None:
         print("collecting files...")
         files = dedup.collect_files()
         print(f"found {len(files)} duplicates")
-        for dup, orig in files.items():
-            print(f"{dup.name} => {orig.name}")
+        for group in files:
+            for dup in group.copies:
+                print(f"dup '{dup}' => orig '{group.original}'")
         print("replacing links...")
         dedup.deduplicate(files)
         print("done.")
