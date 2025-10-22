@@ -49,7 +49,7 @@ class MediaDedup:
         duplicates: dict[pathlib.Path, pathlib.Path] = {}
         for entry in pathlib.Path(self._col.media.dir()).iterdir():
             if not entry.is_file() or entry.name.startswith("_"):
-                # files starting with "_" are special
+                # files starting with "_" are special to Anki.
                 continue
             try:
                 file_hash = compute_file_hash(entry)
