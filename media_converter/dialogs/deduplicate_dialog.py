@@ -4,7 +4,7 @@
 import typing
 from collections.abc import Sequence
 
-from aqt.qt import QDialogButtonBox
+from aqt.qt import *
 
 from ..ajt_common.stats_table_dialog import StatsDialog
 from ..ajt_common.utils import ui_translate
@@ -25,3 +25,12 @@ class DeduplicateMediaConfirmDialog(StatsDialog):
     button_box_buttons: QDialogButtonBox.StandardButton = (
         QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
     )
+
+    def __init__(self, column_names: Sequence[str], parent=None) -> None:
+        super().__init__(column_names=column_names, parent=parent)
+        self._count_label = QLabel()
+        self._layout.insertWidget(0, self._count_label)
+
+    def load_data(self, data: Sequence[Sequence[str]]) -> "StatsDialog":
+        self._count_label.setText(f"Found {len(data)} copies.")
+        return super().load_data(data)
