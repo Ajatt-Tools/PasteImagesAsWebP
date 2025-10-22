@@ -93,12 +93,16 @@ To rename media files on a particular note,
 open the Anki Browser, select the note and click on the pencil icon on the toolbar.
 A dialog will pop up asking you to enter new filenames.
 
+## Deduplicate media files
+
+Press "AJT" > "Deduplicate media..." to replace duplicate media file names with original names in notes.
+
 ## Contributions
 
 If you've found a bug or want to extend the add-on, please let us know in the
-[Matrix chat](https://tatsumoto-ren.github.io/blog/join-our-community.html).
+[chat](https://tatsumoto-ren.github.io/blog/join-our-community.html).
 I'm open to suggestions and pull requests.
 
 My special thanks to all my
-[Patreon](https://www.patreon.com/tatsumoto_ren)
-supporters for making this project possible.
+[supporters](https://tatsumoto-ren.github.io/blog/donating-to-tatsumoto.html)
+for making this project possible.
