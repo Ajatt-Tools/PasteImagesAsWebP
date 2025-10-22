@@ -2,6 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import functools
 import pathlib
+from collections.abc import Sequence
 
 from aqt import mw, qconnect
 from aqt.operations import CollectionOp, QueryOp
@@ -15,7 +16,7 @@ from ..dialogs.deduplicate_dialog import (
 from .deduplication import DuplicatesGroup, MediaDedup
 
 
-def show_deduplication_confirm_dialog(files: list[DuplicatesGroup]) -> DeduplicateMediaConfirmDialog:
+def show_deduplication_confirm_dialog(files: Sequence[DuplicatesGroup]) -> DeduplicateMediaConfirmDialog:
     dialog = DeduplicateMediaConfirmDialog(column_names=DeduplicateTableColumns.column_names(), parent=mw)
     dialog.load_data([
         DeduplicateTableColumns(duplicate_name=dup.name, original_name=group.original.name)
@@ -29,7 +30,7 @@ def deduplication_result_msg(n_files: int) -> str:
     return f'Deduplicated {n_files} files. Don\'t forget to run "Tools" -> "Check Media".'
 
 
-def deduplicate_media_files(dedup: MediaDedup, files: list[DuplicatesGroup]) -> None:
+def deduplicate_media_files(dedup: MediaDedup, files: Sequence[DuplicatesGroup]) -> None:
     CollectionOp(
         parent=mw,
         op=lambda col: dedup.deduplicate_notes_op(files),
@@ -41,7 +42,7 @@ def deduplicate_media_files(dedup: MediaDedup, files: list[DuplicatesGroup]) -> 
     ).run_in_background()
 
 
-def process_duplicates_search_results(dedup: MediaDedup, files: list[DuplicatesGroup]) -> None:
+def process_duplicates_search_results(dedup: MediaDedup, files: Sequence[DuplicatesGroup]) -> None:
     if not files:
         show_info("No duplicate media files found.", parent=mw)
         return

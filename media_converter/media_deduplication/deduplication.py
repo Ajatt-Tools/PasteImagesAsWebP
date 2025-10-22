@@ -62,7 +62,7 @@ class MediaDedup:
     def __init__(self, col: Collection) -> None:
         self._col = col
 
-    def collect_files(self) -> list[DuplicatesGroup]:
+    def collect_files(self) -> typing.Sequence[DuplicatesGroup]:
         """
         Returns a list of groups.
         """
@@ -79,7 +79,7 @@ class MediaDedup:
             hash_to_names[file_hash].append(entry)
         return [DuplicatesGroup.from_list(files) for files in hash_to_names.values() if len(files) > 1]
 
-    def deduplicate_notes_op(self, files: list[DuplicatesGroup]) -> ResultWithChanges:
+    def deduplicate_notes_op(self, files: typing.Sequence[DuplicatesGroup]) -> ResultWithChanges:
         pos = self._col.add_custom_undo_entry(f"Replace media links to {len(files)} in notes")
         self.deduplicate(files)
         return self._col.merge_undo_entries(pos)
@@ -95,7 +95,7 @@ class MediaDedup:
                 deduplicate_media_in_note(to_update[note_id], dup.name, group.original.name)
         return to_update
 
-    def deduplicate(self, files: list[DuplicatesGroup]) -> OpChanges:
+    def deduplicate(self, files: typing.Sequence[DuplicatesGroup]) -> OpChanges:
         to_update: dict[NoteId, Note] = {}
         for group in files:
             self._deduplicate_group(group, to_update)
