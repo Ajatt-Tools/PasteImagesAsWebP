@@ -31,6 +31,9 @@ class DeduplicateMediaConfirmDialog(StatsDialog):
         self._count_label = QLabel()
         self._layout.insertWidget(0, self._count_label)
 
+    def row_count(self) -> int:
+        return self._table.rowCount()
+
     def load_data(self, data: Sequence[Sequence[str]]) -> "StatsDialog":
         self._count_label.setText(f"Found {len(data)} copies.")
         return super().load_data(data)
