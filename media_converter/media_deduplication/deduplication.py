@@ -1,13 +1,17 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import collections
+import concurrent.futures
 import hashlib
+import math
+import multiprocessing
 import os.path
 import pathlib
 import typing
+from collections.abc import MutableSequence
 
+import anki.collection
 import anki.errors
-from anki.collection import Collection, OpChanges
 from anki.notes import Note, NoteId
 from aqt.operations import ResultWithChanges
 from aqt.qt import *
@@ -41,7 +45,7 @@ class DuplicatesGroup(typing.NamedTuple):
     copies: list[pathlib.Path]
 
     @classmethod
-    def from_list(cls, files: list[pathlib.Path]) -> "DuplicatesGroup":
+    def from_list(cls, files: collections.abc.Collection[pathlib.Path]) -> "DuplicatesGroup":
         assert len(files) > 1, "a group of duplicates should contain at least two files"
         files = sorted(files, key=lambda file: len(file.name))
         # Assign the shortest name as the original.
@@ -56,31 +60,65 @@ def deduplicate_media_in_note(note: Note, dup_name: str, orig_name: str) -> Note
     return note
 
 
-class MediaDedup:
-    _col: Collection
+T = TypeVar("T")
 
-    def __init__(self, col: Collection) -> None:
+
+def split_list(input_list: typing.Sequence[T], n_chunks: int) -> typing.Iterable[typing.Sequence[T]]:
+    """Splits a list into N chunks."""
+    chunk_size = math.ceil(len(input_list) / n_chunks)
+    for i in range(0, len(input_list), chunk_size):
+        yield input_list[i : i + chunk_size]
+
+
+def hash_files(files: typing.Sequence[pathlib.Path]) -> dict[MediaDedupFileHash, list[pathlib.Path]]:
+    hash_to_names: dict[MediaDedupFileHash, list[pathlib.Path]] = collections.defaultdict(list)
+    for entry in files:
+        if not entry.is_file() or entry.name.startswith("_"):
+            # files starting with "_" are special to Anki.
+            continue
+        try:
+            file_hash = compute_file_hash(entry)
+        except OSError as ex:
+            print(f"error when computing hash: {ex}")
+            continue
+        hash_to_names[file_hash].append(entry)
+    return hash_to_names
+
+
+class MediaDedup:
+    _col: anki.collection.Collection
+    _nproc: int
+
+    def __init__(self, col: anki.collection.Collection) -> None:
         self._col = col
+        self._nproc = multiprocessing.cpu_count()
 
     def collect_files(self) -> typing.Sequence[DuplicatesGroup]:
         """
         Returns a list of groups.
         """
-        hash_to_names: dict[MediaDedupFileHash, list[pathlib.Path]] = collections.defaultdict(list)
-        for entry in pathlib.Path(self._col.media.dir()).iterdir():
-            if not entry.is_file() or entry.name.startswith("_"):
-                # files starting with "_" are special to Anki.
-                continue
-            try:
-                file_hash = compute_file_hash(entry)
-            except OSError as ex:
-                print(f"error when computing hash: {ex}")
-                continue
-            hash_to_names[file_hash].append(entry)
-        return [DuplicatesGroup.from_list(files) for files in hash_to_names.values() if len(files) > 1]
+        result: dict[MediaDedupFileHash, MutableSequence[pathlib.Path]] = collections.defaultdict(list)
 
-    def deduplicate_notes_op(self, files: typing.Sequence[DuplicatesGroup]) -> ResultWithChanges:
-        pos = self._col.add_custom_undo_entry(f"Replace media links to {len(files)} in notes")
+        # https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor-example
+        # We can use a with statement to ensure threads are cleaned up promptly
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self._nproc) as executor:
+            # Start the load operations and mark each future with its URL
+            futures = (
+                executor.submit(hash_files, group)
+                for group in split_list(list(pathlib.Path(self._col.media.dir()).iterdir()), n_chunks=self._nproc)
+            )
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    hash_to_names: dict[MediaDedupFileHash, list[pathlib.Path]] = future.result()
+                except Exception as exc:
+                    print(f"thread generated an exception: {exc}")
+                    raise
+                for hash_key, names in hash_to_names.items():
+                    result[hash_key].extend(names)
+        return [DuplicatesGroup.from_list(files) for files in result.values() if len(files) > 1]
+
+    def deduplicate_notes_op(self, files: typing.Sequence[DuplicatesGroup], row_count: int) -> ResultWithChanges:
+        pos = self._col.add_custom_undo_entry(f"Replace media links to {row_count} files in notes")
         self.deduplicate(files)
         return self._col.merge_undo_entries(pos)
 
@@ -95,7 +133,7 @@ class MediaDedup:
                 deduplicate_media_in_note(to_update[note_id], dup.name, group.original.name)
         return to_update
 
-    def deduplicate(self, files: typing.Sequence[DuplicatesGroup]) -> OpChanges:
+    def deduplicate(self, files: typing.Sequence[DuplicatesGroup]) -> anki.collection.OpChanges:
         to_update: dict[NoteId, Note] = {}
         for group in files:
             self._deduplicate_group(group, to_update)

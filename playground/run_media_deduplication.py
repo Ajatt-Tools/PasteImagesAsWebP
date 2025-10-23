@@ -15,7 +15,7 @@ def main() -> None:
         dedup = MediaDedup(col=col)
         print("collecting files...")
         files = dedup.collect_files()
-        print(f"found {len(files)} duplicates")
+        print(f"found {len(files)} groups of duplicates")
         for group in files:
             for dup in group.copies:
                 print(f"dup '{dup}' => orig '{group.original}'")
