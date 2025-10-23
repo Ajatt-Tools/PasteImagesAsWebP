@@ -1,7 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import functools
-import pathlib
 from collections.abc import Sequence
 
 from aqt import mw, qconnect
@@ -30,13 +29,13 @@ def deduplication_result_msg(n_files: int) -> str:
     return f'Deduplicated {n_files} files. Don\'t forget to run "Tools" -> "Check Media".'
 
 
-def deduplicate_media_files(dedup: MediaDedup, files: Sequence[DuplicatesGroup]) -> None:
+def deduplicate_media_files(dedup: MediaDedup, files: Sequence[DuplicatesGroup], row_count: int) -> None:
     CollectionOp(
         parent=mw,
-        op=lambda col: dedup.deduplicate_notes_op(files),
+        op=lambda col: dedup.deduplicate_notes_op(files, row_count),
     ).success(
         lambda out: show_info(
-            deduplication_result_msg(len(files)),
+            deduplication_result_msg(row_count),
             parent=mw,
         ),
     ).run_in_background()
@@ -47,7 +46,7 @@ def process_duplicates_search_results(dedup: MediaDedup, files: Sequence[Duplica
         show_info("No duplicate media files found.", parent=mw)
         return
     dialog = show_deduplication_confirm_dialog(files)
-    qconnect(dialog.accepted, functools.partial(deduplicate_media_files, dedup, files))
+    qconnect(dialog.accepted, functools.partial(deduplicate_media_files, dedup, files, dialog.row_count()))
     qconnect(dialog.rejected, lambda: tooltip("Aborted.", parent=mw))
     dialog.show()
 
