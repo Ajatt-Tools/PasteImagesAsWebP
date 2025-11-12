@@ -65,11 +65,9 @@ class ConvertTask:
         if self._result.has_results():
             raise RuntimeError("Already converted.")
 
-        progress_idx = 0
-
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             future_to_file = {executor.submit(self._convert_stored_file, file): file for file in self._to_convert}
-            for future in concurrent.futures.as_completed(future_to_file):
+            for progress_idx, future in enumerate(concurrent.futures.as_completed(future_to_file), start=1):
                 if self._canceled:
                     cancel_all_remaining_futures(future_to_file)
                     break
@@ -82,7 +80,6 @@ class ConvertTask:
                     self._result.add_failed(original_filename, exception=ex)
                 else:
                     self._result.add_converted(original_filename, converted_filename)
-                progress_idx += 1
                 yield progress_idx
 
     def update_notes(self) -> None:

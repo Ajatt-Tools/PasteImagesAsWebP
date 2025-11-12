@@ -25,6 +25,7 @@ class ConvertRunnable(QRunnable):
         self.task.set_canceled()
 
     def run(self) -> None:
+        self.signals.update_progress.emit(0)
         for progress_value in self.task():
             self.signals.update_progress.emit(progress_value)  # type: ignore
         self.signals.task_done.emit()  # type: ignore
