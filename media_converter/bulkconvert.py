@@ -11,7 +11,7 @@ from aqt.qt import *
 
 from .bulk_convert.convert_task import ConvertTask
 from .common import tooltip
-from .config import config
+from .config import MediaConverterConfig
 from .consts import ADDON_FULL_NAME
 from .dialogs.bulk_convert_dialog import AnkiBulkConvertDialog
 from .dialogs.bulk_convert_progress_bar import ProgressBar
@@ -19,43 +19,53 @@ from .dialogs.bulk_convert_progress_bar import ProgressBar
 ACTION_NAME = f"{ADDON_FULL_NAME}: Bulk-convert"
 
 
-def reload_note(func: Callable[[Browser, Sequence[NoteId], list[str]], None]):
+def reload_note(func: Callable[["BulkConverter", Sequence[NoteId], list[str]], None]):
     @functools.wraps(func)
-    def decorator(browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str]) -> None:
-        assert browser.editor
-        note = browser.editor.note
+    def decorator(self: "BulkConverter", note_ids: Sequence[NoteId], selected_fields: list[str]) -> None:
+        assert self._browser.editor
+        note = self._browser.editor.note
         if note:
-            browser.editor.currentField = None
-            browser.editor.set_note(None)
-        func(browser, note_ids, selected_fields)
+            self._browser.editor.currentField = None
+            self._browser.editor.set_note(None)
+        func(self, note_ids, selected_fields)
         if note:
-            browser.editor.set_note(note)
+            self._browser.editor.set_note(note)
 
     return decorator
 
 
-@reload_note
-def bulk_convert(browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str]) -> None:
-    progress_bar = ProgressBar(task=ConvertTask(browser, note_ids, selected_fields))
-    progress_bar.start_task()  # blocks
-    progress_bar.task.update_notes()
+class BulkConverter:
+    _config: MediaConverterConfig
+    _browser: Browser
 
+    def __init__(self, config: MediaConverterConfig, browser: Browser) -> None:
+        self._config = config
+        self._browser = browser
 
-def on_bulk_convert(browser: Browser):
-    selected_nids = browser.selectedNotes()
-    if selected_nids:
-        dialog = AnkiBulkConvertDialog(parent=browser, config=config)
-        if dialog.exec():
-            if len(selected_nids) == 1:
-                browser.table.clear_selection()
-            bulk_convert(browser, selected_nids, dialog.selected_fields())
-    else:
-        tooltip("No cards selected.", parent=browser)
+    def on_bulk_convert(self) -> None:
+        selected_nids = self._browser.selectedNotes()
+        if selected_nids:
+            dialog = AnkiBulkConvertDialog(parent=self._browser, config=self._config)
+            if dialog.exec():
+                if len(selected_nids) == 1:
+                    self._browser.table.clear_selection()
+                self._bulk_convert(selected_nids, dialog.selected_fields())
+        else:
+            tooltip("No cards selected.", parent=self._browser)
+
+    @reload_note
+    def _bulk_convert(self, note_ids: Sequence[NoteId], selected_fields: list[str]) -> None:
+        progress_bar = ProgressBar(task=ConvertTask(self._browser, note_ids, selected_fields, self._config))
+        progress_bar.start_task()  # blocks
+        progress_bar.task.update_notes()
 
 
 def setup_menu(browser: Browser):
+    from .config import config
+
     a = QAction(ACTION_NAME, browser)
-    qconnect(a.triggered, lambda: on_bulk_convert(browser))
+    converter = BulkConverter(config=config, browser=browser)
+    qconnect(a.triggered, converter.on_bulk_convert)
     browser.form.menuEdit.addAction(a)
 
 

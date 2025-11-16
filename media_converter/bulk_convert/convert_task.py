@@ -1,8 +1,8 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import collections
-import multiprocessing
 import concurrent.futures
+import multiprocessing
 from collections.abc import Iterable, Sequence
 
 from anki.collection import Collection
@@ -14,7 +14,7 @@ from aqt.operations import CollectionOp, ResultWithChanges
 
 from ..bulk_convert.convert_result import ConvertResult
 from ..common import find_convertible_audio, find_convertible_images
-from ..config import config
+from ..config import MediaConverterConfig
 from ..dialogs.bulk_convert_result_dialog import BulkConvertResultDialog
 from ..file_converters.common import LocalFile
 from ..file_converters.internal_file_converter import InternalFileConverter
@@ -39,13 +39,17 @@ class ConvertTask:
     _result: ConvertResult
     _to_convert: dict[LocalFile, dict[NoteId, Note]]
     _canceled: bool
+    _config: MediaConverterConfig
 
-    def __init__(self, browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str]):
+    def __init__(
+        self, browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str], config: MediaConverterConfig
+    ) -> None:
         self._browser = browser
         self._selected_fields = selected_fields
         self._result = ConvertResult()
         self._to_convert = self._find_files_to_convert_and_notes(note_ids)
         self._canceled = False
+        self._config = config
 
     @property
     def size(self) -> int:
@@ -123,10 +127,10 @@ class ConvertTask:
             note_content = join_fields([note[field] for field in self._keys_to_update(note)])
             if "<img" not in note_content and "[sound:" not in note_content:
                 continue
-            if config.enable_image_conversion:
-                for filename in find_convertible_images(note_content, include_converted=config.bulk_reconvert):
+            if self._config.enable_image_conversion:
+                for filename in find_convertible_images(note_content, include_converted=self._config.bulk_reconvert):
                     to_convert[LocalFile.image(filename)][note.id] = note
-            if config.enable_audio_conversion:
+            if self._config.enable_audio_conversion:
                 # TODO config.bulk_reconvert
                 for filename in find_convertible_audio(note_content, include_converted=False):
                     to_convert[LocalFile.audio(filename)][note.id] = note
