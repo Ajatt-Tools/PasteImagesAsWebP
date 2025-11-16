@@ -3,6 +3,12 @@
 
 import re
 
+import pytest
+
+from media_converter.common import image_html
+from media_converter.file_converters.common import get_file_extension
+from media_converter.file_converters.find_media import FindMedia
+
 HTML = """
 <img src="1.webp">[sound:file1.ogg]
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -25,26 +31,24 @@ def test_image_format():
 
 
 def test_find_convertible_images(no_anki_config) -> None:
-    from media_converter.common import find_convertible_images
-
-    assert frozenset(find_convertible_images(HTML)) == frozenset(("2.jpg", "4.png"))
-    assert frozenset(find_convertible_images(HTML, include_converted=True)) == frozenset(("1.webp", "2.jpg", "4.png"))
+    finder = FindMedia(no_anki_config)
+    assert frozenset(finder.find_convertible_images(HTML)) == frozenset(("2.jpg", "4.png"))
+    assert frozenset(finder.find_convertible_images(HTML, include_converted=True)) == frozenset(("1.webp", "2.jpg", "4.png"))
 
     # The config should be idiot-proof.
     no_anki_config.excluded_image_containers = ""
     # The target extension is still excluded.
-    assert frozenset(find_convertible_images(HTML)) == frozenset(("2.jpg", "3.avif", "4.png", "5.svg"))
+    assert frozenset(finder.find_convertible_images(HTML)) == frozenset(("2.jpg", "3.avif", "4.png", "5.svg"))
     # Reconvert enabled.
-    assert frozenset(find_convertible_images(HTML, include_converted=True)) == frozenset(
+    assert frozenset(finder.find_convertible_images(HTML, include_converted=True)) == frozenset(
         ("1.webp", "2.jpg", "3.avif", "4.png", "5.svg")
     )
 
 
 def test_find_convertible_audio(no_anki_config) -> None:
-    from media_converter.common import find_convertible_audio
-
-    assert frozenset(find_convertible_audio(HTML)) == frozenset(("極貧_ゴクヒン━_0_NHK-2016.mp3",))
-    assert frozenset(find_convertible_audio(HTML, include_converted=True)) == frozenset((
+    finder = FindMedia(no_anki_config)
+    assert frozenset(finder.find_convertible_audio(HTML)) == frozenset(("極貧_ゴクヒン━_0_NHK-2016.mp3",))
+    assert frozenset(finder.find_convertible_audio(HTML, include_converted=True)) == frozenset((
         "file1.ogg",
         "臣民_シンミ＼ン_3_NHK-2016.ogg",
         "極貧_ゴクヒン━_0_NHK-2016.mp3",
@@ -54,9 +58,9 @@ def test_find_convertible_audio(no_anki_config) -> None:
     # The config should be idiot-proof.
     no_anki_config.excluded_audio_containers = ""
     # The target extension is still excluded.
-    assert frozenset(find_convertible_audio(HTML)) == frozenset(("極貧_ゴクヒン━_0_NHK-2016.mp3",))
+    assert frozenset(finder.find_convertible_audio(HTML)) == frozenset(("極貧_ゴクヒン━_0_NHK-2016.mp3",))
     # Reconvert enabled.
-    assert frozenset(find_convertible_audio(HTML, include_converted=True)) == frozenset((
+    assert frozenset(finder.find_convertible_audio(HTML, include_converted=True)) == frozenset((
         "file1.ogg",
         "臣民_シンミ＼ン_3_NHK-2016.ogg",
         "極貧_ゴクヒン━_0_NHK-2016.mp3",
@@ -80,3 +84,16 @@ def test_find_regex() -> None:
         "極貧_ゴクヒン━_0_NHK-2016.mp3",
         "極貧_ゴクヒン━_0_NHK-2016.ogg",
     ]
+
+
+@pytest.mark.parametrize(
+    "image_filename, expected_extension, expected_image_html",
+    [
+        ("image25.webp", ".webp", f'<img alt="webp image" src="image25.webp">'),
+        ("123.avif", ".avif", f'<img alt="avif image" src="123.avif">'),
+        ("1 2 3.jpg", ".jpg", f'<img alt="jpg image" src="1 2 3.jpg">'),
+    ],
+)
+def test_image_html(image_filename: str, expected_extension: str, expected_image_html: str) -> None:
+    assert get_file_extension(image_filename) == expected_extension
+    assert image_html(image_filename) == expected_image_html
