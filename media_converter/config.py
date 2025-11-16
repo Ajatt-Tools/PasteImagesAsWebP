@@ -229,6 +229,10 @@ class MediaConverterConfig(AddonConfigManager):
     def should_show_settings(self, action: ShowOptions) -> bool:
         return bool(action in self.show_settings())
 
+    @property
+    def show_context_menu_entry(self) -> bool:
+        return bool(self["show_context_menu_entry"])
+
 
 def get_global_config() -> MediaConverterConfig:
     assert mw, "anki must be running"
