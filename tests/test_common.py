@@ -33,7 +33,9 @@ def test_image_format():
 def test_find_convertible_images(no_anki_config) -> None:
     finder = FindMedia(no_anki_config)
     assert frozenset(finder.find_convertible_images(HTML)) == frozenset(("2.jpg", "4.png"))
-    assert frozenset(finder.find_convertible_images(HTML, include_converted=True)) == frozenset(("1.webp", "2.jpg", "4.png"))
+    assert frozenset(finder.find_convertible_images(HTML, include_converted=True)) == frozenset(
+        ("1.webp", "2.jpg", "4.png")
+    )
 
     # The config should be idiot-proof.
     no_anki_config.excluded_image_containers = ""

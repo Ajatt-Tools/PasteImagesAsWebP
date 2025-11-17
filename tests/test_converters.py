@@ -4,9 +4,10 @@
 
 def test_target_extension(no_anki_config) -> None:
     from media_converter.file_converters.common import LocalFile
-    from media_converter.file_converters.internal_file_converter import (
-        get_target_extension,
-    )
+    from media_converter.utils.file_paths_factory import FilePathFactory
 
-    assert get_target_extension(LocalFile.image("test.jpg")) == ".webp"
-    assert get_target_extension(LocalFile.audio("test.mp3")) == ".ogg"
+    # Create a FilePathFactory instance with the config
+    fpf = FilePathFactory(note=None, editor=None, config=no_anki_config)
+
+    assert fpf.get_target_extension(LocalFile.image("test.jpg")) == ".webp"
+    assert fpf.get_target_extension(LocalFile.audio("test.mp3")) == ".ogg"
