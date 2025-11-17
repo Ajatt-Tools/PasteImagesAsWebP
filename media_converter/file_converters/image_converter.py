@@ -8,7 +8,7 @@ from aqt.qt import *
 from aqt.utils import showWarning
 
 from ..ajt_common.utils import find_executable as find_executable_ajt
-from ..config import ImageFormat, MediaConverterConfig, get_global_config
+from ..config import ImageFormat, MediaConverterConfig
 from ..consts import ADDON_FULL_NAME, SUPPORT_DIR
 from ..utils.mime_helper import iter_files
 from ..utils.show_options import ImageDimensions
@@ -115,8 +115,8 @@ class ImageConverter(FileConverter, mode=ConverterType.image):
     _destination_path: str
     _config: MediaConverterConfig
 
-    def __init__(self, source_path: str, destination_path: str) -> None:
-        self._config = get_global_config()
+    def __init__(self, source_path: str, destination_path: str, config: MediaConverterConfig) -> None:
+        self._config = config
         self._source_path = source_path
         self._destination_path = destination_path
         self._dimensions = find_image_dimensions(source_path)

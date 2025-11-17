@@ -1,7 +1,7 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from ..config import get_global_config
+from ..config import MediaConverterConfig
 from .common import ConverterType, create_process, run_process
 from .file_converter import FFmpegNotFoundError, FileConverter, find_ffmpeg_exe
 
@@ -9,9 +9,10 @@ from .file_converter import FFmpegNotFoundError, FileConverter, find_ffmpeg_exe
 class AudioConverter(FileConverter, mode=ConverterType.audio):
     _source_path: str
     _destination_path: str
+    _config: MediaConverterConfig
 
-    def __init__(self, source_path: str, destination_path: str) -> None:
-        self._config = get_global_config()
+    def __init__(self, source_path: str, destination_path: str, config: MediaConverterConfig) -> None:
+        self._config = config
         self._source_path = source_path
         self._destination_path = destination_path
 

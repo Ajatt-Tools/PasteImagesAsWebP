@@ -16,7 +16,7 @@ from aqt.utils import showCritical, tooltip
 from .ajt_common.about_menu import tweak_window
 from .ajt_common.media import find_all_media
 from .ajt_common.monospace_line_edit import MonoSpaceLineEdit
-from .consts import *
+from .consts import ADDON_FULL_NAME, ADDON_PATH, WINDOW_MIN_WIDTH
 
 
 class FileNameEdit(MonoSpaceLineEdit):

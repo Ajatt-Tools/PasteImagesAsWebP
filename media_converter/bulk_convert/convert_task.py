@@ -13,10 +13,10 @@ from aqt.browser import Browser
 from aqt.operations import CollectionOp, ResultWithChanges
 
 from ..bulk_convert.convert_result import ConvertResult
-from ..common import find_convertible_audio, find_convertible_images
 from ..config import MediaConverterConfig
 from ..dialogs.bulk_convert_result_dialog import BulkConvertResultDialog
 from ..file_converters.common import LocalFile
+from ..file_converters.find_media import FindMedia
 from ..file_converters.internal_file_converter import InternalFileConverter
 
 MAX_WORKERS = max(1, multiprocessing.cpu_count() - 1)
@@ -40,6 +40,7 @@ class ConvertTask:
     _to_convert: dict[LocalFile, dict[NoteId, Note]]
     _canceled: bool
     _config: MediaConverterConfig
+    _finder: FindMedia
 
     def __init__(
         self, browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str], config: MediaConverterConfig
@@ -50,6 +51,7 @@ class ConvertTask:
         self._to_convert = self._find_files_to_convert_and_notes(note_ids)
         self._canceled = False
         self._config = config
+        self._finder = FindMedia(config)
 
     @property
     def size(self) -> int:
@@ -128,11 +130,13 @@ class ConvertTask:
             if "<img" not in note_content and "[sound:" not in note_content:
                 continue
             if self._config.enable_image_conversion:
-                for filename in find_convertible_images(note_content, include_converted=self._config.bulk_reconvert):
+                for filename in self._finder.find_convertible_images(
+                    note_content, include_converted=self._config.bulk_reconvert
+                ):
                     to_convert[LocalFile.image(filename)][note.id] = note
             if self._config.enable_audio_conversion:
                 # TODO config.bulk_reconvert
-                for filename in find_convertible_audio(note_content, include_converted=False):
+                for filename in self._finder.find_convertible_audio(note_content, include_converted=False):
                     to_convert[LocalFile.audio(filename)][note.id] = note
         return to_convert
 
@@ -143,7 +147,7 @@ class ConvertTask:
         """
         if self._canceled:
             raise TaskCanceledByUserException
-        conv = InternalFileConverter(self._browser.editor, file, self._first_referenced(file))
+        conv = InternalFileConverter(self._browser.editor, file, self._first_referenced(file), config=self._config)
         conv.convert_internal()
         return conv.new_filename
 

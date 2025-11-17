@@ -5,6 +5,7 @@ import functools
 from typing import Optional
 
 from ..ajt_common.utils import find_executable as find_executable_ajt
+from ..config import MediaConverterConfig
 from .common import COMMON_AUDIO_FORMATS, ConverterType, get_file_extension
 
 
@@ -37,7 +38,7 @@ class FileConverter:
         cls._subclasses_map[mode] = cls
         cls._mode = mode
 
-    def __new__(cls, source_path: str, destination_path: str) -> "FileConverter":
+    def __new__(cls, source_path: str, destination_path: str, config: MediaConverterConfig) -> "FileConverter":
         if is_audio_file(source_path):
             mode = ConverterType.audio
         else:

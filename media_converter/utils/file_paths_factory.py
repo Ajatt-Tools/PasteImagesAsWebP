@@ -15,7 +15,8 @@ from anki.notes import Note
 from anki.utils import html_to_text_line
 from aqt.editor import Editor
 
-from ..config import MediaConverterConfig, get_global_config
+from ..config import MediaConverterConfig
+from ..file_converters.common import ConverterType, LocalFile
 from .converter_interfaces import FileNamePatterns
 
 
@@ -59,9 +60,9 @@ class FilePathFactory(FileNamePatterns):
     _editor: Optional[Editor]
     _config: MediaConverterConfig
 
-    def __init__(self, note: Optional[Note], editor: Optional[Editor]) -> None:
+    def __init__(self, note: Optional[Note], editor: Optional[Editor], config: MediaConverterConfig) -> None:
         super().__init__()
-        self._config = get_global_config()
+        self._config = config
         self._note = note
         self._editor = editor
 
@@ -118,3 +119,11 @@ class FilePathFactory(FileNamePatterns):
     @staticmethod
     def _time_human():
         return strftime("%d-%b-%Y_%H-%M-%S", gmtime())
+
+    def get_target_extension(self, file: LocalFile) -> str:
+        """
+        If image file, convert to avif or webp. If audio file, convert to opus.
+        """
+        if file.type == ConverterType.audio:
+            return self._config.audio_extension
+        return self._config.image_extension

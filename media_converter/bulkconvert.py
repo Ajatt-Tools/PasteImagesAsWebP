@@ -8,9 +8,9 @@ from anki.notes import NoteId
 from aqt import gui_hooks
 from aqt.browser import Browser
 from aqt.qt import *
+from aqt.utils import tooltip
 
 from .bulk_convert.convert_task import ConvertTask
-from .common import tooltip
 from .config import MediaConverterConfig
 from .consts import ADDON_FULL_NAME
 from .dialogs.bulk_convert_dialog import AnkiBulkConvertDialog
@@ -51,7 +51,7 @@ class BulkConverter:
                     self._browser.table.clear_selection()
                 self._bulk_convert(selected_nids, dialog.selected_fields())
         else:
-            tooltip("No cards selected.", parent=self._browser)
+            tooltip("No cards selected.", period=self._config.tooltip_duration_millisecond, parent=self._browser)
 
     @reload_note
     def _bulk_convert(self, note_ids: Sequence[NoteId], selected_fields: list[str]) -> None:

@@ -14,11 +14,7 @@ from .consts import ADDON_FULL_NAME, ADDON_NAME, ADDON_PATH
 from .dialogs.main_settings_dialog import AnkiMainSettingsDialog
 from .file_converters.file_converter import FFmpegNotFoundError
 from .file_converters.image_converter import ffmpeg_not_found_dialog
-from .file_converters.on_paste_converter import (
-    TEMP_IMAGE_FORMAT,
-    OnPasteConverter,
-    mime_to_image_file,
-)
+from .file_converters.on_paste_converter import TEMP_IMAGE_FORMAT, OnPasteConverter
 from .media_deduplication.anki_collection_op import run_media_deduplication
 from .utils.show_options import ShowOptions
 from .utils.temp_file import TempFile
@@ -49,7 +45,7 @@ def convert_and_insert(editor: Editor, source: ShowOptions) -> None:
     mime: QMimeData = editor.mw.app.clipboard().mimeData()
     conv = OnPasteConverter(editor, source)
     with TempFile(suffix=f".{TEMP_IMAGE_FORMAT}") as tmp_file:
-        if to_convert := mime_to_image_file(mime, tmp_file.path()):
+        if to_convert := conv.mime_to_image_file(mime, tmp_file.path()):
             try:
                 new_file_path = conv.convert_mime(to_convert)
             except FFmpegNotFoundError:

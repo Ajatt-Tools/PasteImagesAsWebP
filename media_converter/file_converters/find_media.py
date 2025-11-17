@@ -1,11 +1,11 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import re
-from typing import Iterable
+from collections.abc import Iterable
 
-from media_converter.common import RE_IMAGE_HTML_TAG, RE_AUDIO_HTML_TAG
-from media_converter.config import MediaConverterConfig
-from media_converter.file_converters.common import get_file_extension
+from ..common import RE_AUDIO_HTML_TAG, RE_IMAGE_HTML_TAG
+from ..config import MediaConverterConfig
+from .common import get_file_extension
 
 
 class FindMedia:
@@ -13,7 +13,6 @@ class FindMedia:
 
     def __init__(self, config: MediaConverterConfig) -> None:
         self._config = config
-
 
     def is_excluded_image_extension(self, filename: str, include_converted: bool = False) -> bool:
         """
@@ -35,7 +34,6 @@ class FindMedia:
 
         return get_file_extension(filename) in self._config.get_excluded_audio_extensions(include_converted)
 
-
     def find_convertible_images(self, html: str, include_converted: bool = False) -> Iterable[str]:
         """
         Find image files referenced by a note.
@@ -50,7 +48,6 @@ class FindMedia:
             # Check if the filename ends with any of the excluded extensions
             if not self.is_excluded_image_extension(filename, include_converted):
                 yield filename
-
 
     def find_convertible_audio(self, html: str, include_converted: bool = False) -> Iterable[str]:
         """

@@ -9,21 +9,12 @@ from anki.notes import Note
 from aqt import mw
 from aqt.qt import *
 
-from ..config import config
+from ..config import MediaConverterConfig
 from ..utils.file_paths_factory import FilePathFactory
 from ..utils.show_options import ImageDimensions
 from .common import ConverterType, LocalFile
 from .file_converter import FileConverter
 from .image_converter import ImageConverter
-
-
-def get_target_extension(file: LocalFile) -> str:
-    """
-    If image file, convert to avif or webp. If audio file, convert to opus.
-    """
-    if file.type == ConverterType.audio:
-        return config.audio_extension
-    return config.image_extension
 
 
 class InternalFileConverter:
@@ -35,17 +26,19 @@ class InternalFileConverter:
     _destination_file_path: str
     _conversion_finished: bool
     _converter: FileConverter
+    _config: MediaConverterConfig
 
-    def __init__(self, editor: Optional[aqt.editor.Editor], file: LocalFile, note: Note):
+    def __init__(self, editor: Optional[aqt.editor.Editor], file: LocalFile, note: Note, config: MediaConverterConfig):
         self._conversion_finished = False
-        self._fpf = FilePathFactory(note=note, editor=editor)
+        self._fpf = FilePathFactory(note=note, editor=editor, config=self._config)
         self._initial_file_path = os.path.join(self._dest_dir, file.file_name)
+        self._config = config
         self._destination_file_path = self._fpf.make_unique_filepath(
             self._dest_dir,
             file.file_name,
-            extension=get_target_extension(file),
+            extension=self._fpf.get_target_extension(file),
         )
-        self._converter = FileConverter(self._initial_file_path, self._destination_file_path)
+        self._converter = FileConverter(self._initial_file_path, self._destination_file_path, config=self._config)
 
     @property
     def _dest_dir(self) -> str:
@@ -77,6 +70,6 @@ class InternalFileConverter:
     def convert_internal(self) -> None:
         self._converter.convert()
         self._conversion_finished = True
-        if config.delete_original_file_on_convert:
+        if self._config.delete_original_file_on_convert:
             print("Removing original file.")
             os.remove(self._initial_file_path)
