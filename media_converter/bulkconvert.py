@@ -60,13 +60,17 @@ class BulkConverter:
         progress_bar.task.update_notes()
 
 
-def setup_menu(browser: Browser):
+def setup_menu(browser: Browser) -> None:
     from .config import config
 
     a = QAction(ACTION_NAME, browser)
     converter = BulkConverter(config=config, browser=browser)
+
     qconnect(a.triggered, converter.on_bulk_convert)
     browser.form.menuEdit.addAction(a)
+
+    # Note: attach the object to the browser to prevent it from being deleted. Otherwise, the menu action doesn't work.
+    browser._ajt__media_converter_bulk_converter = converter
 
 
 def init() -> None:
