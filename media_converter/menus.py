@@ -20,12 +20,10 @@ from .utils.show_options import ShowOptions
 from .utils.temp_file import TempFile
 
 
-def setup_mainwindow_menu() -> None:
+def setup_mainwindow_menu(config: MediaConverterConfig) -> None:
     """
     setup menu in anki
     """
-    from .config import config
-
     root_menu = menu_root_entry()
 
     def open_settings():
@@ -106,9 +104,7 @@ class Menus:
             )
 
 
-def setup_editor_menus() -> None:
-    from .config import config
-
+def setup_editor_menus(config: MediaConverterConfig) -> None:
     menus = Menus(config)
     gui_hooks.editor_did_init_buttons.append(menus.on_editor_did_init_buttons)
     gui_hooks.editor_did_init_shortcuts.append(menus.on_editor_did_init_shortcuts)
@@ -116,5 +112,7 @@ def setup_editor_menus() -> None:
 
 
 def init() -> None:
-    setup_mainwindow_menu()
-    setup_editor_menus()
+    from .config import config
+
+    setup_mainwindow_menu(config)
+    setup_editor_menus(config)
