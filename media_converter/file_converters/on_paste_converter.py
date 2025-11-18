@@ -88,7 +88,7 @@ class OnPasteConverter:
         # TODO handle audio
 
     def tooltip(self, msg: Union[Exception, str]) -> None:
-        return tooltip(str(msg), period=self._config.tooltip_duration_millisecond, parent=self._editor.parentWindow)
+        return tooltip(str(msg), period=self._config.tooltip_duration_milliseconds, parent=self._editor.parentWindow)
 
     def result_tooltip(self, filepath: str) -> None:
         return self.tooltip(

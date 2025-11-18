@@ -61,7 +61,7 @@ class AnkiMediaDedup:
         dialog = show_deduplication_confirm_dialog(files)
         qconnect(dialog.accepted, functools.partial(self._deduplicate_media_files, files, dialog.row_count()))
         qconnect(
-            dialog.rejected, lambda: tooltip("Aborted.", period=self._config.tooltip_duration_millisecond, parent=mw)
+            dialog.rejected, lambda: tooltip("Aborted.", period=self._config.tooltip_duration_milliseconds, parent=mw)
         )
         dialog.show()
 

@@ -51,7 +51,7 @@ class BulkConverter:
                     self._browser.table.clear_selection()
                 self._bulk_convert(selected_nids, dialog.selected_fields())
         else:
-            tooltip("No cards selected.", period=self._config.tooltip_duration_millisecond, parent=self._browser)
+            tooltip("No cards selected.", period=self._config.tooltip_duration_milliseconds, parent=self._browser)
 
     @reload_note
     def _bulk_convert(self, note_ids: Sequence[NoteId], selected_fields: list[str]) -> None:

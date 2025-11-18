@@ -93,7 +93,7 @@ class Events:
             except FFmpegNotFoundError:
                 ffmpeg_not_found_dialog()
             except CanceledPaste as ex:
-                tooltip(str(ex), period=self._config.tooltip_duration_millisecond, parent=mw)
+                tooltip(str(ex), period=self._config.tooltip_duration_milliseconds, parent=mw)
             except (OSError, RuntimeError, FileNotFoundError):
                 pass
 
