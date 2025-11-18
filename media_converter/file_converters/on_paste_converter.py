@@ -69,7 +69,7 @@ class OnPasteConverter:
             original_filename=os.path.basename(image_path),
             extension=self._config.image_extension,
         )
-        conv = ImageConverter(image_path, destination_path)
+        conv = ImageConverter(image_path, destination_path, config=self._config)
         self._maybe_show_settings(conv.initial_dimensions)
         conv.convert()
         return destination_path
@@ -82,7 +82,7 @@ class OnPasteConverter:
             original_filename=to_convert.initial_filename,
             extension=self._config.image_extension,
         )
-        conv = ImageConverter(to_convert.tmp_path, destination_path)
+        conv = ImageConverter(to_convert.tmp_path, destination_path, config=self._config)
         conv.convert()
         return destination_path
         # TODO handle audio
