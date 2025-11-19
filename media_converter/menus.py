@@ -108,7 +108,7 @@ class Menus:
 
 
 def setup_editor_menus(config: MediaConverterConfig) -> None:
-    menus = Menus(config)
+    mw._ajt__media_converter_menus = menus = Menus(config)
     gui_hooks.editor_did_init_buttons.append(menus.on_editor_did_init_buttons)
     gui_hooks.editor_did_init_shortcuts.append(menus.on_editor_did_init_shortcuts)
     gui_hooks.editor_will_show_context_menu.append(menus.on_editor_will_show_context_menu)

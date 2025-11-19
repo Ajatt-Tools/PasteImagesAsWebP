@@ -120,7 +120,7 @@ class Events:
 def init() -> None:
     from .config import config
 
-    events = Events(config)
+    mw._ajt__media_converter_events = events = Events(config)
     gui_hooks.editor_will_process_mime.append(events.on_process_mime)
     hooks.note_will_be_added.append(events.on_add_note)
     aqt.editor.Editor.setup_mask_editor = wrap(
