@@ -43,7 +43,7 @@ class TempFile(os.PathLike):
         return self._tmp_filepath
 
     def close(self):
-        if self._opened is True:
+        if self._opened:
             os.close(self._fd)
             os.remove(self._tmp_filepath)
             self._opened = False
