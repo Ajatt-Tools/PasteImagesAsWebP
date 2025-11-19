@@ -46,12 +46,12 @@ class ConvertTask:
         self, browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str], config: MediaConverterConfig
     ) -> None:
         self._browser = browser
+        self._config = config
         self._selected_fields = selected_fields
         self._result = ConvertResult()
-        self._to_convert = self._find_files_to_convert_and_notes(note_ids)
-        self._canceled = False
-        self._config = config
         self._finder = FindMedia(config)
+        self._canceled = False
+        self._to_convert = self._find_files_to_convert_and_notes(note_ids)
 
     @property
     def size(self) -> int:
@@ -123,6 +123,7 @@ class ConvertTask:
         Maps each filename to a set of note ids that reference the filename.
         """
         assert mw
+        assert self._config, "config should be set"
         to_convert: dict[LocalFile, dict[NoteId, Note]] = collections.defaultdict(dict)
 
         for note in map(mw.col.get_note, note_ids):

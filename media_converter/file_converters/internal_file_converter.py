@@ -29,16 +29,16 @@ class InternalFileConverter:
     _config: MediaConverterConfig
 
     def __init__(self, editor: Optional[aqt.editor.Editor], file: LocalFile, note: Note, config: MediaConverterConfig):
-        self._conversion_finished = False
-        self._fpf = FilePathFactory(note=note, editor=editor, config=self._config)
-        self._initial_file_path = os.path.join(self._dest_dir, file.file_name)
         self._config = config
+        self._conversion_finished = False
+        self._initial_file_path = os.path.join(self._dest_dir, file.file_name)
+        self._fpf = FilePathFactory(note=note, editor=editor, config=config)
         self._destination_file_path = self._fpf.make_unique_filepath(
             self._dest_dir,
             file.file_name,
             extension=self._fpf.get_target_extension(file),
         )
-        self._converter = FileConverter(self._initial_file_path, self._destination_file_path, config=self._config)
+        self._converter = FileConverter(self._initial_file_path, self._destination_file_path, config=config)
 
     @property
     def _dest_dir(self) -> str:
