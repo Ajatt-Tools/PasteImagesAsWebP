@@ -39,30 +39,31 @@ def setup_mainwindow_menu(config: MediaConverterConfig) -> None:
     root_menu.addAction(action)
 
 
-def convert_and_insert(editor: Editor, source: ShowOptions) -> None:
-    mime: QMimeData = editor.mw.app.clipboard().mimeData()
-    conv = OnPasteConverter(editor, source)
-    with TempFile(suffix=f".{TEMP_IMAGE_FORMAT}") as tmp_file:
-        if to_convert := conv.mime_to_image_file(mime, tmp_file.path()):
-            try:
-                new_file_path = conv.convert_mime(to_convert)
-            except FFmpegNotFoundError:
-                ffmpeg_not_found_dialog()
-            except FileNotFoundError:
-                conv.tooltip("File not found.")
-            except Exception as ex:
-                conv.tooltip(ex)
-            else:
-                # File has been converted.
-                insert_image_html(editor, os.path.basename(new_file_path))
-                conv.result_tooltip(new_file_path)
-
-
 class Menus:
     _config: MediaConverterConfig
 
     def __init__(self, config: MediaConverterConfig) -> None:
         self._config = config
+
+    def _convert_and_insert(self, editor: Editor, source: ShowOptions) -> None:
+        mime: QMimeData = editor.mw.app.clipboard().mimeData()
+        conv = OnPasteConverter(editor, source, config=self._config)
+        with TempFile(suffix=f".{TEMP_IMAGE_FORMAT}") as tmp_file:
+            if to_convert := conv.mime_to_image_file(mime, tmp_file.path()):
+                try:
+                    new_file_path = conv.convert_mime(to_convert)
+                except FFmpegNotFoundError:
+                    ffmpeg_not_found_dialog()
+                except FileNotFoundError:
+                    conv.tooltip("File not found.")
+                except Exception as ex:
+                    conv.tooltip(ex)
+                else:
+                    # File has been converted.
+                    insert_image_html(editor, os.path.basename(new_file_path))
+                    conv.result_tooltip(new_file_path)
+            else:
+                conv.tooltip("Nothing to convert.")
 
     def on_editor_did_init_buttons(self, buttons: list[str], editor: Editor) -> None:
         """
@@ -73,7 +74,7 @@ class Menus:
                 editor.addButton(
                     icon=os.path.join(ADDON_PATH, "icons", "webp.png"),
                     cmd=f"ajt__{ADDON_FULL_NAME.lower().replace(' ', '_')}_button",
-                    func=functools.partial(convert_and_insert, source=ShowOptions.toolbar),
+                    func=functools.partial(self._convert_and_insert, source=ShowOptions.toolbar),
                     tip=self._action_tooltip(),
                     keys=self._config.shortcut or None,
                 )
@@ -92,15 +93,17 @@ class Menus:
         If editor button is enabled, it has its own keyboard shortcut.
         """
         if not self._config.show_editor_button and self._config.shortcut:
-            cuts.append(
-                (self._config.shortcut, functools.partial(convert_and_insert, editor=editor, source=ShowOptions.paste))
-            )
+            cuts.append((
+                self._config.shortcut,
+                functools.partial(self._convert_and_insert, editor=editor, source=ShowOptions.paste),
+            ))
 
     def on_editor_will_show_context_menu(self, webview: EditorWebView, menu: QMenu) -> None:
         if self._config.show_context_menu_entry:
             action: QAction = menu.addAction(self._action_tooltip())
             qconnect(
-                action.triggered, functools.partial(convert_and_insert, editor=webview.editor, source=ShowOptions.paste)
+                action.triggered,
+                functools.partial(self._convert_and_insert, editor=webview.editor, source=ShowOptions.paste),
             )
 
 
