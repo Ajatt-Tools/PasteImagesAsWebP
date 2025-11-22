@@ -23,7 +23,7 @@ class ProgressBar(AnkiSaveAndRestoreGeomDialog):
         self.task = task
         self.signals = ConvertSignals()
         self.pool = QThreadPool.globalInstance()
-        cast(QWidget, self).setWindowTitle("Converting...")
+        self.setWindowTitle("Converting...")
         self.setMinimumSize(320, 24)
         self.move(100, 100)
         self.set_range(0, task.size)

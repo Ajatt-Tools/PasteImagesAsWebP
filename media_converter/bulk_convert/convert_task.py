@@ -1,6 +1,8 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import collections
+import multiprocessing
+import concurrent.futures
 from collections.abc import Iterable, Sequence
 
 from anki.collection import Collection
@@ -17,36 +19,70 @@ from ..dialogs.bulk_convert_result_dialog import BulkConvertResultDialog
 from ..file_converters.common import LocalFile
 from ..file_converters.internal_file_converter import InternalFileConverter
 
+MAX_WORKERS = max(1, multiprocessing.cpu_count() - 1)
+
+
+class TaskCanceledByUserException(Exception):
+    pass
+
+
+def cancel_all_remaining_futures(future_to_file: dict[concurrent.futures.Future, LocalFile]) -> None:
+    # Cancel all remaining futures that have not started yet
+    for future in future_to_file:
+        if not future.done():
+            future.cancel()
+
 
 class ConvertTask:
     _browser: Browser
     _selected_fields: list[str]
     _result: ConvertResult
     _to_convert: dict[LocalFile, dict[NoteId, Note]]
+    _canceled: bool
 
     def __init__(self, browser: Browser, note_ids: Sequence[NoteId], selected_fields: list[str]):
         self._browser = browser
         self._selected_fields = selected_fields
         self._result = ConvertResult()
         self._to_convert = self._find_files_to_convert_and_notes(note_ids)
+        self._canceled = False
 
     @property
     def size(self) -> int:
         return len(self._to_convert)
 
-    def __call__(self):
-        if self._result.is_dirty():
-            raise RuntimeError("Already converted.")
-        for progress_idx, file in enumerate(self._to_convert):
-            yield progress_idx
-            try:
-                converted_filename = self._convert_stored_file(file)
-            except (OSError, RuntimeError, FileNotFoundError) as ex:
-                self._result.add_failed(file, exception=ex)
-            else:
-                self._result.add_converted(file, converted_filename)
+    def set_canceled(self) -> None:
+        self._canceled = True
 
-    def update_notes(self):
+    def __call__(self) -> Iterable[int]:
+        """
+        Execute the conversion using ThreadPoolExecutor for parallelism while reporting progress.
+        The conversion is performed in parallel; the order of completion is not guaranteed.
+        If the task is canceled, all pending jobs are cancelled and no further
+        conversions are started.  Running conversions are allowed to finish but
+        their results are ignored.
+        """
+        if self._result.has_results():
+            raise RuntimeError("Already converted.")
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            future_to_file = {executor.submit(self._convert_stored_file, file): file for file in self._to_convert}
+            for progress_idx, future in enumerate(concurrent.futures.as_completed(future_to_file), start=1):
+                if self._canceled:
+                    cancel_all_remaining_futures(future_to_file)
+                    break
+                original_filename = future_to_file[future]
+                try:
+                    converted_filename = future.result()
+                except TaskCanceledByUserException:
+                    continue
+                except Exception as ex:
+                    self._result.add_failed(original_filename, exception=ex)
+                else:
+                    self._result.add_converted(original_filename, converted_filename)
+                yield progress_idx
+
+    def update_notes(self) -> None:
         def show_report_message() -> int:
             dialog = BulkConvertResultDialog(self._browser)
             dialog.set_result(self._result)
@@ -57,12 +93,15 @@ class ConvertTask:
             show_report_message()
             self._browser.editor.loadNoteKeepingFocus()
 
-        if self._result.is_dirty():
+        if self._result.has_results():
+            # If there are converted or failed files.
             if not self._result.converted:
-                return show_report_message()
+                show_report_message()
+                return
             CollectionOp(parent=self._browser, op=lambda col: self._update_notes_op(col)).success(
                 lambda out: on_finish()
             ).run_in_background()
+        return
 
     def _first_referenced(self, file: LocalFile) -> Note:
         return next(note for note in self._to_convert[file].values())
@@ -94,6 +133,12 @@ class ConvertTask:
         return to_convert
 
     def _convert_stored_file(self, file: LocalFile) -> str:
+        """
+        Convert a single file.
+        If the task has been canceled, the conversion is skipped.
+        """
+        if self._canceled:
+            raise TaskCanceledByUserException
         conv = InternalFileConverter(self._browser.editor, file, self._first_referenced(file))
         conv.convert_internal()
         return conv.new_filename

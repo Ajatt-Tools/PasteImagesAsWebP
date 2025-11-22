@@ -14,21 +14,18 @@ class ConvertSignals(QObject):
 
 
 class ConvertRunnable(QRunnable):
-    canceled: bool
 
-    def __init__(self, task: ConvertTask, signals: ConvertSignals):
+    def __init__(self, task: ConvertTask, signals: ConvertSignals) -> None:
         super().__init__()
-        self.canceled = False
         self.task = task
         self.signals = signals
         qconnect(self.signals.canceled, self.set_canceled)
 
-    def set_canceled(self):
-        self.canceled = True
+    def set_canceled(self) -> None:
+        self.task.set_canceled()
 
-    def run(self):
+    def run(self) -> None:
+        self.signals.update_progress.emit(0)
         for progress_value in self.task():
-            if self.canceled:
-                break
             self.signals.update_progress.emit(progress_value)  # type: ignore
         self.signals.task_done.emit()  # type: ignore

@@ -1,5 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+
 from typing import Optional
 
 from ..file_converters.common import LocalFile
@@ -24,5 +25,5 @@ class ConvertResult:
     def failed(self) -> dict[LocalFile, Optional[Exception]]:
         return self._failed
 
-    def is_dirty(self) -> bool:
+    def has_results(self) -> bool:
         return bool(self._converted or self._failed)
