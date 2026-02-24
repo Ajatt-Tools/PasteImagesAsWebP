@@ -98,7 +98,7 @@ class MediaDedup:
 
     def __init__(self, col: anki.collection.Collection) -> None:
         self._col = col
-        self._nproc = multiprocessing.cpu_count()
+        self._nproc = max(1, multiprocessing.cpu_count() - 1)
 
     def collect_files(self) -> typing.Sequence[DuplicatesGroup]:
         """
