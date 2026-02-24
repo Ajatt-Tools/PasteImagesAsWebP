@@ -57,6 +57,10 @@ class DuplicatesGroup(typing.NamedTuple):
 
 
 def deduplicate_media_in_note(note: Note, dup_name: str, orig_name: str) -> Note:
+    """
+    Replace ALL references to duplicate media with original media in note fields.
+    Handles Rikaitan dictionary format with href, CSS url(), and img src.
+    """
     for field_name in note.keys():
         note[field_name] = note[field_name].replace(f' src="{dup_name}"', f' src="{orig_name}"')
         note[field_name] = note[field_name].replace(f" src='{dup_name}'", f" src='{orig_name}'")
