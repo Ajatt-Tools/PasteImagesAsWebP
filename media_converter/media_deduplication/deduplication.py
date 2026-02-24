@@ -14,7 +14,6 @@ from collections.abc import MutableSequence
 import anki.collection
 import anki.errors
 from anki.notes import Note, NoteId
-from aqt.operations import ResultWithChanges
 from aqt.qt import *
 
 HASH_FUNC = hashlib.sha512
@@ -100,7 +99,7 @@ def deduplicate_media_in_note(note: Note, dup_name: str, orig_name: str) -> Note
     return note
 
 
-T = TypeVar("T")
+T = typing.TypeVar("T")
 
 
 def split_list(input_list: typing.Sequence[T], n_chunks: int) -> typing.Iterable[typing.Sequence[T]]:
@@ -160,7 +159,12 @@ class MediaDedup:
                     result[hash_key].extend(names)
         return [DuplicatesGroup.from_list(files) for files in result.values() if len(files) > 1]
 
-    def deduplicate_notes_op(self, files: typing.Sequence[DuplicatesGroup], row_count: int) -> ResultWithChanges:
+    def deduplicate_notes_op(
+        self, files: typing.Sequence[DuplicatesGroup], row_count: int
+    ) -> anki.collection.OpChanges:
+        """
+        Wrapper for deduplication operation.
+        """
         pos = self._col.add_custom_undo_entry(f"Replace media links to {row_count} files in notes")
         self.deduplicate(files)
         return self._col.merge_undo_entries(pos)
