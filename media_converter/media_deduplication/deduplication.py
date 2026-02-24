@@ -1,5 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+
 import collections
 import concurrent.futures
 import hashlib
@@ -30,7 +31,10 @@ class MediaDedupFileHash(typing.NamedTuple):
 
 
 def compute_file_hash(path: pathlib.Path) -> MediaDedupFileHash:
-    # https://www.geeksforgeeks.org/python/python-program-to-find-hash-of-file/
+    """
+    Compute SHA-512 hash of a file.
+    https://www.geeksforgeeks.org/python/python-program-to-find-hash-of-file/
+    """
     if not path.is_file():
         raise ValueError(f"{path} is not a file.")
     h = HASH_FUNC()
