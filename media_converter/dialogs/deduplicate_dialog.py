@@ -21,6 +21,11 @@ class DeduplicateTableColumns(typing.NamedTuple):
         return [ui_translate(field) for field in cls.__annotations__]
 
 
+def copy_cell_to_clipboard(item: typing.Optional[QTableWidgetItem]) -> None:
+    if item:
+        QApplication.clipboard().setText(item.text())
+
+
 class DeduplicateMediaConfirmDialog(StatsDialog):
     name: str = "ajt__deduplicate_media_confirm_dialog"
     win_title: str = "Deduplicate media files"
@@ -46,6 +51,10 @@ class DeduplicateMediaConfirmDialog(StatsDialog):
         if not item:
             return
         menu = QMenu(self._table)
+
+        copy_cell_action = menu.addAction("Copy to the clipboard")
+        copy_cell_action.setEnabled(item is not None)
+        qconnect(copy_cell_action.triggered, lambda: copy_cell_to_clipboard(item))
 
         search_action = menu.addAction("Search in Browser")
         search_action.setEnabled(item is not None)
