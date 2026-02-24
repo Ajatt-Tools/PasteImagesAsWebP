@@ -106,7 +106,7 @@ class MediaDedup:
 
     def collect_files(self) -> typing.Sequence[DuplicatesGroup]:
         """
-        Returns a list of groups.
+        Collect and hash all files, returning groups of duplicates.
         """
         result: dict[MediaDedupFileHash, MutableSequence[pathlib.Path]] = collections.defaultdict(list)
 
@@ -134,6 +134,7 @@ class MediaDedup:
         return self._col.merge_undo_entries(pos)
 
     def _deduplicate_group(self, group: DuplicatesGroup, to_update: dict[NoteId, Note]) -> dict[NoteId, Note]:
+        """Process a single group of duplicates."""
         for dup in group.copies:
             for note_id in self._col.find_notes(query=self._col.build_search_string(dup.name)):
                 try:
@@ -145,7 +146,15 @@ class MediaDedup:
         return to_update
 
     def deduplicate(self, files: typing.Sequence[DuplicatesGroup]) -> anki.collection.OpChanges:
+        """
+        Process all duplicate groups and update note references.
+        Files are left in place.
+        Run Tools → Check Media afterward to review and delete.
+        """
         to_update: dict[NoteId, Note] = {}
+
+        # Update all note references
         for group in files:
             self._deduplicate_group(group, to_update)
+
         return self._col.update_notes(list(to_update.values()))
