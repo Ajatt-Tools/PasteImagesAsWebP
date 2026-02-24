@@ -5,6 +5,7 @@ import typing
 from collections.abc import Sequence
 
 import anki.collection
+import aqt
 from aqt import mw, qconnect
 from aqt.operations import CollectionOp, QueryOp
 from aqt.utils import show_info, tooltip
@@ -59,10 +60,13 @@ class AnkiMediaDedup:
             show_info("No duplicate media files found.", parent=mw)
             return
         dialog = show_deduplication_confirm_dialog(files)
-        qconnect(dialog.accepted, functools.partial(self._deduplicate_media_files, files, dialog.row_count()))
-        qconnect(
-            dialog.rejected, lambda: tooltip("Aborted.", period=self._config.tooltip_duration_milliseconds, parent=mw)
-        )
+
+        on_all_dialogs_closed = functools.partial(self._deduplicate_media_files, files, row_count=dialog.row_count())
+        tooltip_period = self._config.tooltip_duration_milliseconds
+
+        # close dialogs that would interfere with note updates.
+        qconnect(dialog.accepted, lambda: aqt.dialogs.closeAll(on_all_dialogs_closed))
+        qconnect(dialog.rejected, lambda: tooltip("Aborted.", period=tooltip_period, parent=mw))
         dialog.show()
 
 
