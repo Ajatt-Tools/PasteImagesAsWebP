@@ -56,15 +56,47 @@ class DuplicatesGroup(typing.NamedTuple):
         return cls(original=files[0], copies=files[1:])
 
 
+def do_replacements(field_content: str, dup_name: str, orig_name: str) -> str:
+    if dup_name not in field_content:
+        return field_content
+    # Comprehensive replacements for all possible patterns
+    replacements = (
+        # Image, Video, SVG Sources
+        (f' src="{dup_name}"', f' src="{orig_name}"'),
+        (f" src='{dup_name}'", f" src='{orig_name}'"),
+        # Links (href attributes)
+        (f' href="{dup_name}"', f' href="{orig_name}"'),
+        (f" href='{dup_name}'", f" href='{orig_name}'"),
+        # CSS url() with HTML entities
+        (f"url(&quot;{dup_name}&quot;)", f"url(&quot;{orig_name}&quot;)"),
+        (f"url(&#39;{dup_name}&#39;)", f"url(&#39;{orig_name}&#39;)"),
+        # CSS url() with regular quotes or without quotes
+        (f'url("{dup_name}")', f'url("{orig_name}")'),
+        (f"url('{dup_name}')", f"url('{orig_name}')"),
+        (f"url({dup_name})", f"url({orig_name})"),
+        # Sound files
+        (f"[sound:{dup_name}]", f"[sound:{orig_name}]"),
+        # Plain text references
+        (f">{dup_name}<", f">{orig_name}<"),
+        (f" {dup_name} ", f" {orig_name} "),
+    )
+    for old, new in replacements:
+        if old not in field_content:
+            continue
+        field_content = field_content.replace(old, new)
+    return field_content
+
+
 def deduplicate_media_in_note(note: Note, dup_name: str, orig_name: str) -> Note:
     """
     Replace ALL references to duplicate media with original media in note fields.
     Handles Rikaitan dictionary format with href, CSS url(), and img src.
     """
     for field_name in note.keys():
-        note[field_name] = note[field_name].replace(f' src="{dup_name}"', f' src="{orig_name}"')
-        note[field_name] = note[field_name].replace(f" src='{dup_name}'", f" src='{orig_name}'")
-        note[field_name] = note[field_name].replace(f"[sound:{dup_name}]", f"[sound:{orig_name}]")
+        new_field_content = do_replacements(note[field_name], dup_name, orig_name)
+        if new_field_content == note[field_name]:
+            continue
+        note[field_name] = new_field_content
     return note
 
 
