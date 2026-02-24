@@ -9,7 +9,7 @@ from aqt.qt import *
 from aqt.utils import tooltip
 
 from ..ajt_common.stats_table_dialog import StatsDialog
-from ..ajt_common.utils import ui_translate
+from ..ajt_common.utils import open_file, ui_translate
 
 
 class DeduplicateTableColumns(typing.NamedTuple):
@@ -60,6 +60,10 @@ class DeduplicateMediaConfirmDialog(StatsDialog):
         search_action.setEnabled(item is not None)
         qconnect(search_action.triggered, lambda: self._search_in_anki_browser(item))
 
+        show_in_fm_action = menu.addAction("Show in file manager")
+        show_in_fm_action.setEnabled(item is not None)
+        qconnect(show_in_fm_action.triggered, lambda: self._show_in_file_manager(item))
+
         menu.exec(self._table.viewport().mapToGlobal(pos))
 
     def _search_in_anki_browser(self, item: typing.Optional[QTableWidgetItem]) -> None:
@@ -67,13 +71,22 @@ class DeduplicateMediaConfirmDialog(StatsDialog):
         Paste selected text into the Browser's search bar and perform search.
         """
         if not aqt.mw:
-            # Can't do anything with Anki. Abort.
+            # Can't do anything without Anki. Abort.
             return
         if not (item and item.text()):
             tooltip("Empty selection.", parent=self)
         browser = aqt.dialogs.open("Browser", aqt.mw)  # browser requires mw (AnkiQt) to be passed as parent
         browser.activateWindow()
         browser.search_for(item.text())
+
+    def _show_in_file_manager(self, item: typing.Optional[QTableWidgetItem]) -> None:
+        if not (item and item.text() and aqt.mw):
+            return
+        file_path = os.path.join(aqt.mw.col.media.dir(), item.text())
+        if os.path.exists(file_path):
+            open_file(file_path)
+        else:
+            tooltip("File does not exist.", parent=self)
 
     def row_count(self) -> int:
         return self._table.rowCount()
