@@ -75,11 +75,14 @@ def split_list(input_list: typing.Sequence[T], n_chunks: int) -> typing.Iterable
 
 
 def hash_files(files: typing.Sequence[pathlib.Path]) -> dict[MediaDedupFileHash, list[pathlib.Path]]:
+    """Hash files and group by hash value."""
     hash_to_names: dict[MediaDedupFileHash, list[pathlib.Path]] = collections.defaultdict(list)
+
     for entry in files:
         if not entry.is_file() or entry.name.startswith("_"):
             # files starting with "_" are special to Anki.
             continue
+
         try:
             file_hash = compute_file_hash(entry)
         except OSError as ex:
