@@ -16,14 +16,18 @@ jobs:
           python-version: "3.9"
           cache: pip
 
-      - name: Install Qt dependencies
+      - name: Install Qt and other dependencies
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: libegl1 libopengl0 libxkbcommon0
+          packages: libegl1 libopengl0 libxkbcommon0 atool
           version: 1.0
 
       - name: Install Hatch
         run: pip install hatch "virtualenv<20.30"
+
+      - name: install cwebp
+        run: bash ./scripts/libwebp-dl.sh
+        shell: bash
 
       - name: Run tests
         run: hatch run dev:test
