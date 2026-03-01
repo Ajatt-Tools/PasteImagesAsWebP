@@ -40,7 +40,7 @@ dependencies = [
   "mypy>=1.0.0",
   "isort",
   "pytest",
-  "aqt[qt6]",
+  "aqt",
   "pyupgrade",
 ]
 python = "3.9"

@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.9"
+          cache: pip
+
+      - name: Install Qt dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libegl1 libopengl0 libxkbcommon0
+          version: 1.0
+
+      - name: Install Hatch
+        run: pip install hatch "virtualenv<20.30"
+
+      - name: Run tests
+        run: hatch run dev:test
