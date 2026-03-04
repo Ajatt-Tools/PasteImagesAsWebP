@@ -14,7 +14,7 @@ ask other users in the [user group](https://tatsumoto.neocities.org/blog/join-ou
 * `bulk_convert_fields` - List of fields where the add-on looks for images when bulk-converting.
 * `bulk_reconvert` - When bulk-converting, reconvert images that are already in the desired format.
 * `copy_paste` - Convert images when you copy-paste them.
-* `cwebp_args` - Extra [cwebp arguments](https://www.unix.com/man-page/debian/1/cwebp/).
+* `cwebp_args` - Extra [cwebp arguments](https://developers.google.com/speed/webp/docs/cwebp#options).
   They are applied on each call to `cwebp`.
 * `ffmpeg_args` - Extra [ffmpeg arguments](https://ffmpeg.org/ffmpeg.html).
   They are applied on each call to `ffmpeg`.
