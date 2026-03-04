@@ -11,6 +11,8 @@ def preset_to_str(preset: PresetDict) -> str:
 
 
 class PresetsEditor(QGroupBox):
+    """A group box with a combo box and add/remove buttons for managing a list of presets."""
+
     def __init__(self, name: str, sliders: ImageSliderBox) -> None:
         super().__init__(name)
         self._sliders = sliders
