@@ -14,6 +14,7 @@ class PresetsEditor(QGroupBox):
     """A group box with a combo box and add/remove buttons for managing a list of presets."""
 
     def __init__(self, name: str, sliders: ImageSliderBox) -> None:
+        """Initialize the editor with a combo box and add/remove/apply buttons."""
         super().__init__(name)
         self._sliders = sliders
         self.combo = QComboBox()
