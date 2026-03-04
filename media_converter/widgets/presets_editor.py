@@ -26,6 +26,7 @@ class PresetsEditor(QGroupBox):
         self.connect_buttons()
 
     def create_layout(self) -> QLayout:
+        """Arrange the combo box and buttons in a grid layout."""
         layout = QGridLayout()
         layout.addWidget(self.combo, 0, 0, 1, 3)  # row, col, row-span, col-span
         layout.addWidget(self.add_current, 1, 0)
