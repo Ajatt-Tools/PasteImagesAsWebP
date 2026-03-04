@@ -1,5 +1,6 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+from typing import Sequence
 
 from aqt.qt import *
 
@@ -35,7 +36,8 @@ class PresetsEditor(QGroupBox):
     def as_list(self) -> list[PresetDict]:
         return [self.combo.itemData(index) for index in range(self.combo.count())]
 
-    def add_items(self, items: list[PresetDict]) -> None:
+    def add_items(self, items: Sequence[PresetDict]) -> None:
+        """Append presets to the combo box."""
         for item in items:
             self.combo.addItem(preset_to_str(item), item)
 
