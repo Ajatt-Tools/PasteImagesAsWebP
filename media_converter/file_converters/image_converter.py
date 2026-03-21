@@ -90,9 +90,10 @@ def ffmpeg_not_found_dialog(parent=None):
         text="""
         <h2>FFmpeg is not found in PATH.</h2>
 
-        Install ffmpeg if it is not installed yet.
+        Install ffmpeg if it is not already installed.
         Follow <a href="https://wiki.archlinux.org/title/FFmpeg">Arch Wiki</a>
         or the <a href="https://www.ffmpeg.org/">project home page</a> for details.
+        On Homebrew the package is called <a href="https://formulae.brew.sh/formula/ffmpeg-full">ffmpeg-full</a>.
 
         Make sure that ffmpeg is added to the PATH.
         To learn how, read
