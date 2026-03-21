@@ -51,7 +51,12 @@ class PresetsEditor(QGroupBox):
 
     def add_new_preset(self) -> None:
         """Add the current text as a new item if it is not already in the list."""
-        self.combo.addItem(preset_to_str(preset := self._sliders.as_dict()), preset)
+        # https://doc.qt.io/qt-6/qcombobox.html#findText
+        new_preset = self._sliders.as_dict()
+        preset_text = preset_to_str(new_preset)
+        if self.combo.findText(preset_text) == -1:
+            # If not found, then add.
+            self.combo.addItem(preset_text, new_preset)
 
     def apply_selected_preset(self) -> None:
         data: PresetDict
