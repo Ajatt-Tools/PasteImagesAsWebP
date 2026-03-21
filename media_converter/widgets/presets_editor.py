@@ -50,6 +50,7 @@ class PresetsEditor(QGroupBox):
         self.add_items(items)
 
     def add_new_preset(self) -> None:
+        """Add the current text as a new item if it is not already in the list."""
         self.combo.addItem(preset_to_str(preset := self._sliders.as_dict()), preset)
 
     def apply_selected_preset(self) -> None:
@@ -60,6 +61,8 @@ class PresetsEditor(QGroupBox):
             self._sliders.image_quality = data["image_quality"]
 
     def connect_buttons(self) -> None:
+        """Wire up the add and remove buttons to their respective actions."""
+        # https://doc.qt.io/qt-6/qabstractbutton.html#clicked
         qconnect(self.add_current.clicked, self.add_new_preset)
         qconnect(self.remove_selected.clicked, lambda: self.combo.removeItem(self.combo.currentIndex()))
         qconnect(self.apply_selected.clicked, self.apply_selected_preset)
