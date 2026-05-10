@@ -29,7 +29,7 @@ class ScaleSettings(QGroupBox, WidgetHasName, ConfigPropMixIn):
         self.setLayout(self.create_scale_options_grid())
 
     def create_scale_options_grid(self) -> QGridLayout:
-        factors = (1 / 8, 1 / 4, 1 / 2, 1, 1.5, 2)
+        factors = (1 / 4, 1 / 2, 0.75, 1, 1.5, 2)
         widgets = []
         for factor in factors:
             button = QPushButton(f"{factor}x")
