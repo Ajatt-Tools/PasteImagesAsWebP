@@ -20,12 +20,12 @@ from .config import MediaConverterConfig, get_global_config
 from .consts import ADDON_FULL_NAME, WINDOW_MIN_WIDTH
 from .media_deduplication.deduplication import do_replacements
 
-
 RE_FILENAME_VALID = re.compile(r'^[^\[\]<>:\'"/|?*\\]+\.\w{1,5}$', flags=re.IGNORECASE)
 
 
 class FileNameEdit(MonoSpaceLineEdit):
-    _edit_max_len = 119
+    _edit_max_len: int = 119  # length in bytes
+    _valid: bool
 
     def __init__(self, text: str):
         super().__init__()
