@@ -12,7 +12,6 @@ def start_addon() -> None:
     bulkconvert.init()
     menus.init()
     events.init()
-    media_rename.init()
 
 
 if mw and "pytest" not in sys.modules:
