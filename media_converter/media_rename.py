@@ -40,7 +40,7 @@ class FileNameEdit(MonoSpaceLineEdit):
 
     def validate(self):
         self._valid = len(self.text().encode("utf-8")) <= self._edit_max_len and re.fullmatch(
-            r'^[^\[\]<>:\'"/|?*\\]+\.\w{,5}$', self.text()
+            r'^[^\[\]<>:\'"/|?*\\]+\.\w{1,5}$', self.text()
         )
         if self._valid:
             cast(QWidget, self).setStyleSheet("")
