@@ -68,7 +68,7 @@ class EditorMenus:
         if self._file_rename_dialog:
             return
         elif editor.note and (filenames := find_all_media(join_fields(editor.note.fields))):
-            d = self._file_rename_dialog = AnkiMediaRenameDialog(editor, editor.note, filenames)
+            d = self._file_rename_dialog = AnkiMediaRenameDialog(editor, editor.note, filenames, self._cfg)
             qconnect(d.finished, lambda result: self.del_ref())
             d.show()
         else:

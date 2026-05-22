@@ -16,7 +16,7 @@ from aqt.utils import showCritical, tooltip
 from .ajt_common.about_menu import tweak_window
 from .ajt_common.monospace_line_edit import MonoSpaceLineEdit
 from .ajt_common.utils import open_file
-from .config import get_global_config
+from .config import MediaConverterConfig, get_global_config
 from .consts import ADDON_FULL_NAME, WINDOW_MIN_WIDTH
 from .media_deduplication.deduplication import do_replacements
 
@@ -130,19 +130,44 @@ class MediaRenameDialog(QDialog):
             if old_filename != (new_filename := edit_widget.text()):
                 yield RenameTask(old_filename, new_filename)
 
+    def can_rename_all_files(self) -> bool:
+        """True if all rename line edits are valid."""
+        return all(e.valid for e in self.edits.values())
+
 
 class AnkiMediaRenameDialog(MediaRenameDialog):
     """Rename dialog that performs the actual rename inside Anki."""
 
-    def __init__(self, editor: Editor, note: Note, filenames: list[str]):
+    def __init__(self, editor: Editor, note: Note, filenames: list[str], cfg: Optional[MediaConverterConfig] = None):
         super().__init__(filenames, parent=editor.widget)
         self.editor = editor
         self.note = note
+        self._cfg = cfg or get_global_config()
 
     def accept(self) -> None:
+        if not self.can_rename_all_files():
+            self.tooltip("Some file names are invalid.")
+            return
         if to_rename := list(self.to_rename()):
-            rename_media_files(to_rename, self.note, self.editor)
+            self._rename_media_files(to_rename, self.note, self.editor)
         super().accept()
+
+    def tooltip(self, msg: str) -> None:
+        tooltip(msg, parent=self.editor.parentWindow, period=self._cfg.tooltip_duration_milliseconds)
+
+    def _rename_media_files(self, to_rename: list[RenameTask], note: Note, editor: Editor):
+        to_rename = list(try_rename_files(to_rename))
+        for old_filename, new_filename in to_rename:
+            for field_name, field_value in note.items():
+                note[field_name] = do_replacements(note[field_name], old_filename, new_filename)
+
+        def on_success() -> None:
+            self.tooltip(format_report_message(to_rename))
+
+        CollectionOp(
+            parent=editor.widget,
+            op=lambda col: col.update_note(note),
+        ).success(lambda out: on_success()).run_in_background()
 
 
 def duplicate_file_in_collection(old_filename: str, new_filename: str) -> str:
@@ -174,24 +199,3 @@ def try_rename_files(to_rename: list[RenameTask]) -> Iterable[RenameTask]:
             showCritical(f"{old_filename} doesn't exist.", title="Couldn't rename file.")
             continue
         yield RenameTask(old_filename=old_filename, new_filename=new_filename)
-
-
-def rename_media_files(to_rename: list[RenameTask], note: Note, editor: Editor):
-    to_rename = list(try_rename_files(to_rename))
-    for old_filename, new_filename in to_rename:
-        for field_name, field_value in note.items():
-            note[field_name] = do_replacements(note[field_name], old_filename, new_filename)
-
-    cfg = get_global_config()
-
-    def on_success() -> None:
-        tooltip(
-            format_report_message(to_rename),
-            parent=editor.parentWindow,
-            period=cfg.tooltip_duration_milliseconds,
-        )
-
-    CollectionOp(
-        parent=editor.widget,
-        op=lambda col: col.update_note(note),
-    ).success(lambda out: on_success()).run_in_background()
