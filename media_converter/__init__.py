@@ -7,7 +7,7 @@ from aqt import mw
 
 
 def start_addon() -> None:
-    from . import bulkconvert, events, media_rename, menus
+    from . import bulkconvert, events, menus
 
     bulkconvert.init()
     menus.init()
