@@ -154,7 +154,7 @@ def rename_file(old_filename: str, new_filename: str) -> str:
         return mw.col.media.write_data(new_filename, f.read())
 
 
-def rename_media_files(to_rename: list[RenameTask], note: Note, parent: Editor):
+def rename_media_files(to_rename: list[RenameTask], note: Note, editor: Editor):
     for old_filename, new_filename in to_rename:
         try:
             new_filename = rename_file(old_filename, new_filename)
@@ -162,7 +162,18 @@ def rename_media_files(to_rename: list[RenameTask], note: Note, parent: Editor):
             showCritical(f"{old_filename} doesn't exist.", title="Couldn't rename file.")
             continue
         for field_name, field_value in note.items():
-            note[field_name] = field_value.replace(old_filename, new_filename)
-    CollectionOp(parent=parent.widget, op=lambda col: col.update_note(note)).success(
-        lambda out: tooltip(f"Renamed {len(to_rename)} files", parent=parent.parentWindow)
-    ).run_in_background()
+            note[field_name] = do_replacements(note[field_name], old_filename, new_filename)
+
+    cfg = get_global_config()
+
+    def on_success() -> None:
+        tooltip(
+            f"Renamed {len(to_rename)} files",
+            parent=editor.parentWindow,
+            period=cfg.tooltip_duration_milliseconds,
+        )
+
+    CollectionOp(
+        parent=editor.widget,
+        op=lambda col: col.update_note(note),
+    ).success(lambda out: on_success()).run_in_background()
