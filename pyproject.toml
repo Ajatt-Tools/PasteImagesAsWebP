@@ -40,9 +40,9 @@ dependencies = [
   "mypy>=1.0.0",
   "isort",
   "pytest",
-  "aqt",
   "pyupgrade",
 ]
+system-packages = true
 python = "3.9"
 
 [tool.hatch.envs.dev.scripts]
@@ -79,3 +79,16 @@ unstable = true
 
 [tool.isort]
 profile = "black"
+
+[tool.hatch.envs.hatch-test]
+# https://hatch.pypa.io/latest/config/internal/testing/
+# https://hatch.pypa.io/latest/tutorials/testing/overview/
+dependencies = [
+    "mypy>=1.0.0",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-xdist",
+]
+system-packages = true
+parallel = true
+randomize = true
