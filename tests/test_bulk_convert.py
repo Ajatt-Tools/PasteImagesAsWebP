@@ -3,10 +3,10 @@
 
 import os
 import tempfile
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from anki.notes import NoteId
+from anki.notes import Note, NoteId
 
 from media_converter.bulk_convert.convert_result import ConvertResult
 from media_converter.bulk_convert.convert_task import (
@@ -324,13 +324,6 @@ def test_real_image_conversion(no_anki_config: MediaConverterConfig) -> None:
 
 def test_convert_task_call_with_real_images(no_anki_config: MediaConverterConfig) -> None:
     """Test that ConvertTask.__call__ works properly with real images from the tests directory."""
-    from unittest.mock import MagicMock
-
-    from anki.notes import Note
-
-    from media_converter.bulk_convert.convert_task import ConvertTask
-    from media_converter.file_converters.common import LocalFile
-
     # Mock the Anki environment
     mock_browser = MagicMock()
     mock_browser.editor = MagicMock()

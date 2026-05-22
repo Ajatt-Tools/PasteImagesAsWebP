@@ -5,9 +5,10 @@ import re
 
 import pytest
 
-from media_converter.common import image_html
+from media_converter.common import RE_AUDIO_HTML_TAG, RE_IMAGE_HTML_TAG, image_html
 from media_converter.file_converters.common import get_file_extension
 from media_converter.file_converters.find_media import FindMedia
+from media_converter.utils.config_types import SUPPORTED_IMAGE_FORMATS
 
 HTML = """
 <img src="1.webp">[sound:file1.ogg]
@@ -25,8 +26,6 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
 
 def test_image_format():
-    from media_converter.utils.config_types import SUPPORTED_IMAGE_FORMATS
-
     assert frozenset(SUPPORTED_IMAGE_FORMATS) == frozenset(["avif", "webp"])
 
 
@@ -71,8 +70,6 @@ def test_find_convertible_audio(no_anki_config) -> None:
 
 
 def test_find_regex() -> None:
-    from media_converter.common import RE_AUDIO_HTML_TAG, RE_IMAGE_HTML_TAG
-
     assert re.findall(RE_IMAGE_HTML_TAG, HTML) == [
         "1.webp",
         "2.jpg",

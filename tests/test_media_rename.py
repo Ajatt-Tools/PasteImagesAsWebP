@@ -3,7 +3,12 @@
 
 import pytest
 
-from media_converter.media_rename import FileNameEdit, MediaRenameDialog, RenameTask
+from media_converter.media_rename import (
+    FileNameEdit,
+    MediaRenameDialog,
+    RenameTask,
+    format_report_message,
+)
 
 
 class TestFileNameEdit:
