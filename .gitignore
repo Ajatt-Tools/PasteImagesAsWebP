@@ -20,3 +20,6 @@ meta.json
 
 */user_files/user_data*
 *TODO*
+
+/*.md
+!/README.md
