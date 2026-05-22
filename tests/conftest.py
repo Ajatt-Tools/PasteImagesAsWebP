@@ -2,9 +2,17 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import pytest
+from aqt.qt import QApplication
 
 import media_converter.config
 from playground.no_anki_config import NoAnkiConfigView
+
+
+@pytest.fixture(autouse=True, scope="session")
+def qapp() -> QApplication:
+    """Ensure a QApplication exists for widget tests."""
+    app = QApplication.instance() or QApplication([])
+    return app
 
 
 @pytest.fixture(autouse=True, scope="function")
