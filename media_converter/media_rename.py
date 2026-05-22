@@ -1,6 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-
+import io
 import re
 import typing
 from collections.abc import Iterable
@@ -145,7 +145,8 @@ class AnkiMediaRenameDialog(MediaRenameDialog):
         super().accept()
 
 
-def rename_file(old_filename: str, new_filename: str) -> str:
+def duplicate_file_in_collection(old_filename: str, new_filename: str) -> str:
+    """Returns new filename after Anki possibly alters it."""
     if not (mw and mw.col):
         print("no collection available")
         return old_filename
@@ -154,13 +155,30 @@ def rename_file(old_filename: str, new_filename: str) -> str:
         return mw.col.media.write_data(new_filename, f.read())
 
 
-def rename_media_files(to_rename: list[RenameTask], note: Note, editor: Editor):
+def format_report_message(to_rename: list[RenameTask]) -> str:
+    buffer = io.StringIO()
+    buffer.write(f"<p>Renamed <code>{len(to_rename)}</code> files.</p>")
+    buffer.write("<ol>")
+    for old_name, new_name in to_rename:
+        buffer.write(f"<li><code>{old_name}</code> → <code>{new_name}</code></li>")
+    buffer.write("</ol>")
+    return buffer.getvalue()
+
+
+def try_rename_files(to_rename: list[RenameTask]) -> Iterable[RenameTask]:
+    """Yields successful renames."""
     for old_filename, new_filename in to_rename:
         try:
-            new_filename = rename_file(old_filename, new_filename)
+            new_filename = duplicate_file_in_collection(old_filename, new_filename)
         except FileNotFoundError:
             showCritical(f"{old_filename} doesn't exist.", title="Couldn't rename file.")
             continue
+        yield RenameTask(old_filename=old_filename, new_filename=new_filename)
+
+
+def rename_media_files(to_rename: list[RenameTask], note: Note, editor: Editor):
+    to_rename = list(try_rename_files(to_rename))
+    for old_filename, new_filename in to_rename:
         for field_name, field_value in note.items():
             note[field_name] = do_replacements(note[field_name], old_filename, new_filename)
 
@@ -168,7 +186,7 @@ def rename_media_files(to_rename: list[RenameTask], note: Note, editor: Editor):
 
     def on_success() -> None:
         tooltip(
-            f"Renamed {len(to_rename)} files",
+            format_report_message(to_rename),
             parent=editor.parentWindow,
             period=cfg.tooltip_duration_milliseconds,
         )
