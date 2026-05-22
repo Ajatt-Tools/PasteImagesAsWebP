@@ -3,21 +3,18 @@
 
 import re
 from collections.abc import Iterable
-from typing import Optional, cast
+from typing import cast
 
 from anki.notes import Note
-from anki.utils import join_fields
-from aqt import gui_hooks, mw
+from aqt import mw
 from aqt.editor import Editor
 from aqt.operations import CollectionOp
 from aqt.qt import *
 from aqt.utils import showCritical, tooltip
 
 from .ajt_common.about_menu import tweak_window
-from .ajt_common.media import find_all_media
 from .ajt_common.monospace_line_edit import MonoSpaceLineEdit
-from .config import MediaConverterConfig, get_global_config
-from .consts import ADDON_FULL_NAME, ADDON_PATH, WINDOW_MIN_WIDTH
+from .consts import ADDON_FULL_NAME, WINDOW_MIN_WIDTH
 
 
 class FileNameEdit(MonoSpaceLineEdit):
@@ -48,6 +45,8 @@ class FileNameEdit(MonoSpaceLineEdit):
 
 
 class MediaRenameDialog(QDialog):
+    edits: dict[str, FileNameEdit]
+
     def __init__(self, editor: Editor, note: Note, filenames: list[str], *args, **kwargs):
         super().__init__(parent=editor.widget, *args, **kwargs)
         self.editor = editor
