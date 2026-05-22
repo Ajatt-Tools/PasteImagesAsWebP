@@ -10,7 +10,7 @@ from aqt import mw, qconnect
 from aqt.operations import CollectionOp, QueryOp
 from aqt.utils import show_info, tooltip
 
-from ..config import MediaConverterConfig
+from ..config import MediaConverterConfig, get_global_config
 from ..dialogs.deduplicate_dialog import (
     DeduplicateMediaConfirmDialog,
     DeduplicateTableColumns,
@@ -71,9 +71,9 @@ class AnkiMediaDedup:
 
 
 def run_media_deduplication() -> None:
-    from ..config import config
-
-    dedup = AnkiMediaDedup(col=mw.col, config=config)
+    col = mw.col
+    assert col, "Collection should be open."
+    dedup = AnkiMediaDedup(col=col, config=get_global_config())
     QueryOp(
         parent=mw,
         op=lambda collection: dedup.collect_files(),
