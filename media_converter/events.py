@@ -11,7 +11,7 @@ from aqt.qt import *
 from aqt.utils import KeyboardModifiersPressed, tooltip
 
 from .common import has_local_file, image_html
-from .config import MediaConverterConfig
+from .config import MediaConverterConfig, get_global_config
 from .file_converters.file_converter import FFmpegNotFoundError
 from .file_converters.find_media import FindMedia
 from .file_converters.image_converter import CanceledPaste, ffmpeg_not_found_dialog
@@ -118,9 +118,7 @@ class Events:
 
 
 def init() -> None:
-    from .config import config
-
-    mw._ajt__media_converter_events = events = Events(config)
+    mw._ajt__media_converter_events = events = Events(get_global_config())
     gui_hooks.editor_will_process_mime.append(events.on_process_mime)
     hooks.note_will_be_added.append(events.on_add_note)
     aqt.editor.Editor.setup_mask_editor = wrap(
