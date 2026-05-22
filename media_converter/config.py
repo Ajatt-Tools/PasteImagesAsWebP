@@ -1,6 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-
+import functools
 from collections.abc import Iterable, Sequence
 from typing import Union
 
@@ -238,11 +238,9 @@ class MediaConverterConfig(AddonConfigManager):
         return bool(self["show_context_menu_entry"])
 
 
+@functools.cache
 def get_global_config() -> MediaConverterConfig:
     assert mw, "anki must be running"
-    return config
-
-
-if mw:
     config = MediaConverterConfig()
     set_config_update_action(config.update_from_addon_manager)
+    return config
