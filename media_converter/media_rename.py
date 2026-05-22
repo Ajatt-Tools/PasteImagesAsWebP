@@ -16,6 +16,7 @@ from aqt.utils import showCritical, tooltip
 from .ajt_common.about_menu import tweak_window
 from .ajt_common.media import find_all_media
 from .ajt_common.monospace_line_edit import MonoSpaceLineEdit
+from .config import MediaConverterConfig, get_global_config
 from .consts import ADDON_FULL_NAME, ADDON_PATH, WINDOW_MIN_WIDTH
 
 
@@ -63,7 +64,7 @@ class MediaRenameDialog(QDialog):
     def show(self) -> None:
         for widget in self.edits.values():
             self.edits_layout.addWidget(widget)
-        return cast(QDialog, super()).show()
+        return super().show()
 
     def make_layout(self) -> QLayout:
         layout = QVBoxLayout()
@@ -110,31 +111,42 @@ def rename_media_files(to_rename: list[tuple[str, str]], note: Note, parent: Edi
 class Menus:
     """Holds a reference to MediaRenameDialog to avoid spawning the same window multiple times."""
 
-    file_rename_dialog: Optional[MediaRenameDialog] = None
+    _cfg: MediaConverterConfig
+    _file_rename_dialog: Optional[MediaRenameDialog]
 
-    @classmethod
-    def del_ref(cls) -> None:
-        cls.file_rename_dialog = None
+    def __init__(self):
+        self._cfg = get_global_config()
+        self._file_rename_dialog = None
 
-    @classmethod
-    def show_rename_dialog(cls, editor: Editor) -> None:
-        if cls.file_rename_dialog:
+    def del_ref(self) -> None:
+        self._file_rename_dialog = None
+
+    def show_rename_dialog(self, editor: Editor) -> None:
+        if self._file_rename_dialog:
             return
         elif editor.note and (filenames := find_all_media(join_fields(editor.note.fields))):
-            d = cls.file_rename_dialog = MediaRenameDialog(editor, editor.note, filenames)
-            qconnect(d.finished, lambda result: cls.del_ref())
+            d = self._file_rename_dialog = MediaRenameDialog(editor, editor.note, filenames)
+            qconnect(d.finished, lambda result: self.del_ref())
             d.show()
+        else:
+            tooltip(
+                "No files found on this card.",
+                period=self._cfg.tooltip_duration_milliseconds,
+                parent=editor.parentWindow,
+            )
 
-    @classmethod
-    def add_editor_button(cls, buttons: list[str], editor: Editor) -> None:
+    def add_editor_button(self, buttons: list[str], editor: Editor) -> None:
         b = editor.addButton(
             icon=os.path.join(ADDON_PATH, "icons", "edit.svg"),
             cmd="ajt__rename_media_files",
-            func=cls.show_rename_dialog,
+            func=self.show_rename_dialog,
             tip="Rename media files referenced by note.",
         )
         buttons.append(b)
 
 
+menus = Menus()
+
+
 def init() -> None:
-    gui_hooks.editor_did_init_buttons.append(Menus.add_editor_button)
+    gui_hooks.editor_did_init_buttons.append(menus.add_editor_button)
