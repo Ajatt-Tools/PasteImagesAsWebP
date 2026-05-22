@@ -21,6 +21,9 @@ from .consts import ADDON_FULL_NAME, WINDOW_MIN_WIDTH
 from .media_deduplication.deduplication import do_replacements
 
 
+RE_FILENAME_VALID = re.compile(r'^[^\[\]<>:\'"/|?*\\]+\.\w{1,5}$', flags=re.IGNORECASE)
+
+
 class FileNameEdit(MonoSpaceLineEdit):
     _edit_max_len = 119
 
@@ -39,8 +42,9 @@ class FileNameEdit(MonoSpaceLineEdit):
         return super().text().strip("-_ ")
 
     def validate(self):
-        self._valid = len(self.text().encode("utf-8")) <= self._edit_max_len and re.fullmatch(
-            r'^[^\[\]<>:\'"/|?*\\]+\.\w{1,5}$', self.text()
+        self._valid = bool(
+            len(self.text().encode("utf-8", errors="replace")) <= self._edit_max_len
+            and re.fullmatch(RE_FILENAME_VALID, self.text())
         )
         if self._valid:
             cast(QWidget, self).setStyleSheet("")
