@@ -4,7 +4,7 @@
 import re
 import typing
 from collections.abc import Iterable
-from typing import cast
+from typing import Optional, cast
 
 from anki.notes import Note
 from aqt import mw
@@ -16,7 +16,9 @@ from aqt.utils import showCritical, tooltip
 from .ajt_common.about_menu import tweak_window
 from .ajt_common.monospace_line_edit import MonoSpaceLineEdit
 from .ajt_common.utils import open_file
+from .config import get_global_config
 from .consts import ADDON_FULL_NAME, WINDOW_MIN_WIDTH
+from .media_deduplication.deduplication import do_replacements
 
 
 class FileNameEdit(MonoSpaceLineEdit):
@@ -47,7 +49,7 @@ class FileNameEdit(MonoSpaceLineEdit):
 
 
 class FileOpenButton(QPushButton):
-    def __init__(self, filename: str, parent: typing.Optional[QWidget] = None) -> None:
+    def __init__(self, filename: str, parent: Optional[QWidget] = None) -> None:
         super().__init__("Open", parent)
         self._filename = filename
         qconnect(self.clicked, lambda: self._open_file())
@@ -74,7 +76,7 @@ def make_widget_pairs(edits: dict[str, FileNameEdit]) -> dict[str, FileRenamePai
 class FileRenameLayout(QGridLayout):
     edits: dict[str, FileRenamePair]
 
-    def __init__(self, edits: dict[str, FileNameEdit], parent: typing.Optional[QWidget] = None):
+    def __init__(self, edits: dict[str, FileNameEdit], parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.edits = make_widget_pairs(edits)
         self._init_ui()
@@ -96,13 +98,13 @@ class RenameTask(typing.NamedTuple):
 
 
 class MediaRenameDialog(QDialog):
+    """Base rename dialog. Can be used without Anki running."""
+
     edits: dict[str, FileNameEdit]
 
-    def __init__(self, editor: Editor, note: Note, filenames: list[str], *args, **kwargs):
-        super().__init__(parent=editor.widget, *args, **kwargs)
-        self.editor = editor
+    def __init__(self, filenames: list[str], parent: Optional[QWidget] = None):
+        super().__init__(parent=parent)
         self.edits = {filename: FileNameEdit(text=filename) for filename in filenames}
-        self.note = note
         self.edits_layout = FileRenameLayout(self.edits)
         self.bottom_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         cast(QDialog, self).setWindowTitle(f"{ADDON_FULL_NAME}: rename files")
@@ -127,6 +129,15 @@ class MediaRenameDialog(QDialog):
                 continue
             if old_filename != (new_filename := edit_widget.text()):
                 yield RenameTask(old_filename, new_filename)
+
+
+class AnkiMediaRenameDialog(MediaRenameDialog):
+    """Rename dialog that performs the actual rename inside Anki."""
+
+    def __init__(self, editor: Editor, note: Note, filenames: list[str]):
+        super().__init__(filenames, parent=editor.widget)
+        self.editor = editor
+        self.note = note
 
     def accept(self) -> None:
         if to_rename := list(self.to_rename()):

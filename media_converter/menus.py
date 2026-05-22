@@ -20,7 +20,7 @@ from .file_converters.file_converter import FFmpegNotFoundError
 from .file_converters.image_converter import ffmpeg_not_found_dialog
 from .file_converters.on_paste_converter import TEMP_IMAGE_FORMAT, OnPasteConverter
 from .media_deduplication.anki_collection_op import run_media_deduplication
-from .media_rename import MediaRenameDialog
+from .media_rename import AnkiMediaRenameDialog
 from .utils.show_options import ShowOptions
 from .utils.temp_file import TempFile
 
@@ -52,10 +52,10 @@ def get_clipboard_mime_data(editor: Editor) -> QMimeData | None:
 
 
 class EditorMenus:
-    """Holds a reference to MediaRenameDialog to avoid spawning the same window multiple times."""
+    """Holds a reference to AnkiMediaRenameDialog to avoid spawning the same window multiple times."""
 
     _cfg: MediaConverterConfig
-    _file_rename_dialog: Optional[MediaRenameDialog]
+    _file_rename_dialog: Optional[AnkiMediaRenameDialog]
 
     def __init__(self, cfg: MediaConverterConfig):
         self._cfg = cfg
@@ -68,7 +68,7 @@ class EditorMenus:
         if self._file_rename_dialog:
             return
         elif editor.note and (filenames := find_all_media(join_fields(editor.note.fields))):
-            d = self._file_rename_dialog = MediaRenameDialog(editor, editor.note, filenames)
+            d = self._file_rename_dialog = AnkiMediaRenameDialog(editor, editor.note, filenames)
             qconnect(d.finished, lambda result: self.del_ref())
             d.show()
         else:
