@@ -2,6 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import re
+import typing
 from collections.abc import Iterable
 from typing import cast
 
@@ -14,6 +15,7 @@ from aqt.utils import showCritical, tooltip
 
 from .ajt_common.about_menu import tweak_window
 from .ajt_common.monospace_line_edit import MonoSpaceLineEdit
+from .ajt_common.utils import open_file
 from .consts import ADDON_FULL_NAME, WINDOW_MIN_WIDTH
 
 
@@ -44,6 +46,55 @@ class FileNameEdit(MonoSpaceLineEdit):
             cast(QWidget, self).setStyleSheet("background-color: #eb6b60;")
 
 
+class FileOpenButton(QPushButton):
+    def __init__(self, filename: str, parent: typing.Optional[QWidget] = None) -> None:
+        super().__init__("Open", parent)
+        self._filename = filename
+        qconnect(self.clicked, lambda: self._open_file())
+
+    def _open_file(self) -> None:
+        if not (mw and mw.col):
+            print("no collection available")
+            return
+        open_file(os.path.join(mw.col.media.dir(), self._filename))
+
+
+class FileRenamePair(typing.NamedTuple):
+    edit_widget: FileNameEdit
+    open_button: FileOpenButton
+
+
+def make_widget_pairs(edits: dict[str, FileNameEdit]) -> dict[str, FileRenamePair]:
+    return {
+        filename: FileRenamePair(edit_widget=edit, open_button=FileOpenButton(filename))
+        for filename, edit in edits.items()
+    }
+
+
+class FileRenameLayout(QGridLayout):
+    edits: dict[str, FileRenamePair]
+
+    def __init__(self, edits: dict[str, FileNameEdit], parent: typing.Optional[QWidget] = None):
+        super().__init__(parent)
+        self.edits = make_widget_pairs(edits)
+        self._init_ui()
+
+    def _init_ui(self) -> None:
+        for row_idx, column_idx, edit_widget in self._iter_widgets():
+            # row: int, column: int, rowSpan: int, columnSpan: int
+            self.addWidget(edit_widget, row_idx, column_idx)
+
+    def _iter_widgets(self) -> Iterable[tuple[int, int, QWidget]]:
+        for row_idx, filename in enumerate(self.edits):
+            for column_idx, widget in enumerate(self.edits[filename]):
+                yield row_idx, column_idx, widget
+
+
+class RenameTask(typing.NamedTuple):
+    old_filename: str
+    new_filename: str
+
+
 class MediaRenameDialog(QDialog):
     edits: dict[str, FileNameEdit]
 
@@ -52,20 +103,15 @@ class MediaRenameDialog(QDialog):
         self.editor = editor
         self.edits = {filename: FileNameEdit(text=filename) for filename in filenames}
         self.note = note
-        self.edits_layout = QVBoxLayout()
+        self.edits_layout = FileRenameLayout(self.edits)
         self.bottom_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         cast(QDialog, self).setWindowTitle(f"{ADDON_FULL_NAME}: rename files")
         self.setMinimumWidth(WINDOW_MIN_WIDTH)
-        self.setLayout(self.make_layout())
+        self.setLayout(self._make_layout())
         self.connect_ui_elements()
         tweak_window(self)
 
-    def show(self) -> None:
-        for widget in self.edits.values():
-            self.edits_layout.addWidget(widget)
-        return super().show()
-
-    def make_layout(self) -> QLayout:
+    def _make_layout(self) -> QLayout:
         layout = QVBoxLayout()
         layout.addLayout(self.edits_layout)
         layout.addWidget(self.bottom_box)
@@ -75,25 +121,29 @@ class MediaRenameDialog(QDialog):
         qconnect(self.bottom_box.accepted, self.accept)
         qconnect(self.bottom_box.rejected, self.reject)
 
-    def to_rename(self) -> Iterable[tuple[str, str]]:
-        widget: QLineEdit
-        for old_filename, widget in self.edits.items():
-            if old_filename != (new_filename := widget.text()):
-                yield old_filename, new_filename
+    def to_rename(self) -> Iterable[RenameTask]:
+        for old_filename, edit_widget in self.edits.items():
+            if not edit_widget.valid:
+                continue
+            if old_filename != (new_filename := edit_widget.text()):
+                yield RenameTask(old_filename, new_filename)
 
     def accept(self) -> None:
-        if all(e.valid for e in self.edits.values()) and (to_rename := list(self.to_rename())):
+        if to_rename := list(self.to_rename()):
             rename_media_files(to_rename, self.note, self.editor)
         super().accept()
 
 
 def rename_file(old_filename: str, new_filename: str) -> str:
+    if not (mw and mw.col):
+        print("no collection available")
+        return old_filename
     print(f"{old_filename} => {new_filename}")
     with open(os.path.join(mw.col.media.dir(), old_filename), "rb") as f:
         return mw.col.media.write_data(new_filename, f.read())
 
 
-def rename_media_files(to_rename: list[tuple[str, str]], note: Note, parent: Editor):
+def rename_media_files(to_rename: list[RenameTask], note: Note, parent: Editor):
     for old_filename, new_filename in to_rename:
         try:
             new_filename = rename_file(old_filename, new_filename)
