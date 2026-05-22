@@ -11,7 +11,7 @@ from aqt.qt import *
 from aqt.utils import tooltip
 
 from .bulk_convert.convert_task import ConvertTask
-from .config import MediaConverterConfig
+from .config import MediaConverterConfig, get_global_config
 from .consts import ADDON_FULL_NAME
 from .dialogs.bulk_convert_dialog import AnkiBulkConvertDialog
 from .dialogs.bulk_convert_progress_bar import ProgressBar
@@ -61,10 +61,8 @@ class BulkConverter:
 
 
 def setup_menu(browser: Browser) -> None:
-    from .config import config
-
     a = QAction(ACTION_NAME, browser)
-    converter = BulkConverter(config=config, browser=browser)
+    converter = BulkConverter(config=get_global_config(), browser=browser)
 
     qconnect(a.triggered, converter.on_bulk_convert)
     browser.form.menuEdit.addAction(a)
