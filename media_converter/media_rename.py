@@ -187,10 +187,11 @@ def duplicate_file_in_collection(old_filename: str, new_filename: str) -> str:
 def format_report_message(to_rename: list[RenameTask]) -> str:
     buffer = io.StringIO()
     buffer.write(f"<p>Renamed <code>{len(to_rename)}</code> files.</p>")
-    buffer.write("<ol>")
-    for old_name, new_name in to_rename:
-        buffer.write(f"<li><code>{old_name}</code> → <code>{new_name}</code></li>")
-    buffer.write("</ol>")
+    if to_rename:
+        buffer.write("<ol>")
+        for old_name, new_name in to_rename:
+            buffer.write(f"<li><code>{old_name}</code> → <code>{new_name}</code></li>")
+        buffer.write("</ol>")
     return buffer.getvalue()
 
 
