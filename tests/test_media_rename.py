@@ -38,6 +38,7 @@ class TestFileNameEdit:
             "file>.png",
             "file:.png",
             'file".png',
+            "file'.png",
             "file/.png",
             "file|.png",
             "file?.png",
@@ -55,6 +56,7 @@ class TestFileNameEdit:
             "greater_than",
             "colon",
             "double_quote",
+            "single_quote",
             "slash",
             "pipe",
             "question_mark",
@@ -125,3 +127,24 @@ class TestMediaRenameDialog:
         dialog = MediaRenameDialog(["a.png", "b.mp3"])
         dialog.edits["a.png"].setText(text_to_set)
         assert dialog.can_rename_all_files() == expected
+
+
+class TestFormatReportMessage:
+    """Tests for format_report_message()."""
+
+    def test_single_rename(self) -> None:
+        result = format_report_message([RenameTask("old.png", "new.png")])
+        assert "<code>1</code> files" in result
+        assert "<code>old.png</code>" in result
+        assert "<code>new.png</code>" in result
+
+    def test_multiple_renames(self) -> None:
+        tasks = [RenameTask("a.png", "b.png"), RenameTask("c.mp3", "d.ogg")]
+        result = format_report_message(tasks)
+        assert "<code>2</code> files" in result
+        assert "<li>" in result
+
+    def test_empty_list(self) -> None:
+        result = format_report_message([])
+        assert "<code>0</code> files" in result
+        assert "<ol>" not in result
