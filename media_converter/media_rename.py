@@ -27,9 +27,9 @@ class FileNameEdit(MonoSpaceLineEdit):
     def __init__(self, text: str):
         super().__init__()
         self.setMaxLength(self._edit_max_len)
-        self.setText(text)
+        self._valid = False
         qconnect(self.textChanged, self.validate)
-        self._valid = True
+        self.setText(text)
 
     @property
     def valid(self) -> bool:
