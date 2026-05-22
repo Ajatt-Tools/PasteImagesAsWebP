@@ -55,29 +55,29 @@ class DuplicatesGroup(typing.NamedTuple):
         return cls(original=files[0], copies=files[1:])
 
 
-def do_replacements(field_content: str, dup_name: str, orig_name: str) -> str:
-    if dup_name not in field_content:
+def do_replacements(field_content: str, old_name: str, new_name: str) -> str:
+    if old_name not in field_content:
         return field_content
     # Comprehensive replacements for all possible patterns
     replacements = (
         # Image, Video, SVG Sources
-        (f' src="{dup_name}"', f' src="{orig_name}"'),
-        (f" src='{dup_name}'", f" src='{orig_name}'"),
+        (f' src="{old_name}"', f' src="{new_name}"'),
+        (f" src='{old_name}'", f" src='{new_name}'"),
         # Links (href attributes)
-        (f' href="{dup_name}"', f' href="{orig_name}"'),
-        (f" href='{dup_name}'", f" href='{orig_name}'"),
+        (f' href="{old_name}"', f' href="{new_name}"'),
+        (f" href='{old_name}'", f" href='{new_name}'"),
         # CSS url() with HTML entities
-        (f"url(&quot;{dup_name}&quot;)", f"url(&quot;{orig_name}&quot;)"),
-        (f"url(&#39;{dup_name}&#39;)", f"url(&#39;{orig_name}&#39;)"),
+        (f"url(&quot;{old_name}&quot;)", f"url(&quot;{new_name}&quot;)"),
+        (f"url(&#39;{old_name}&#39;)", f"url(&#39;{new_name}&#39;)"),
         # CSS url() with regular quotes or without quotes
-        (f'url("{dup_name}")', f'url("{orig_name}")'),
-        (f"url('{dup_name}')", f"url('{orig_name}')"),
-        (f"url({dup_name})", f"url({orig_name})"),
+        (f'url("{old_name}")', f'url("{new_name}")'),
+        (f"url('{old_name}')", f"url('{new_name}')"),
+        (f"url({old_name})", f"url({new_name})"),
         # Sound files
-        (f"[sound:{dup_name}]", f"[sound:{orig_name}]"),
+        (f"[sound:{old_name}]", f"[sound:{new_name}]"),
         # Plain text references
-        (f">{dup_name}<", f">{orig_name}<"),
-        (f" {dup_name} ", f" {orig_name} "),
+        (f">{old_name}<", f">{new_name}<"),
+        (f" {old_name} ", f" {new_name} "),
     )
     for old, new in replacements:
         if old not in field_content:
