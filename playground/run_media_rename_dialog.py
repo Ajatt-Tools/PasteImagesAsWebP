@@ -8,7 +8,7 @@ from media_converter.media_rename import MediaRenameDialog
 
 def main() -> None:
     app = QApplication(sys.argv)
-    form = MediaRenameDialog(["image_001.png", "recording.mp3", "photo.webp"])
+    form = MediaRenameDialog(["image_001.png", "recording.mp3", "photo.webp", "invalid"])
     form.show()
     sys.exit(app.exec())
 
