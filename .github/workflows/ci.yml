@@ -30,4 +30,4 @@ jobs:
         shell: bash
 
       - name: Run tests
-        run: hatch run dev:test
+        run: hatch test -v

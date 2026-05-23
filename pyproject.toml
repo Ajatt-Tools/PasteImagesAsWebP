@@ -41,7 +41,6 @@ dependencies = [
   "isort",
   "pytest",
   "pyupgrade",
-  "aqt",
 ]
 system-packages = true
 python = "3.9"
@@ -89,6 +88,7 @@ dependencies = [
     "pytest",
     "pytest-asyncio",
     "pytest-xdist",
+    "aqt",
 ]
 system-packages = true
 parallel = true
