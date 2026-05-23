@@ -41,6 +41,7 @@ dependencies = [
   "isort",
   "pytest",
   "pyupgrade",
+  "aqt",
 ]
 system-packages = true
 python = "3.9"
