@@ -22,7 +22,6 @@ def cfg_comma_sep_str_to_file_ext_set(cfg_str: str) -> set[str]:
 
 
 class MediaConverterConfig(AddonConfigManager):
-
     def __init__(self, default: bool = False) -> None:
         super().__init__(default)
 

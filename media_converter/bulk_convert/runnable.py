@@ -14,7 +14,6 @@ class ConvertSignals(QObject):
 
 
 class ConvertRunnable(QRunnable):
-
     def __init__(self, task: ConvertTask, signals: ConvertSignals) -> None:
         super().__init__()
         self.task = task

@@ -57,6 +57,7 @@ class FileOpenButton(QPushButton):
         super().__init__("Open", parent)
         self._filename = filename
         qconnect(self.clicked, lambda: self._open_file())
+        self.setToolTip(f"Open file in the collection folder.")
 
     def _open_file(self) -> None:
         if not (mw and mw.col):
