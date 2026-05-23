@@ -98,6 +98,8 @@ A dialog will pop up asking you to enter new filenames.
 
 Press "AJT" > "Deduplicate media..." to replace duplicate media file names with original names in notes.
 
+<img alt="screenshot" src="https://github.com/user-attachments/assets/f83bf41e-afcf-4182-9219-be993ccff774" />
+
 ## Contributions
 
 If you've found a bug or want to extend the add-on, please let us know in the
