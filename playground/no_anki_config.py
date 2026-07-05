@@ -15,7 +15,7 @@ class NoAnkiConfigView(MediaConverterConfig):
     config_json_path = pathlib.Path(__file__).parent.parent / "media_converter" / "config.json"
 
     def _set_underlying_dicts(self) -> None:
-        with open(self.config_json_path) as f:
+        with open(self.config_json_path, encoding="utf-8") as f:
             self._default_config = self._config = json.load(f)
 
     def write_config(self) -> None:
