@@ -12,7 +12,7 @@
     "image_format": "webp",
     "audio_container": "ogg",
     "excluded_image_containers": "svg,webp,avif",
-    "excluded_audio_containers": "mid,aac,opus,ogg",
+    "excluded_audio_containers": "mid,aac,opus,ogg,webm",
     "image_quality": 20,
     "show_settings": "toolbar",
     "drag_and_drop": true,

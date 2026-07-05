@@ -18,6 +18,7 @@ SUPPORTED_IMAGE_FORMATS: Sequence[str] = tuple(x.name for x in ImageFormat)
 class AudioContainer(enum.Enum):
     opus = "opus"
     ogg = "ogg"
+    webm = "webm"
 
     @classmethod
     def _missing_(cls, _value):
