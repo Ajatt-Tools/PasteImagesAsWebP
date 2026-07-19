@@ -7,11 +7,21 @@ import pytest
 from media_converter.utils.config_types import AudioContainer, ImageFormat
 
 
-def test_audio_container() -> None:
-    assert AudioContainer("opus") == AudioContainer.opus
-    assert AudioContainer("ogg") == AudioContainer.ogg
-    assert AudioContainer("missing") == AudioContainer.ogg
-    assert [item.name for item in AudioContainer] == ["opus", "ogg"]
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        ("opus", AudioContainer.opus),
+        ("ogg", AudioContainer.ogg),
+        ("webm", AudioContainer.webm),
+        ("missing", AudioContainer.ogg),
+    ],
+)
+def test_audio_container(value: str, expected: AudioContainer) -> None:
+    assert AudioContainer(value) == expected
+
+
+def test_audio_container_names() -> None:
+    assert [item.name for item in AudioContainer] == ["opus", "ogg", "webm"]
 
 
 @pytest.mark.parametrize(
