@@ -49,10 +49,12 @@ def image_from_file(filepath: str) -> QImage | None:
 
 
 def image_candidates(mime: QMimeData) -> Iterable[QImage | None]:
-    yield mime.imageData()
+    files = list(iter_files(mime))
+    if not files:
+        yield mime.imageData()
     for data in data_from_html(mime.html()):
         yield QImage.fromData(data)
-    for file in iter_files(mime):
+    for file in files:
         yield image_from_file(file)
     for url in iter_urls(mime):
         yield image_from_url(url)
