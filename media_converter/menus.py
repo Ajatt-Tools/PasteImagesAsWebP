@@ -2,7 +2,6 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import functools
 import os.path
-from typing import Optional
 
 from anki.utils import join_fields
 from aqt import gui_hooks, mw
@@ -11,6 +10,7 @@ from aqt.qt import *
 from aqt.utils import tooltip
 
 from .ajt_common.about_menu import menu_root_entry
+from .ajt_common.addon_config import set_config_action, set_config_update_action
 from .ajt_common.media import find_all_media
 from .common import insert_image_html, key_to_str
 from .config import MediaConverterConfig, get_global_config
@@ -25,23 +25,28 @@ from .utils.show_options import ShowOptions
 from .utils.temp_file import TempFile
 
 
+def open_media_converter_settings(config: MediaConverterConfig, parent: QWidget) -> None:
+    dialog = AnkiMainSettingsDialog(config, parent)
+    dialog.exec()
+
+
 def setup_mainwindow_menu(config: MediaConverterConfig) -> None:
     """
     setup menu in anki
     """
     root_menu = menu_root_entry()
 
-    def open_settings() -> None:
-        dialog = AnkiMainSettingsDialog(config, mw)
-        dialog.show()
-
     action = QAction(f"{ADDON_NAME} Options...", root_menu)
-    qconnect(action.triggered, open_settings)
+    qconnect(action.triggered, lambda: open_media_converter_settings(config=config, parent=mw))
     root_menu.addAction(action)
 
     action = QAction(f"Deduplicate media...", root_menu)
     qconnect(action.triggered, run_media_deduplication)
     root_menu.addAction(action)
+
+    # Register settings dialog with Anki's add-on config buttons.
+    set_config_action(lambda: open_media_converter_settings(config=config, parent=mw))
+    set_config_update_action(config.update_from_addon_manager)
 
 
 def get_clipboard_mime_data(editor: Editor) -> QMimeData | None:
