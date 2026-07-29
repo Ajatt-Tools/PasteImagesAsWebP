@@ -25,7 +25,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 """
 
 
-def test_image_format():
+def test_image_format() -> None:
     assert frozenset(SUPPORTED_IMAGE_FORMATS) == frozenset(["avif", "webp"])
 
 
