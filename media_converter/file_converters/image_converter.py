@@ -9,12 +9,10 @@ from aqt.utils import showWarning
 
 from ..ajt_common.utils import find_executable as find_executable_ajt
 from ..config import ImageFormat, MediaConverterConfig
-from ..consts import ADDON_FULL_NAME, SUPPORT_DIR
+from ..consts import ADDON_FULL_NAME, IS_MAC, IS_WIN, SUPPORT_DIR
 from ..utils.mime_helper import iter_files
 from ..utils.show_options import ImageDimensions
 from .common import (
-    IS_MAC,
-    IS_WIN,
     ConverterType,
     create_process,
     get_file_extension,

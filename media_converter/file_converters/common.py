@@ -4,12 +4,11 @@ import enum
 import functools
 import os
 import subprocess
-import sys
 import typing
 from typing import Any
 
-IS_MAC = sys.platform.startswith("darwin")
-IS_WIN = sys.platform.startswith("win32")
+from ..consts import IS_WIN
+
 COMMON_AUDIO_FORMATS = frozenset(
     (".mp3", ".wav", ".ogg", ".flac", ".aac", ".m4a", ".aiff", ".amr", ".ape", ".mp2", ".oga", ".oma", ".opus")
 )

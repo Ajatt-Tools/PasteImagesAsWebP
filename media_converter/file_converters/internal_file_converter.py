@@ -28,7 +28,9 @@ class InternalFileConverter:
     _converter: FileConverter
     _config: MediaConverterConfig
 
-    def __init__(self, editor: aqt.editor.Editor | None, file: LocalFile, note: Note, config: MediaConverterConfig) -> None:
+    def __init__(
+        self, editor: aqt.editor.Editor | None, file: LocalFile, note: Note, config: MediaConverterConfig
+    ) -> None:
         self._config = config
         self._conversion_finished = False
         self._initial_file_path = os.path.join(self._dest_dir, file.file_name)

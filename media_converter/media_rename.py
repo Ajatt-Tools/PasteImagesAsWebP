@@ -143,7 +143,9 @@ class MediaRenameDialog(QDialog):
 class AnkiMediaRenameDialog(MediaRenameDialog):
     """Rename dialog that performs the actual rename inside Anki."""
 
-    def __init__(self, editor: Editor, note: Note, filenames: list[str], cfg: MediaConverterConfig | None = None) -> None:
+    def __init__(
+        self, editor: Editor, note: Note, filenames: list[str], cfg: MediaConverterConfig | None = None
+    ) -> None:
         super().__init__(filenames, parent=editor.widget)
         self.editor = editor
         self.note = note

@@ -27,9 +27,7 @@ class OnAddNoteConverter:
     _config: MediaConverterConfig
     _finder: FindMedia
 
-    def __init__(
-        self, note: Note, action: ShowOptions, parent: QWidget | None, config: MediaConverterConfig
-    ) -> None:
+    def __init__(self, note: Note, action: ShowOptions, parent: QWidget | None, config: MediaConverterConfig) -> None:
         self._settings_shown = False
         self._action = action
         self._note = note
