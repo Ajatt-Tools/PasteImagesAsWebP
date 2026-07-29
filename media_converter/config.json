@@ -11,7 +11,7 @@
     "max_image_height": 1000,
     "image_format": "webp",
     "audio_container": "ogg",
-    "excluded_image_containers": "svg,webp,avif",
+    "excluded_image_containers": "svg,webp,avif,mp4,mkv",
     "excluded_audio_containers": "mid,aac,opus,ogg,webm",
     "image_quality": 20,
     "show_settings": "toolbar",
