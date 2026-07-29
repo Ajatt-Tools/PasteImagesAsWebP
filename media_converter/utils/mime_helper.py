@@ -38,9 +38,14 @@ def image_from_url(src_url: str) -> QImage | None:
     return image
 
 
-def image_from_file(filepath: str):
-    with open(filepath, "rb") as f:
-        return QImage.fromData(f.read())
+def image_from_file(filepath: str) -> QImage | None:
+    try:
+        with open(filepath, "rb") as f:
+            return QImage.fromData(f.read())
+    except OSError:
+        # The file may have vanished between copy and paste, or be unreadable.
+        # Return None so the caller can try the next candidate instead of crashing.
+        return None
 
 
 def image_candidates(mime: QMimeData) -> Iterable[QImage | None]:
