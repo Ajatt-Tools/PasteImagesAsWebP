@@ -8,9 +8,9 @@ import random
 import re
 import time
 import unicodedata
+from collections.abc import Callable
 from time import gmtime, strftime
 from typing import Optional
-from collections.abc import Callable
 
 from anki.notes import Note
 from anki.utils import html_to_text_line

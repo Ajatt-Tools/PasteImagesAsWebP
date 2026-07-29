@@ -3,13 +3,12 @@
 
 import re
 from collections.abc import Iterable
-from typing import Optional
 
 import requests
 from aqt.qt import *
 from requests.exceptions import InvalidSchema, Timeout
 
-from ..consts import REQUEST_HEADERS, REQUEST_TIMEOUTS
+from ..consts import IS_MAC, REQUEST_HEADERS, REQUEST_TIMEOUTS
 
 
 def urls_from_html(html: str) -> list:
@@ -48,8 +47,19 @@ def image_from_file(filepath: str) -> QImage | None:
         return None
 
 
+def has_local_files(mime: QMimeData) -> bool:
+    """Return True if the clipboard contains at least one local file URL."""
+    return any(url.isLocalFile() for url in mime.urls())
+
+
 def image_candidates(mime: QMimeData) -> Iterable[QImage | None]:
-    yield mime.imageData()
+    # On macOS, copying a file in Finder puts the file's .icns thumbnail on the clipboard.
+    # Qt exposes it as imageData() ('application/x-qt-image') and does not reveal the raw 'public.icns' UTI,
+    # so the thumbnail is indistinguishable from a genuine image by format alone.
+    # The reliable signature of a Finder copy is a local file URL alongside image data.
+    # Skip imageData(), but only on macOS, so genuine image payloads keep working everywhere else.
+    if not (IS_MAC and has_local_files(mime)):
+        yield mime.imageData()
     for data in data_from_html(mime.html()):
         yield QImage.fromData(data)
     for file in iter_files(mime):

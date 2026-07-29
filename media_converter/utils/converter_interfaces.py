@@ -1,8 +1,7 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from collections.abc import Iterable
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 
 
 class FileNamePatterns:
