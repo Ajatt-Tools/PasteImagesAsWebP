@@ -9,12 +9,12 @@ from ..file_converters.common import LocalFile
 class ConvertResult:
     def __init__(self) -> None:
         self._converted: dict[LocalFile, str] = {}
-        self._failed: dict[LocalFile, Optional[Exception]] = {}
+        self._failed: dict[LocalFile, Exception | None] = {}
 
     def add_converted(self, old_file: LocalFile, new_filename: str) -> None:
         self._converted[old_file] = new_filename
 
-    def add_failed(self, file: LocalFile, exception: Optional[Exception] = None):
+    def add_failed(self, file: LocalFile, exception: Exception | None = None) -> None:
         self._failed[file] = exception
 
     @property
@@ -22,7 +22,7 @@ class ConvertResult:
         return self._converted
 
     @property
-    def failed(self) -> dict[LocalFile, Optional[Exception]]:
+    def failed(self) -> dict[LocalFile, Exception | None]:
         return self._failed
 
     def has_results(self) -> bool:

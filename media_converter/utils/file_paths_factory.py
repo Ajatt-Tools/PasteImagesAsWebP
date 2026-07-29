@@ -9,7 +9,8 @@ import re
 import time
 import unicodedata
 from time import gmtime, strftime
-from typing import Callable, Optional
+from typing import Optional
+from collections.abc import Callable
 
 from anki.notes import Note
 from anki.utils import html_to_text_line
@@ -20,7 +21,7 @@ from ..file_converters.common import ConverterType, LocalFile
 from .converter_interfaces import FileNamePatterns
 
 
-def compatible_filename(f: Callable[..., str]):
+def compatible_filename(f: Callable[..., str]) -> Callable[..., str]:
     max_len_bytes = 90
 
     def replace_forbidden_chars(s: str) -> str:
@@ -56,22 +57,22 @@ def note_sort_field_content(note: Note) -> str:
 
 
 class FilePathFactory(FileNamePatterns):
-    _note: Optional[Note]
-    _editor: Optional[Editor]
+    _note: Note | None
+    _editor: Editor | None
     _config: MediaConverterConfig
 
-    def __init__(self, note: Optional[Note], editor: Optional[Editor], config: MediaConverterConfig) -> None:
+    def __init__(self, note: Note | None, editor: Editor | None, config: MediaConverterConfig) -> None:
         super().__init__()
         self._config = config
         self._note = note
         self._editor = editor
 
-    def make_unique_filepath(self, dest_dir: str, original_filename: Optional[str], extension: str) -> str:
+    def make_unique_filepath(self, dest_dir: str, original_filename: str | None, extension: str) -> str:
         new_file_path = os.path.join(dest_dir, self._make_filename_no_ext(original_filename) + extension)
         return ensure_unique(new_file_path)
 
     @compatible_filename
-    def _make_filename_no_ext(self, original_filename: Optional[str]) -> str:
+    def _make_filename_no_ext(self, original_filename: str | None) -> str:
         if original_filename and self._config.preserve_original_filenames:
             return os.path.splitext(original_filename)[0]
 
@@ -113,11 +114,11 @@ class FilePathFactory(FileNamePatterns):
         return self._sort_field()
 
     @staticmethod
-    def _time_number():
+    def _time_number() -> str:
         return str(int(time.time() * 1000))
 
     @staticmethod
-    def _time_human():
+    def _time_human() -> str:
         return strftime("%d-%b-%Y_%H-%M-%S", gmtime())
 
     def get_target_extension(self, file: LocalFile) -> str:

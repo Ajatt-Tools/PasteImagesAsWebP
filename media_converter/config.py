@@ -34,7 +34,7 @@ class MediaConverterConfig(AddonConfigManager):
                 continue
         return instances
 
-    def set_show_options(self, options: Iterable[ShowOptions]):
+    def set_show_options(self, options: Iterable[ShowOptions]) -> None:
         self["show_settings"] = ",".join(option.name for option in options)
 
     @property
@@ -42,7 +42,7 @@ class MediaConverterConfig(AddonConfigManager):
         return ImageFormat[self["image_format"].lower()]
 
     @image_format.setter
-    def image_format(self, image_format: Union[ImageFormat, str]) -> None:
+    def image_format(self, image_format: ImageFormat | str) -> None:
         if isinstance(image_format, str):
             assert image_format in SUPPORTED_IMAGE_FORMATS, "image format should be supported."
             self["image_format"] = image_format.lower()
@@ -158,15 +158,15 @@ class MediaConverterConfig(AddonConfigManager):
         return bool(self["enable_audio_conversion"])
 
     @property
-    def cwebp_args(self) -> list[Union[str, int]]:
+    def cwebp_args(self) -> list[str | int]:
         return self["cwebp_args"]
 
     @property
-    def ffmpeg_args(self) -> list[Union[str, int]]:
+    def ffmpeg_args(self) -> list[str | int]:
         return self["ffmpeg_args"]
 
     @property
-    def ffmpeg_audio_args(self) -> list[Union[str, int]]:
+    def ffmpeg_audio_args(self) -> list[str | int]:
         return self["ffmpeg_audio_args"]
 
     @property

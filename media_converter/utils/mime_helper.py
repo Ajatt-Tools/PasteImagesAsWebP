@@ -28,7 +28,7 @@ def iter_files(mime: QMimeData) -> Iterable[str]:
     return (url.toLocalFile() for url in mime.urls() if url.isLocalFile())
 
 
-def image_from_url(src_url: str) -> Optional[QImage]:
+def image_from_url(src_url: str) -> QImage | None:
     image = QImage()
     try:
         with requests.get(src_url, timeout=REQUEST_TIMEOUTS, headers=REQUEST_HEADERS) as r:
@@ -43,7 +43,7 @@ def image_from_file(filepath: str):
         return QImage.fromData(f.read())
 
 
-def image_candidates(mime: QMimeData) -> Iterable[Optional[QImage]]:
+def image_candidates(mime: QMimeData) -> Iterable[QImage | None]:
     yield mime.imageData()
     for data in data_from_html(mime.html()):
         yield QImage.fromData(data)

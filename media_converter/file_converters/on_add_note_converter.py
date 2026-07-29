@@ -23,12 +23,12 @@ class OnAddNoteConverter:
     _settings_shown: bool
     _action: ShowOptions
     _note: Note
-    _parent: Optional[QWidget] = None
+    _parent: QWidget | None = None
     _config: MediaConverterConfig
     _finder: FindMedia
 
     def __init__(
-        self, note: Note, action: ShowOptions, parent: Optional[QWidget], config: MediaConverterConfig
+        self, note: Note, action: ShowOptions, parent: QWidget | None, config: MediaConverterConfig
     ) -> None:
         self._settings_shown = False
         self._action = action
@@ -57,7 +57,7 @@ class OnAddNoteConverter:
         conv.convert_internal()
         self._update_note_fields(filename, conv.new_filename)
 
-    def convert_note(self):
+    def convert_note(self) -> None:
         for filename in self._finder.find_convertible_images(self._note.joined_fields()):
             if mw.col.media.have(filename):
                 print(f"Converting file: {filename}")

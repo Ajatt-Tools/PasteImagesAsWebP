@@ -20,7 +20,7 @@ def image_html(image_filename: str) -> str:
     return f'<img alt="{get_file_extension(image_filename).lstrip(".")} image" src="{image_filename}">'
 
 
-def insert_image_html(editor: Editor, image_filename: str):
+def insert_image_html(editor: Editor, image_filename: str) -> None:
     editor.doPaste(html=image_html(image_filename), internal=True)
 
 

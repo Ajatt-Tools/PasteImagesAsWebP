@@ -8,7 +8,7 @@ from media_converter.dialogs.bulk_convert_result_dialog import BulkConvertResult
 from media_converter.file_converters.common import ConverterType, LocalFile
 
 
-def fill_fake_results(result: ConvertResult):
+def fill_fake_results(result: ConvertResult) -> None:
     for idx in range(1, 10):
         result.add_converted(LocalFile(f"image_{idx}.jpg", ConverterType.image), f"new_image_{idx}.webp")
     for idx in range(1, 1000):

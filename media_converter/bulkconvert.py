@@ -19,7 +19,9 @@ from .dialogs.bulk_convert_progress_bar import ProgressBar
 ACTION_NAME = f"{ADDON_FULL_NAME}: Bulk-convert"
 
 
-def reload_note(func: Callable[["BulkConverter", Sequence[NoteId], list[str]], None]):
+def reload_note(
+    func: Callable[["BulkConverter", Sequence[NoteId], list[str]], None],
+) -> Callable[["BulkConverter", Sequence[NoteId], list[str]], None]:
     @functools.wraps(func)
     def decorator(self: "BulkConverter", note_ids: Sequence[NoteId], selected_fields: list[str]) -> None:
         assert self._browser.editor

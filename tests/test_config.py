@@ -33,7 +33,7 @@ def test_audio_container_names() -> None:
         (ImageFormat.webp, ImageFormat.webp),
     ],
 )
-def test_set_format(no_anki_config, image_format: Union[ImageFormat, str], result_format: ImageFormat) -> None:
+def test_set_format(no_anki_config, image_format: ImageFormat | str, result_format: ImageFormat) -> None:
     no_anki_config.image_format = image_format
     assert no_anki_config.image_format == result_format
     assert no_anki_config["image_format"] == result_format.name

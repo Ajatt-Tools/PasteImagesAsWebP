@@ -36,7 +36,7 @@ class ProgressBar(AnkiSaveAndRestoreGeomDialog):
         self.pool.start(runnable)
         return self.exec()
 
-    def set_canceled(self):
+    def set_canceled(self) -> None:
         self.signals.canceled.emit()  # type: ignore
 
     def setup_layout(self) -> QLayout:

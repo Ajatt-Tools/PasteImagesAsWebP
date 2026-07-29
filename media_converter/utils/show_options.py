@@ -17,7 +17,7 @@ class ImageDimensions(NamedTuple):
     height: int
 
 
-def main():
+def main() -> None:
     print(ShowOptions["toolbar"])
 
 

@@ -67,7 +67,7 @@ def find_cwebp_exe() -> str:
     return find_executable_ajt("cwebp") or get_bundled_executable("cwebp")
 
 
-def fetch_filename(mime: QMimeData) -> Optional[str]:
+def fetch_filename(mime: QMimeData) -> str | None:
     for file in iter_files(mime):
         if base := os.path.basename(file):
             return base
@@ -83,7 +83,7 @@ def is_animation(source_path: str) -> bool:
     return get_file_extension(source_path) in ANIMATED_OR_VIDEO_FORMATS
 
 
-def ffmpeg_not_found_dialog(parent=None):
+def ffmpeg_not_found_dialog(parent: QWidget | None = None) -> None:
     return showWarning(
         title=ADDON_FULL_NAME,
         parent=parent,
@@ -129,7 +129,7 @@ class ImageConverter(FileConverter, mode=ConverterType.image):
     def smaller_than_requested(self, image: ImageDimensions) -> bool:
         return 0 < image.width < self._config.image_width or 0 < image.height < self._config.image_height
 
-    def _get_resize_dimensions(self) -> Optional[ImageDimensions]:
+    def _get_resize_dimensions(self) -> ImageDimensions | None:
         if self._config.avoid_upscaling and self.smaller_than_requested(self._dimensions):
             # skip resizing if the image is already smaller than the requested size
             return None

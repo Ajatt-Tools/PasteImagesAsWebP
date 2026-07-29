@@ -28,16 +28,16 @@ class LocalFile(typing.NamedTuple):
         return f"{self.type.name} '{self.file_name}'"
 
     @classmethod
-    def image(cls, file_name: str):
+    def image(cls, file_name: str) -> "LocalFile":
         return cls(file_name, ConverterType.image)
 
     @classmethod
-    def audio(cls, file_name: str):
+    def audio(cls, file_name: str) -> "LocalFile":
         return cls(file_name, ConverterType.audio)
 
 
 @functools.cache
-def startup_info():
+def startup_info() -> Any | None:
     if IS_WIN:
         # Prevents a console window from popping up on Windows
         si = subprocess.STARTUPINFO()

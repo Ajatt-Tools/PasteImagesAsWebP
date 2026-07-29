@@ -19,7 +19,7 @@ def show_deduplication_confirm_dialog(files: Sequence[DeduplicateTableColumns]) 
     return dialog
 
 
-def make_random_files():
+def make_random_files() -> list[DeduplicateTableColumns]:
     return [DeduplicateTableColumns(f"zzz{idx}.jpg", "xxx.jpg") for idx in range(10)]
 
 

@@ -27,7 +27,7 @@ class FileNameEdit(MonoSpaceLineEdit):
     _edit_max_len: int = 119  # length in bytes
     _valid: bool
 
-    def __init__(self, text: str):
+    def __init__(self, text: str) -> None:
         super().__init__()
         self.setMaxLength(self._edit_max_len)
         self._valid = False
@@ -38,10 +38,10 @@ class FileNameEdit(MonoSpaceLineEdit):
     def valid(self) -> bool:
         return self._valid
 
-    def text(self):
+    def text(self) -> str:
         return super().text().strip("-_ ")
 
-    def validate(self):
+    def validate(self) -> None:
         self._valid = bool(
             len(self.text().encode("utf-8", errors="replace")) <= self._edit_max_len
             and re.fullmatch(RE_FILENAME_VALID, self.text())
@@ -53,7 +53,7 @@ class FileNameEdit(MonoSpaceLineEdit):
 
 
 class FileOpenButton(QPushButton):
-    def __init__(self, filename: str, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, filename: str, parent: QWidget | None = None) -> None:
         super().__init__("Open", parent)
         self._filename = filename
         qconnect(self.clicked, lambda: self._open_file())
@@ -81,7 +81,7 @@ def make_widget_pairs(edits: dict[str, FileNameEdit]) -> dict[str, FileRenamePai
 class FileRenameLayout(QGridLayout):
     edits: dict[str, FileRenamePair]
 
-    def __init__(self, edits: dict[str, FileNameEdit], parent: Optional[QWidget] = None):
+    def __init__(self, edits: dict[str, FileNameEdit], parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.edits = make_widget_pairs(edits)
         self._init_ui()
@@ -107,7 +107,7 @@ class MediaRenameDialog(QDialog):
 
     edits: dict[str, FileNameEdit]
 
-    def __init__(self, filenames: list[str], parent: Optional[QWidget] = None):
+    def __init__(self, filenames: list[str], parent: QWidget | None = None) -> None:
         super().__init__(parent=parent)
         self.edits = {filename: FileNameEdit(text=filename) for filename in filenames}
         self.edits_layout = FileRenameLayout(self.edits)
@@ -124,7 +124,7 @@ class MediaRenameDialog(QDialog):
         layout.addWidget(self.bottom_box)
         return layout
 
-    def connect_ui_elements(self):
+    def connect_ui_elements(self) -> None:
         qconnect(self.bottom_box.accepted, self.accept)
         qconnect(self.bottom_box.rejected, self.reject)
 
@@ -143,7 +143,7 @@ class MediaRenameDialog(QDialog):
 class AnkiMediaRenameDialog(MediaRenameDialog):
     """Rename dialog that performs the actual rename inside Anki."""
 
-    def __init__(self, editor: Editor, note: Note, filenames: list[str], cfg: Optional[MediaConverterConfig] = None):
+    def __init__(self, editor: Editor, note: Note, filenames: list[str], cfg: MediaConverterConfig | None = None) -> None:
         super().__init__(filenames, parent=editor.widget)
         self.editor = editor
         self.note = note
@@ -160,7 +160,7 @@ class AnkiMediaRenameDialog(MediaRenameDialog):
     def tooltip(self, msg: str) -> None:
         tooltip(msg, parent=self.editor.parentWindow, period=self._cfg.tooltip_duration_milliseconds)
 
-    def _rename_media_files(self, to_rename: list[RenameTask], note: Note, editor: Editor):
+    def _rename_media_files(self, to_rename: list[RenameTask], note: Note, editor: Editor) -> None:
         to_rename = list(try_rename_files(to_rename))
         for old_filename, new_filename in to_rename:
             for field_name, field_value in note.items():

@@ -11,7 +11,7 @@ from ..bulk_convert.convert_result import ConvertResult
 from ..consts import ADDON_FULL_NAME
 
 
-def fallback_parent(parent) -> Optional[QWidget]:
+def fallback_parent(parent) -> QWidget | None:
     if parent is None:
         try:
             return aqt.mw.app.activeWindow() or aqt.mw
@@ -34,7 +34,7 @@ def form_report_message(result: ConvertResult) -> str:
 
 
 class AJTScrollLabel(QScrollArea):
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWidgetResizable(True)
         content = QWidget(self)
@@ -51,7 +51,7 @@ class AJTScrollLabel(QScrollArea):
 
 
 class BulkConvertResultDialog(QDialog):
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent=fallback_parent(parent))
         tweak_window(self)
         self.setWindowModality(Qt.WindowModality.ApplicationModal)

@@ -26,7 +26,7 @@ TEMP_IMAGE_FORMAT = "png"
 class ConverterPayload(typing.NamedTuple):
     tmp_path: str
     dimensions: ImageDimensions
-    initial_filename: typing.Optional[str]
+    initial_filename: str | None
 
 
 def save_image(mime: QMimeData, tmp_path: str) -> ConverterPayload:
@@ -99,7 +99,7 @@ class OnPasteConverter:
     def _dest_dir(self) -> str:
         return self._editor.mw.col.media.dir()
 
-    def mime_to_image_file(self, mime: QMimeData, destination_path: str) -> typing.Optional[ConverterPayload]:
+    def mime_to_image_file(self, mime: QMimeData, destination_path: str) -> ConverterPayload | None:
         """
         Try to save image file. Return None if the file can't be saved or the file type is excluded by the user.
         """

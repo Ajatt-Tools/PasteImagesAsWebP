@@ -21,5 +21,5 @@ class AudioContainer(enum.Enum):
     webm = "webm"
 
     @classmethod
-    def _missing_(cls, _value):
+    def _missing_(cls, _value: object) -> "AudioContainer":
         return cls.ogg

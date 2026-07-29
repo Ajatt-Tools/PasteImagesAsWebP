@@ -31,7 +31,7 @@ def setup_mainwindow_menu(config: MediaConverterConfig) -> None:
     """
     root_menu = menu_root_entry()
 
-    def open_settings():
+    def open_settings() -> None:
         dialog = AnkiMainSettingsDialog(config, mw)
         dialog.show()
 
@@ -55,9 +55,9 @@ class EditorMenus:
     """Holds a reference to AnkiMediaRenameDialog to avoid spawning the same window multiple times."""
 
     _cfg: MediaConverterConfig
-    _file_rename_dialog: Optional[AnkiMediaRenameDialog]
+    _file_rename_dialog: AnkiMediaRenameDialog | None
 
-    def __init__(self, cfg: MediaConverterConfig):
+    def __init__(self, cfg: MediaConverterConfig) -> None:
         self._cfg = cfg
         self._file_rename_dialog = None
 

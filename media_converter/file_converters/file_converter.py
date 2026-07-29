@@ -18,7 +18,7 @@ def is_audio_file(filename: str) -> bool:
 
 
 @functools.cache
-def find_ffmpeg_exe() -> Optional[str]:
+def find_ffmpeg_exe() -> str | None:
     # https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-essentials.7z
     return find_executable_ajt("ffmpeg")
 

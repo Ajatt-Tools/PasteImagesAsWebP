@@ -1,6 +1,7 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import os
+from types import TracebackType
 from tempfile import mkstemp
 
 
@@ -15,17 +16,22 @@ class TempFile(os.PathLike):
     _fd: int = 0
     _opened: bool = False
 
-    def __init__(self, suffix: str = ".png"):
+    def __init__(self, suffix: str = ".png") -> None:
         self._fd, self._tmp_filepath = mkstemp(prefix="ajt__", suffix=suffix)
         self._opened = True
 
-    def __enter__(self):
+    def __enter__(self) -> "TempFile":
         return self
 
-    def __exit__(self, exc_type, exc_value, trace_back):
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        trace_back: TracebackType | None,
+    ) -> None:
         self.close()
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.close()
 
     def __fspath__(self) -> str:
@@ -42,7 +48,7 @@ class TempFile(os.PathLike):
             raise TempFileException("error creating temp file")
         return self._tmp_filepath
 
-    def close(self):
+    def close(self) -> None:
         if self._opened:
             os.close(self._fd)
             os.remove(self._tmp_filepath)

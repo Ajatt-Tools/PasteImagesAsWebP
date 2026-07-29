@@ -21,7 +21,7 @@ class DeduplicateTableColumns(typing.NamedTuple):
         return [ui_translate(field) for field in cls.__annotations__]
 
 
-def copy_cell_to_clipboard(item: typing.Optional[QTableWidgetItem]) -> None:
+def copy_cell_to_clipboard(item: QTableWidgetItem | None) -> None:
     if item:
         QApplication.clipboard().setText(item.text())
 
@@ -33,7 +33,7 @@ class DeduplicateMediaConfirmDialog(StatsDialog):
         QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
     )
 
-    def __init__(self, column_names: Sequence[str], parent: typing.Optional[aqt.AnkiQt] = None) -> None:
+    def __init__(self, column_names: Sequence[str], parent: aqt.AnkiQt | None = None) -> None:
         super().__init__(column_names=column_names, parent=parent)
         self._count_label = QLabel()
         self._layout.insertWidget(0, self._count_label)
@@ -66,7 +66,7 @@ class DeduplicateMediaConfirmDialog(StatsDialog):
 
         menu.exec(self._table.viewport().mapToGlobal(pos))
 
-    def _search_in_anki_browser(self, item: typing.Optional[QTableWidgetItem]) -> None:
+    def _search_in_anki_browser(self, item: QTableWidgetItem | None) -> None:
         """
         Paste selected text into the Browser's search bar and perform search.
         """
@@ -79,7 +79,7 @@ class DeduplicateMediaConfirmDialog(StatsDialog):
         browser.activateWindow()
         browser.search_for(item.text())
 
-    def _show_in_file_manager(self, item: typing.Optional[QTableWidgetItem]) -> None:
+    def _show_in_file_manager(self, item: QTableWidgetItem | None) -> None:
         if not (item and item.text() and aqt.mw):
             return
         file_path = os.path.join(aqt.mw.col.media.dir(), item.text())

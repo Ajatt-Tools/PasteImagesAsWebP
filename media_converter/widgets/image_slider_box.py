@@ -58,7 +58,7 @@ class ImageSliderBox(QWidget):
         return self._sliders.image_width.value
 
     @image_width.setter
-    def image_width(self, value: int):
+    def image_width(self, value: int) -> None:
         self._sliders.image_width.value = value
 
     @property
@@ -66,7 +66,7 @@ class ImageSliderBox(QWidget):
         return self._sliders.image_height.value
 
     @image_height.setter
-    def image_height(self, value: int):
+    def image_height(self, value: int) -> None:
         self._sliders.image_height.value = value
 
     @property
@@ -74,10 +74,10 @@ class ImageSliderBox(QWidget):
         return self._sliders.image_quality.value
 
     @image_quality.setter
-    def image_quality(self, value: int):
+    def image_quality(self, value: int) -> None:
         self._sliders.image_quality.value = value
 
-    def set_tooltips(self):
+    def set_tooltips(self) -> None:
         side_tooltip = str(
             "Desired %s.\n"
             "If either of the width or height parameters is 0,\n"

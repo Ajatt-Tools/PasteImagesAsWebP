@@ -2,7 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 from collections.abc import Iterable
-from typing import Callable
+from collections.abc import Callable
 
 
 class FileNamePatterns:
@@ -10,7 +10,7 @@ class FileNamePatterns:
     _suffixes: dict[str, Callable[[], str]]
     _patterns: list[str]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._prefixes = {
             "paste": self._default_prefix,
             "sort-field": self._sort_field,
@@ -27,7 +27,7 @@ class FileNamePatterns:
         return self._patterns
 
     @staticmethod
-    def _default_prefix():
+    def _default_prefix() -> str:
         return "paste"
 
     @staticmethod
@@ -43,9 +43,9 @@ class FileNamePatterns:
         return "current-field"
 
     @staticmethod
-    def _time_number():
+    def _time_number() -> str:
         return "epoch-time"
 
     @staticmethod
-    def _time_human():
+    def _time_human() -> str:
         return "date-time"
