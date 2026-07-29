@@ -44,7 +44,7 @@ ask other users in the [user group](https://tatsumoto.neocities.org/blog/join-ou
 * `preserve_original_filenames` - If an image is already named, reuse that name.
   Works when dragging an image from a GUI file manager, e.g. [Thunar](https://wiki.archlinux.org/title/Thunar).
 * `enable_audio_conversion` - Enable/disable conversion of audio files to `opus`.
-* `enable_image_conversion` - Enable/disable conversion of audio files to `webp` or `avif`
+* `enable_image_conversion` - Enable/disable conversion of image files to `webp` or `avif`
   based on the selected image format.
 * `ffmpeg_audio_args` - Extra [ffmpeg arguments](https://ffmpeg.org/ffmpeg.html) for audio.
     * `-b:a` - Audio bitrate. Default "64k".
