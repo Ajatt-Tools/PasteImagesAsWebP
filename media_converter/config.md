@@ -8,6 +8,12 @@ To restore default settings, click the **"Restore Defaults"** button.
 If you have any questions,
 ask other users in the [user group](https://tatsumoto.neocities.org/blog/join-our-community.html).
 
+**Notes:**
+
+- The add-on does not preserve transparency by default because `blend_alpha` is set to white.
+- When batch converting, it is not recommended to enable `delete_original_file_on_convert`.
+- If you have video files in your collection, exclude them using `excluded_image_containers`.
+
 ****
 
 * `avoid_upscaling` - Don't resize an image when its original size is less than requested.
