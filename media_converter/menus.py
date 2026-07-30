@@ -10,7 +10,7 @@ from aqt.qt import *
 from aqt.utils import tooltip
 
 from .ajt_common.about_menu import menu_root_entry
-from .ajt_common.addon_config import set_config_action, set_config_update_action
+from .ajt_common.addon_config import set_config_action
 from .ajt_common.media import find_all_media
 from .common import insert_image_html, key_to_str
 from .config import MediaConverterConfig, get_global_config
@@ -44,9 +44,9 @@ def setup_mainwindow_menu(config: MediaConverterConfig) -> None:
     qconnect(action.triggered, run_media_deduplication)
     root_menu.addAction(action)
 
-    # Register settings dialog with Anki's add-on config buttons.
+    # Register the modal settings dialog with Anki's add-on config button.
+    # The config update callback is registered by get_global_config().
     set_config_action(lambda: open_media_converter_settings(config=config, parent=mw))
-    set_config_update_action(config.update_from_addon_manager)
 
 
 def get_clipboard_mime_data(editor: Editor) -> QMimeData | None:
