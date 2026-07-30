@@ -25,9 +25,13 @@ from .utils.show_options import ShowOptions
 from .utils.temp_file import TempFile
 
 
-def open_media_converter_settings(config: MediaConverterConfig, parent: QWidget) -> None:
+def open_media_converter_settings(config: MediaConverterConfig, parent: QWidget, *, modal: bool) -> int:
+    """Open the settings dialog, blocking only when requested by Anki's config button."""
     dialog = AnkiMainSettingsDialog(config, parent)
-    dialog.exec()
+    if modal:
+        return dialog.exec()
+    dialog.show()
+    return QDialog.DialogCode.Rejected
 
 
 def setup_mainwindow_menu(config: MediaConverterConfig) -> None:
@@ -37,7 +41,7 @@ def setup_mainwindow_menu(config: MediaConverterConfig) -> None:
     root_menu = menu_root_entry()
 
     action = QAction(f"{ADDON_NAME} Options...", root_menu)
-    qconnect(action.triggered, lambda: open_media_converter_settings(config=config, parent=mw))
+    qconnect(action.triggered, lambda: open_media_converter_settings(config=config, parent=mw, modal=False))
     root_menu.addAction(action)
 
     action = QAction(f"Deduplicate media...", root_menu)
@@ -46,7 +50,7 @@ def setup_mainwindow_menu(config: MediaConverterConfig) -> None:
 
     # Register the modal settings dialog with Anki's add-on config button.
     # The config update callback is registered by get_global_config().
-    set_config_action(lambda: open_media_converter_settings(config=config, parent=mw))
+    set_config_action(lambda: open_media_converter_settings(config=config, parent=mw, modal=True))
 
 
 def get_clipboard_mime_data(editor: Editor) -> QMimeData | None:
