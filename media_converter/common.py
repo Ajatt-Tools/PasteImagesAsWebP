@@ -24,12 +24,5 @@ def insert_image_html(editor: Editor, image_filename: str) -> None:
     editor.doPaste(html=image_html(image_filename), internal=True)
 
 
-def has_local_file(mime: QMimeData) -> bool:
-    for url in mime.urls():
-        if url.isLocalFile():
-            return True
-    return False
-
-
 def key_to_str(shortcut: str) -> str:
     return QKeySequence(shortcut).toString(QKeySequence.SequenceFormat.NativeText)

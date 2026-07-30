@@ -10,13 +10,14 @@ from aqt import gui_hooks, mw
 from aqt.qt import *
 from aqt.utils import KeyboardModifiersPressed, tooltip
 
-from .common import has_local_file, image_html
+from .common import image_html
 from .config import MediaConverterConfig, get_global_config
 from .file_converters.file_converter import FFmpegNotFoundError
 from .file_converters.find_media import FindMedia
 from .file_converters.image_converter import CanceledPaste, ffmpeg_not_found_dialog
 from .file_converters.on_add_note_converter import OnAddNoteConverter
 from .file_converters.on_paste_converter import TEMP_IMAGE_FORMAT, OnPasteConverter
+from .utils.mime_helper import has_local_files
 from .utils.show_options import ShowOptions
 from .utils.temp_file import TempFile
 
@@ -70,7 +71,7 @@ class Events:
         if self._config.drag_and_drop and drop_event:
             return self._convert_mime(mime, editor_web_view.editor, action=ShowOptions.drag_and_drop)
 
-        if self._config.copy_paste and not drop_event and (mime.hasImage() or has_local_file(mime)):
+        if self._config.copy_paste and not drop_event and (mime.hasImage() or has_local_files(mime)):
             return self._convert_mime(mime, editor_web_view.editor, action=ShowOptions.paste)
 
         return mime
