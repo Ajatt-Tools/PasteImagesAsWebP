@@ -40,3 +40,10 @@ def test_set_format(no_anki_config, image_format: ImageFormat | str, result_form
 def test_invalid_format(no_anki_config) -> None:
     with pytest.raises(ValueError):
         no_anki_config.image_format = 1
+
+
+@pytest.mark.parametrize("include_converted", [True, False], ids=["reconvert", "normal"])
+def test_video_containers_excluded_by_default(no_anki_config, include_converted: bool) -> None:
+    """Video files are not images and must never be passed to the image converter."""
+    excluded = no_anki_config.get_excluded_image_extensions(include_converted=include_converted)
+    assert {".mp4", ".mkv"}.issubset(excluded)
