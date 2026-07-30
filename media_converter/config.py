@@ -2,7 +2,6 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import functools
 from collections.abc import Iterable, Sequence
-from typing import Union
 
 from aqt import mw
 

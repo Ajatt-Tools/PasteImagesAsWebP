@@ -2,7 +2,6 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import functools
-from typing import Optional
 
 from aqt.qt import *
 from aqt.utils import showWarning
@@ -152,7 +151,7 @@ class ImageConverter(FileConverter, mode=ConverterType.image):
                 return f"scale={resize_args.width}:{resize_args.height}"
         return "scale=-1:-1"
 
-    def _make_to_webp_args(self, source_path: str, destination_path: str) -> list[Union[str, int]]:
+    def _make_to_webp_args(self, source_path: str, destination_path: str) -> list[str | int]:
         args = [
             find_cwebp_exe(),
             source_path,
@@ -166,7 +165,7 @@ class ImageConverter(FileConverter, mode=ConverterType.image):
             args.extend(["-resize", resize_args.width, resize_args.height])
         return args
 
-    def _make_to_avif_args(self, source_path: str, destination_path: str) -> list[Union[str, int]]:
+    def _make_to_avif_args(self, source_path: str, destination_path: str) -> list[str | int]:
         if not find_ffmpeg_exe():
             raise FFmpegNotFoundError("ffmpeg executable is not in PATH")
         # Use ffmpeg for non-webp formats, dynamically using the format from config

@@ -2,7 +2,6 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import functools
-from typing import Optional
 
 from ..ajt_common.utils import find_executable as find_executable_ajt
 from ..config import MediaConverterConfig

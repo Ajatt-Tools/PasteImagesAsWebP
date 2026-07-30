@@ -2,7 +2,6 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import os
 import os.path
-from typing import Optional
 
 import aqt.editor
 from anki.notes import Note

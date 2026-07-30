@@ -4,7 +4,7 @@ import io
 import re
 import typing
 from collections.abc import Iterable
-from typing import Optional, cast
+from typing import cast
 
 from anki.notes import Note
 from aqt import mw
