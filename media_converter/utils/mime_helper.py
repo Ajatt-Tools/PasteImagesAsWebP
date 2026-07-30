@@ -10,15 +10,18 @@ from requests.exceptions import InvalidSchema, Timeout
 
 from ..consts import IS_MAC, REQUEST_HEADERS, REQUEST_TIMEOUTS
 
+REMOTE_IMAGE_URL_RE = re.compile(r'(?<= src=")(?P<url>http[^"]+)(?=")')
+BASE64_IMAGE_DATA_RE = re.compile(r'(?<=;base64,)(?P<data>[^"]+)(?=")')
+
 
 def urls_from_html(html: str) -> list[str]:
     """Return remote image URLs embedded in HTML source attributes."""
-    return re.findall('(?<= src=")http[^"]+(?=")', html)
+    return [match.group("url") for match in REMOTE_IMAGE_URL_RE.finditer(html)]
 
 
 def data_from_html(html: str) -> list[QByteArray]:
     """Return base64 image payloads embedded in HTML source attributes."""
-    return [QByteArray.fromBase64(data.encode("ascii")) for data in re.findall('(?<=;base64,)[^"]+(?=")', html)]
+    return [QByteArray.fromBase64(match.group("data").encode("ascii")) for match in BASE64_IMAGE_DATA_RE.finditer(html)]
 
 
 def iter_urls(mime: QMimeData) -> Iterable[str]:
