@@ -13,6 +13,7 @@ ask other users in the [user group](https://tatsumoto.neocities.org/blog/join-ou
 - The add-on does not preserve transparency by default because `blend_alpha` is set to white.
 - When batch converting, it is not recommended to enable `delete_original_file_on_convert`.
 - If you have video files in your collection, exclude them using `excluded_image_containers`.
+- Common video containers (`mp4`, `mkv`) are excluded by default.
 
 ****
 
