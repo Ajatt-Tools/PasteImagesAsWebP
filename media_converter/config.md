@@ -19,7 +19,9 @@ ask other users in the [user group](https://tatsumoto.neocities.org/blog/join-ou
 * `avoid_upscaling` - Don't resize an image when its original size is less than requested.
 * `bulk_convert_fields` - List of fields where the add-on looks for images when bulk-converting.
 * `bulk_reconvert` - When bulk-converting, reconvert images that are already in the desired format.
+* `delete_original_file_on_convert` - Delete the original file after conversion.
 * `copy_paste` - Convert images when you copy-paste them.
+* `convert_on_note_add` - Convert media when new notes are created, e.g. by AnkiConnect.
 * `cwebp_args` - Extra [cwebp arguments](https://developers.google.com/speed/webp/docs/cwebp#options).
   They are applied on each call to `cwebp`.
 * `ffmpeg_args` - Extra [ffmpeg arguments](https://ffmpeg.org/ffmpeg.html).
@@ -46,15 +48,18 @@ ask other users in the [user group](https://tatsumoto.neocities.org/blog/join-ou
     * `drag_and_drop` - On drag-and-drop (if enabled).
     * `never` - Only when you press `Tools > WebP settings`.
 * `filename_pattern_num` - Used internally.
+* `saved_presets` - Used internally. Saved settings dialog presets.
 * `tooltip_duration_seconds` - Duration of tooltips.
 * `preserve_original_filenames` - If an image is already named, reuse that name.
   Works when dragging an image from a GUI file manager, e.g. [Thunar](https://wiki.archlinux.org/title/Thunar).
+* `custom_name_field` - Name of a note field whose content is used to name converted files.
 * `enable_audio_conversion` - Enable/disable conversion of audio files to `opus`.
 * `enable_image_conversion` - Enable/disable conversion of image files to `webp` or `avif`
   based on the selected image format.
 * `ffmpeg_audio_args` - Extra [ffmpeg arguments](https://ffmpeg.org/ffmpeg.html) for audio.
     * `-b:a` - Audio bitrate. Default "64k".
       [About opus bitrates](https://wiki.xiph.org/Opus_Recommended_Settings).
+* `ffmpeg_audio_bitrate` - Audio bitrate in kbit/s for audio conversion.
 * `audio_container` - Container (file extension name) for opus files ("opus" or "ogg").
 
 If one of the dimensions is set to `0`, images will be resized
