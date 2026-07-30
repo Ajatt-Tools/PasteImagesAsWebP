@@ -54,14 +54,14 @@ ask other users in the [user group](https://tatsumoto.neocities.org/blog/join-ou
 * `preserve_original_filenames` - If an image is already named, reuse that name.
   Works when dragging an image from a GUI file manager, e.g. [Thunar](https://wiki.archlinux.org/title/Thunar).
 * `custom_name_field` - Name of a note field whose content is used to name converted files.
-* `enable_audio_conversion` - Enable/disable conversion of audio files to `opus`.
+* `enable_audio_conversion` - Enable/disable conversion of audio files to the selected `audio_container`.
 * `enable_image_conversion` - Enable/disable conversion of image files to `webp` or `avif`
   based on the selected image format.
 * `ffmpeg_audio_args` - Extra [ffmpeg arguments](https://ffmpeg.org/ffmpeg.html) for audio.
-    * `-b:a` - Audio bitrate. Default "64k".
-      [About opus bitrates](https://wiki.xiph.org/Opus_Recommended_Settings).
+  They are applied on each call to `ffmpeg` when converting audio.
+  [About opus bitrates](https://wiki.xiph.org/Opus_Recommended_Settings).
 * `ffmpeg_audio_bitrate` - Audio bitrate in kbit/s for audio conversion.
-* `audio_container` - Container (file extension name) for opus files ("opus" or "ogg").
+* `audio_container` - Audio container (file extension name) for converted audio files ("opus", "ogg", or "webm").
 
 If one of the dimensions is set to `0`, images will be resized
 preserving the aspect ratio.
