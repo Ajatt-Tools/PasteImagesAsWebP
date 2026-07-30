@@ -11,23 +11,28 @@ from requests.exceptions import InvalidSchema, Timeout
 from ..consts import IS_MAC, REQUEST_HEADERS, REQUEST_TIMEOUTS
 
 
-def urls_from_html(html: str) -> list:
+def urls_from_html(html: str) -> list[str]:
+    """Return remote image URLs embedded in HTML source attributes."""
     return re.findall('(?<= src=")http[^"]+(?=")', html)
 
 
 def data_from_html(html: str) -> list[QByteArray]:
+    """Return base64 image payloads embedded in HTML source attributes."""
     return [QByteArray.fromBase64(data.encode("ascii")) for data in re.findall('(?<=;base64,)[^"]+(?=")', html)]
 
 
 def iter_urls(mime: QMimeData) -> Iterable[str]:
+    """Yield remote URLs carried by the MIME data."""
     return (url.toString() for url in mime.urls() if not url.isLocalFile())
 
 
 def iter_files(mime: QMimeData) -> Iterable[str]:
+    """Yield local file paths carried by the MIME data."""
     return (url.toLocalFile() for url in mime.urls() if url.isLocalFile())
 
 
 def image_from_url(src_url: str) -> QImage | None:
+    """Download a remote image URL and return it as a QImage when possible."""
     image = QImage()
     try:
         with requests.get(src_url, timeout=REQUEST_TIMEOUTS, headers=REQUEST_HEADERS) as r:
@@ -38,6 +43,7 @@ def image_from_url(src_url: str) -> QImage | None:
 
 
 def image_from_file(filepath: str) -> QImage | None:
+    """Read a local image file and return it as a QImage when possible."""
     try:
         with open(filepath, "rb") as f:
             return QImage.fromData(f.read())
@@ -53,6 +59,7 @@ def has_local_files(mime: QMimeData) -> bool:
 
 
 def image_candidates(mime: QMimeData) -> Iterable[QImage | None]:
+    """Yield image candidates from direct image data, HTML, files, and URLs."""
     # On macOS, copying a file in Finder puts the file's .icns thumbnail on the clipboard.
     # Qt exposes it as imageData() ('application/x-qt-image') and does not reveal the raw 'public.icns' UTI,
     # so the thumbnail is indistinguishable from a genuine image by format alone.
