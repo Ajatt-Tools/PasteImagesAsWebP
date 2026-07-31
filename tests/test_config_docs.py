@@ -8,7 +8,7 @@ import re
 ROOT_DIR = pathlib.Path(__file__).resolve().parents[1]
 CONFIG_JSON_PATH = ROOT_DIR / "media_converter" / "config.json"
 CONFIG_MD_PATH = ROOT_DIR / "media_converter" / "config.md"
-CONFIG_KEY_RE = re.compile(r"^\* `([^`]+)`", re.MULTILINE)
+CONFIG_KEY_RE = re.compile(r"^\* `(?P<key>[^`]+)`", re.MULTILINE)
 
 
 class TestConfigDocs:

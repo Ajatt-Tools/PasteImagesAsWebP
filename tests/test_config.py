@@ -46,4 +46,4 @@ def test_invalid_format(no_anki_config) -> None:
 def test_video_containers_excluded_by_default(no_anki_config, include_converted: bool) -> None:
     """Video files are not images and must never be passed to the image converter."""
     excluded = no_anki_config.get_excluded_image_extensions(include_converted=include_converted)
-    assert {".mp4", ".mkv"}.issubset(excluded)
+    assert {".mp4", ".mkv", ".mov", ".webm", ".avi"}.issubset(excluded)
