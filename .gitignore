@@ -10,6 +10,7 @@ __pycache__
 *.pickle
 *.sqlite
 *.sqlite3
+*.mp4
 
 support
 dist
