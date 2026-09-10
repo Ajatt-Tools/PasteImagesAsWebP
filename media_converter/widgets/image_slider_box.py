@@ -36,7 +36,7 @@ class ImageSliderBox(QWidget):
         self._sliders = Sliders(
             image_width=RichSlider("Width", "px", upper_limit=max_width),
             image_height=RichSlider("Height", "px", upper_limit=max_height),
-            image_quality=RichSlider("Quality", "%", upper_limit=100),
+            image_quality=RichSlider("Quality", "%", upper_limit=100, step=1),
         )
         self._setup_ui()
         self.set_tooltips()
