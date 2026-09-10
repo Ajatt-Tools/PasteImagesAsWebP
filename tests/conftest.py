@@ -12,11 +12,20 @@ import media_converter.config
 from playground.no_anki_config import NoAnkiConfigView
 
 
-@pytest.fixture(autouse=True, scope="session")
-def qapp() -> QApplication:
-    """Ensure a QApplication exists for widget tests."""
-    app = QApplication.instance() or QApplication([])
-    return app
+@pytest.fixture(scope="session", autouse=True)
+def qapp(qt_offscreen_platform: None) -> QApplication:
+    """Ensure a QApplication exists for widget tests.
+
+    A program name must be present in argv because QtWebEngine aborts
+    when QApplication is created with an empty argument list.
+    """
+    match instance := QApplication.instance():
+        case None:
+            return QApplication(["pytest"])
+        case QApplication():
+            return instance
+        case _:
+            raise RuntimeError("A QCoreApplication already exists; widget tests require QApplication")
 
 
 @pytest.fixture(autouse=True, scope="function")
