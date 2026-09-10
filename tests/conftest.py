@@ -3,13 +3,17 @@
 
 import os
 
-os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-
 import pytest
 from aqt.qt import QApplication
 
 import media_converter.config
 from playground.no_anki_config import NoAnkiConfigView
+
+
+@pytest.fixture(scope="session", autouse=True)
+def qt_offscreen_platform() -> None:
+    """Force Qt to run without a real display so widget tests work in headless CI."""
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 
 @pytest.fixture(scope="session", autouse=True)
