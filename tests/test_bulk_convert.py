@@ -3,10 +3,15 @@
 
 import os
 import tempfile
-from unittest.mock import MagicMock, Mock, patch
+from concurrent.futures import Future
+from unittest.mock import MagicMock, create_autospec, patch
 
 import pytest
+from anki.collection import Collection, OpChanges
 from anki.notes import Note, NoteId
+from aqt.browser import Browser
+from aqt.qt import QDialog
+from beartype.roar import BeartypeCallHintReturnViolation
 
 from media_converter.bulk_convert.convert_result import ConvertResult
 from media_converter.bulk_convert.convert_task import (
@@ -14,8 +19,9 @@ from media_converter.bulk_convert.convert_task import (
     TaskCanceledByUserException,
     cancel_all_remaining_futures,
 )
-from media_converter.bulk_convert.runnable import ConvertRunnable
+from media_converter.bulk_convert.runnable import ConvertRunnable, ConvertSignals
 from media_converter.config import MediaConverterConfig
+from media_converter.dialogs.bulk_convert_progress_bar import ProgressBar
 from media_converter.file_converters.common import LocalFile
 from media_converter.file_converters.file_converter import FileConverter
 from media_converter.file_converters.find_media import FindMedia
@@ -66,11 +72,11 @@ def test_convert_result_converted_and_failed_properties() -> None:
 def test_cancel_all_remaining_futures() -> None:
     """Test that cancel_all_remaining_futures cancels pending futures."""
     # Create mock futures
-    future1 = Mock()
+    future1 = create_autospec(Future, instance=True)
     future1.done.return_value = False
-    future2 = Mock()
+    future2 = create_autospec(Future, instance=True)
     future2.done.return_value = True  # Already done, should not be canceled
-    future3 = Mock()
+    future3 = create_autospec(Future, instance=True)
     future3.done.return_value = False
 
     future_to_file = {
@@ -87,37 +93,34 @@ def test_cancel_all_remaining_futures() -> None:
     future3.cancel.assert_called_once()
 
 
-def test_convert_task_initialization(no_anki_config: MediaConverterConfig) -> None:
+def test_convert_task_initialization(no_anki_config: MediaConverterConfig, browser: Browser) -> None:
     """Test that ConvertTask initializes correctly."""
-    mock_browser = Mock()
     note_ids = [NoteId(1), NoteId(2), NoteId(3)]
     selected_fields = ["Front", "Back"]
 
     with patch.object(ConvertTask, "_find_files_to_convert_and_notes", return_value={}):
-        task = ConvertTask(mock_browser, note_ids, selected_fields, no_anki_config)
+        task = ConvertTask(browser, note_ids, selected_fields, no_anki_config)
 
-        assert task._browser == mock_browser
+        assert task._browser == browser
         assert task._selected_fields == selected_fields
         assert task._canceled is False
 
 
-def test_convert_task_set_canceled(no_anki_config: MediaConverterConfig) -> None:
+def test_convert_task_set_canceled(no_anki_config: MediaConverterConfig, browser: Browser) -> None:
     """Test that set_canceled sets the canceled flag."""
-    mock_browser = Mock()
     note_ids = [NoteId(1), NoteId(2), NoteId(3)]
     selected_fields = ["Front", "Back"]
 
     with patch.object(ConvertTask, "_find_files_to_convert_and_notes", return_value={}):
-        task = ConvertTask(mock_browser, note_ids, selected_fields, no_anki_config)
+        task = ConvertTask(browser, note_ids, selected_fields, no_anki_config)
 
         assert task._canceled is False
         task.set_canceled()
         assert task._canceled is True
 
 
-def test_convert_task_size(no_anki_config: MediaConverterConfig) -> None:
+def test_convert_task_size(no_anki_config: MediaConverterConfig, browser: Browser) -> None:
     """Test that size property returns the correct count."""
-    mock_browser = Mock()
     note_ids = [NoteId(1), NoteId(2), NoteId(3)]
     selected_fields = ["Front", "Back"]
 
@@ -129,19 +132,18 @@ def test_convert_task_size(no_anki_config: MediaConverterConfig) -> None:
     }
 
     with patch.object(ConvertTask, "_find_files_to_convert_and_notes", return_value=to_convert):
-        task = ConvertTask(mock_browser, note_ids, selected_fields, no_anki_config)
+        task = ConvertTask(browser, note_ids, selected_fields, no_anki_config)
 
         assert task.size == 3
 
 
-def test_convert_task_already_converted_check(no_anki_config: MediaConverterConfig) -> None:
+def test_convert_task_already_converted_check(no_anki_config: MediaConverterConfig, browser: Browser) -> None:
     """Test that calling the task twice raises RuntimeError."""
-    mock_browser = Mock()
     note_ids = [NoteId(1), NoteId(2), NoteId(3)]
     selected_fields = ["Front", "Back"]
 
     with patch.object(ConvertTask, "_find_files_to_convert_and_notes", return_value={}):
-        task = ConvertTask(mock_browser, note_ids, selected_fields, no_anki_config)
+        task = ConvertTask(browser, note_ids, selected_fields, no_anki_config)
 
         # Add a result to make it "dirty"
         task._result.add_converted(LocalFile.image("test.jpg"), "test.webp")
@@ -151,14 +153,13 @@ def test_convert_task_already_converted_check(no_anki_config: MediaConverterConf
             list(task())
 
 
-def test_convert_stored_file_canceled(no_anki_config: MediaConverterConfig) -> None:
+def test_convert_stored_file_canceled(no_anki_config: MediaConverterConfig, browser: Browser) -> None:
     """Test that _convert_stored_file raises TaskCanceledByUserException when canceled."""
-    mock_browser = Mock()
     note_ids = [NoteId(1), NoteId(2), NoteId(3)]
     selected_fields = ["Front", "Back"]
 
     with patch.object(ConvertTask, "_find_files_to_convert_and_notes", return_value={}):
-        task = ConvertTask(mock_browser, note_ids, selected_fields, no_anki_config)
+        task = ConvertTask(browser, note_ids, selected_fields, no_anki_config)
         task.set_canceled()
 
         with pytest.raises(TaskCanceledByUserException):
@@ -167,32 +168,34 @@ def test_convert_stored_file_canceled(no_anki_config: MediaConverterConfig) -> N
 
 def test_convert_runnable_set_canceled() -> None:
     """Test that ConvertRunnable set_canceled delegates to task."""
-    mock_task = Mock()
-    mock_signals = Mock()
+    mock_task = create_autospec(ConvertTask, instance=True)
+    signals = ConvertSignals()
 
-    runnable = ConvertRunnable(mock_task, mock_signals)
+    runnable = ConvertRunnable(mock_task, signals)
 
-    runnable.set_canceled()
+    # Exercise the actual signal connection instead of only calling its target.
+    signals.canceled.emit()
 
     mock_task.set_canceled.assert_called_once()
 
 
 def test_convert_runnable_run() -> None:
     """Test that ConvertRunnable run method works correctly."""
-    mock_task = Mock()
+    mock_task = create_autospec(ConvertTask, instance=True)
     mock_task.return_value = [1, 2, 3]  # Simulate progress values
-    mock_signals = Mock()
+    signals = ConvertSignals()
+    progress: list[int] = []
+    completed: list[bool] = []
+    signals.update_progress.connect(progress.append)
+    signals.task_done.connect(lambda: completed.append(True))
 
-    runnable = ConvertRunnable(mock_task, mock_signals)
+    runnable = ConvertRunnable(mock_task, signals)
 
     runnable.run()
 
     # Check that progress was emitted correctly
-    mock_signals.update_progress.emit.assert_any_call(0)  # Initial call
-    mock_signals.update_progress.emit.assert_any_call(1)  # First progress
-    mock_signals.update_progress.emit.assert_any_call(2)  # Second progress
-    mock_signals.update_progress.emit.assert_any_call(3)  # Third progress
-    mock_signals.task_done.emit.assert_called_once()
+    assert progress == [0, 1, 2, 3]  # Initial call followed by each progress value.
+    assert completed == [True]
 
 
 def test_find_media_functionality(no_anki_config: MediaConverterConfig) -> None:
@@ -252,12 +255,12 @@ def test_convert_result_accumulation() -> None:
     assert result.failed[LocalFile.image("test3.jpg")] == exception1
 
 
-def test_convert_task_cancellation_behavior(no_anki_config: MediaConverterConfig) -> None:
+def test_convert_task_cancellation_behavior(no_anki_config: MediaConverterConfig, browser: Browser) -> None:
     """Test that ConvertTask properly handles cancellation."""
 
     # Mock the file finding to return no files (so we don't need real notes)
     with patch.object(ConvertTask, "_find_files_to_convert_and_notes", return_value={}):
-        task = ConvertTask(Mock(), [], [], no_anki_config)
+        task = ConvertTask(browser, [], [], no_anki_config)
 
         # Initially should not be canceled
         assert task._canceled is False
@@ -267,7 +270,7 @@ def test_convert_task_cancellation_behavior(no_anki_config: MediaConverterConfig
         assert task._canceled is True
 
 
-def test_convert_task_progress_reporting(no_anki_config: MediaConverterConfig) -> None:
+def test_convert_task_progress_reporting(no_anki_config: MediaConverterConfig, browser: Browser) -> None:
     """Test that ConvertTask properly reports progress."""
 
     # Mock the file finding to return some files
@@ -278,7 +281,7 @@ def test_convert_task_progress_reporting(no_anki_config: MediaConverterConfig) -
 
     with patch.object(ConvertTask, "_find_files_to_convert_and_notes", return_value=mock_files):
         with patch.object(ConvertTask, "_convert_stored_file", return_value="converted_file.webp"):
-            task = ConvertTask(Mock(), [], [], no_anki_config)
+            task = ConvertTask(browser, [], [], no_anki_config)
 
             # Check that size is correct
             assert task.size == 2
@@ -322,14 +325,12 @@ def test_real_image_conversion(no_anki_config: MediaConverterConfig) -> None:
         assert os.path.getsize(output_jpg_webp) > 0, "Output JPG WebP file is empty"
 
 
-def test_convert_task_call_with_real_images(no_anki_config: MediaConverterConfig) -> None:
+def test_convert_task_call_with_real_images(no_anki_config: MediaConverterConfig, browser: Browser) -> None:
     """Test that ConvertTask.__call__ works properly with real images from the tests directory."""
-    # Mock the Anki environment
-    mock_browser = MagicMock()
-    mock_browser.editor = MagicMock()
+    # The browser fixture supplies the mocked Anki environment.
 
     # Mock the note finding to return notes that reference our sample images
-    mock_note = MagicMock(spec=Note)
+    mock_note = create_autospec(Note, instance=True)
     mock_note.id = NoteId(1)
     mock_note.keys.return_value = ["Front", "Back"]
 
@@ -348,7 +349,7 @@ def test_convert_task_call_with_real_images(no_anki_config: MediaConverterConfig
             mock_converter_class.return_value = mock_converter_instance
 
             # Create a ConvertTask with our mock browser and note IDs
-            task = ConvertTask(mock_browser, [NoteId(1)], ["Front", "Back"], no_anki_config)
+            task = ConvertTask(browser, [NoteId(1)], ["Front", "Back"], no_anki_config)
 
             # Execute the task
             progress_values = list(task())
@@ -361,3 +362,46 @@ def test_convert_task_call_with_real_images(no_anki_config: MediaConverterConfig
 
             # Verify that the result has been recorded
             assert task._result.has_results() is True
+
+
+class TestUpdateNotesOpAnnotations:
+    """Ensure undo results remain compatible with the method's runtime type checks."""
+
+    @pytest.mark.parametrize("undo_position", [1, 7])
+    def test_returns_merged_changes(self, empty_convert_task: ConvertTask, undo_position: int) -> None:
+        """Return the concrete change object produced by merging the operation's undo entry."""
+        collection = create_autospec(Collection, instance=True)
+        changes = OpChanges()
+        collection.add_custom_undo_entry.return_value = undo_position
+        collection.merge_undo_entries.return_value = changes
+        assert empty_convert_task._update_notes_op(collection) is changes
+        collection.update_notes.assert_called_once_with([])
+        collection.merge_undo_entries.assert_called_once_with(undo_position)
+
+    @pytest.mark.parametrize("invalid_changes", [None, "invalid"])
+    def test_rejects_invalid_return(self, empty_convert_task: ConvertTask, invalid_changes: str | None) -> None:
+        """An invalid result must raise instead of silently bypassing runtime decoration."""
+        collection = create_autospec(Collection, instance=True)
+        collection.merge_undo_entries.return_value = invalid_changes
+        # An uncheckable annotation previously made beartype skip this entire method.
+        with pytest.raises(BeartypeCallHintReturnViolation):
+            empty_convert_task._update_notes_op(collection)
+
+
+class TestProgressBarSignals:
+    """Exercise cancellation through the actual button and its complete signal chain."""
+
+    @pytest.mark.parametrize("checked", [False, True])
+    def test_cancel_button(self, checked: bool) -> None:
+        """The button cancels its runnable without receiving Qt's checked flag as task input."""
+        task = create_autospec(ConvertTask, instance=True)
+        task.size = 1
+        progress = ProgressBar(task)
+        # Keep the real runnable alive so Qt retains its connected cancellation target.
+        runnable = ConvertRunnable(task, progress.signals)
+        progress.cancel_button.setCheckable(True)
+        progress.cancel_button.setChecked(not checked)
+        progress.cancel_button.click()
+        task.set_canceled.assert_called_once_with()
+        assert runnable.task is task
+        assert progress.result() == QDialog.DialogCode.Rejected

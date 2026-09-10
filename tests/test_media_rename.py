@@ -15,6 +15,22 @@ class TestFileNameEdit:
     """Tests for FileNameEdit validation and text processing."""
 
     @pytest.mark.parametrize(
+        ("initial_text", "updated_text", "expected_valid"),
+        [
+            ("old.png", "new.webp", True),
+            ("old.png", "invalid[name", False),
+            ("invalid[name", "new.webp", True),
+            ("old.png", "", False),
+        ],
+    )
+    def test_validation_after_edit(self, initial_text: str, updated_text: str, expected_valid: bool) -> None:
+        """Text-change signals must still validate names when beartype wraps the callback."""
+        edit = FileNameEdit(initial_text)
+        edit.setText(updated_text)
+        assert edit.valid == expected_valid
+        assert bool(edit.styleSheet()) == (not expected_valid)
+
+    @pytest.mark.parametrize(
         "filename",
         [
             "image.png",

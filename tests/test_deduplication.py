@@ -1,9 +1,23 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import pytest
+import pathlib
+from collections.abc import Sequence
+from unittest.mock import create_autospec, patch
 
-from media_converter.media_deduplication.deduplication import do_replacements
+import pytest
+from anki.collection import Collection
+
+from media_converter.config import MediaConverterConfig
+from media_converter.media_deduplication.anki_collection_op import AnkiMediaDedup
+from media_converter.media_deduplication.deduplication import (
+    DuplicatesGroup,
+    MediaDedup,
+    compute_file_hash,
+    do_replacements,
+    hash_files,
+    split_list,
+)
 
 
 @pytest.mark.parametrize(
@@ -45,3 +59,42 @@ from media_converter.media_deduplication.deduplication import do_replacements
 )
 def test_do_replacements(content: str, old_name: str, new_name: str, expected: str) -> None:
     assert do_replacements(content, old_name, new_name) == expected
+
+
+class TestDeduplicationSequenceAnnotations:
+    """Keep sequence-based APIs usable with mutable and immutable inputs under beartype."""
+
+    @pytest.mark.parametrize(
+        ("values", "chunk_count", "expected"),
+        [
+            ([1, 2, 3, 4], 2, [[1, 2], [3, 4]]),
+            ((1, 2, 3, 4), 2, [(1, 2), (3, 4)]),
+            ([1, 2, 3], 2, [[1, 2], [3]]),
+            ((1, 2), 4, [(1,), (2,)]),
+        ],
+    )
+    def test_split_list(self, values: Sequence[int], chunk_count: int, expected: Sequence[Sequence[int]]) -> None:
+        """Chunking preserves each input sequence's slice behavior."""
+        assert list(split_list(values, chunk_count)) == expected
+
+    @pytest.mark.parametrize("use_tuple", [False, True])
+    def test_hash_files(self, tmp_path: pathlib.Path, use_tuple: bool) -> None:
+        """Hashing accepts either sequence representation and groups identical contents."""
+        original = tmp_path / "original.png"
+        copy = tmp_path / "copy.png"
+        original.write_bytes(b"matching contents")
+        copy.write_bytes(original.read_bytes())
+        paths: Sequence[pathlib.Path] = [original, copy]
+        if use_tuple:
+            paths = tuple(paths)
+        assert hash_files(paths) == {compute_file_hash(original): [original, copy]}
+
+    @pytest.mark.parametrize("use_tuple", [False, True])
+    def test_collection_wrapper(self, no_anki_config: MediaConverterConfig, use_tuple: bool) -> None:
+        """The Anki wrapper returns either valid sequence form without coercing the result."""
+        groups: Sequence[DuplicatesGroup] = [DuplicatesGroup(pathlib.Path("a.png"), [pathlib.Path("copy.png")])]
+        if use_tuple:
+            groups = tuple(groups)
+        wrapper = AnkiMediaDedup(create_autospec(Collection, instance=True), no_anki_config)
+        with patch.object(MediaDedup, "collect_files", return_value=groups):
+            assert wrapper.collect_files() is groups
