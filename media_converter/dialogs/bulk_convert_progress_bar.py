@@ -27,7 +27,9 @@ class ProgressBar(AnkiSaveAndRestoreGeomDialog):
         self.setMinimumSize(320, 24)
         self.move(100, 100)
         self.set_range(0, task.size)
-        qconnect(self.cancel_button.clicked, self.set_canceled)
+        # QPushButton emits a checked flag that cancellation does not consume.
+        # https://doc.qt.io/qt-6/qabstractbutton.html#clicked
+        qconnect(self.cancel_button.clicked, lambda: self.set_canceled())
         qconnect(self.signals.task_done, self.accept)
         qconnect(self.signals.update_progress, self.bar.setValue)
 

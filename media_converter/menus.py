@@ -45,7 +45,9 @@ def setup_mainwindow_menu(config: MediaConverterConfig) -> None:
     root_menu.addAction(action)
 
     action = QAction(f"Deduplicate media...", root_menu)
-    qconnect(action.triggered, run_media_deduplication)
+    # QAction's checked argument is not part of the runtime-checked operation's API.
+    # https://doc.qt.io/qt-6/qaction.html#triggered
+    qconnect(action.triggered, lambda: run_media_deduplication())
     root_menu.addAction(action)
 
     # Register the modal settings dialog with Anki's add-on config button.
@@ -157,9 +159,11 @@ class EditorMenus:
             action: QAction | None = menu.addAction(self._action_tooltip())
             if not action:
                 return
+            # Discard QAction's checked flag instead of forwarding it to the bound editor callback.
+            # https://doc.qt.io/qt-6/qaction.html#triggered
             qconnect(
                 action.triggered,
-                functools.partial(self._convert_and_insert, editor=webview.editor, source=ShowOptions.paste),
+                lambda: self._convert_and_insert(editor=webview.editor, source=ShowOptions.paste),
             )
 
 

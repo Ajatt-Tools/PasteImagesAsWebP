@@ -69,4 +69,6 @@ class AnkiMainSettingsDialog(MainSettingsDialog, AnkiSaveAndRestoreGeomDialog):
             qconnect(d.accepted, self.set_initial_values)
 
         b = self.button_box.addButton("Advanced", QDialogButtonBox.ButtonRole.HelpRole)
-        qconnect(b.clicked, advanced_clicked)
+        # The config editor callback does not consume the button's checked flag.
+        # https://doc.qt.io/qt-6/qabstractbutton.html#clicked
+        qconnect(b.clicked, lambda: advanced_clicked())

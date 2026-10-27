@@ -33,11 +33,14 @@ class ScaleSettings(QGroupBox, WidgetHasName, ConfigPropMixIn):
         widgets = []
         for factor in factors:
             button = QPushButton(f"{factor}x")
-            qconnect(button.clicked, functools.partial(self.on_factor_changed, factor))
+            # Bind each factor now, then consume the clicked signal's checked flag in the adapter.
+            # https://doc.qt.io/qt-6/qabstractbutton.html#clicked
+            qconnect(button.clicked, functools.partial(self._on_factor_clicked, float(factor)))
             widgets.append(button)
         return place_widgets_in_grid(widgets, n_columns=3, alignment=None)
 
-    def on_factor_changed(self, factor: float) -> None:
+    def _on_factor_clicked(self, factor: float, checked: bool) -> None:
+        """Forward the bound scale factor without forwarding the button's checked flag."""
         q_emit(self.factor_changed, factor)
 
     def _add_tooltips(self) -> None:

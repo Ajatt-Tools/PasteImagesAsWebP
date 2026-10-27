@@ -66,7 +66,9 @@ def setup_menu(browser: Browser) -> None:
     a = QAction(ACTION_NAME, browser)
     converter = BulkConverter(config=get_global_config(), browser=browser)
 
-    qconnect(a.triggered, converter.on_bulk_convert)
+    # Drop QAction's checked argument before entering the runtime-checked callback.
+    # https://doc.qt.io/qt-6/qaction.html#triggered
+    qconnect(a.triggered, lambda: converter.on_bulk_convert())
     browser.form.menuEdit.addAction(a)
 
     # Note: attach the object to the browser to prevent it from being deleted. Otherwise, the menu action doesn't work.
