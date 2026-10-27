@@ -1,4 +1,4 @@
-# Adapted from https://github.com/Ajatt-Tools/autocopy/blob/main/.github/workflows/ci.yml
+# Adapted from https://github.com/Ajatt-Tools/autocopy/blob/651fcef6b6fb4d7d31a9ee4e557b784e9a8f0e43/.github/workflows/ci.yml
 name: CI
 
 on:
