@@ -159,9 +159,7 @@ class MediaDedup:
                     result[hash_key].extend(names)
         return [DuplicatesGroup.from_list(files) for files in result.values() if len(files) > 1]
 
-    def deduplicate_notes_op(
-        self, files: Sequence[DuplicatesGroup], row_count: int
-    ) -> anki.collection.OpChanges:
+    def deduplicate_notes_op(self, files: Sequence[DuplicatesGroup], row_count: int) -> anki.collection.OpChanges:
         """
         Wrapper for deduplication operation.
         """
