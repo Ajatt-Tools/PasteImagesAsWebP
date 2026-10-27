@@ -1,3 +1,4 @@
+# Adapted from https://github.com/Ajatt-Tools/mergenotes/blob/154e9e2c18ea3b940d95fd3ea56b25d3e20f64fe/.github/dependabot.yml
 version: 2
 updates:
   # GitHub Actions
