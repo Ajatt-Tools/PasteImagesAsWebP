@@ -2,7 +2,7 @@
 
 [![Rate on AnkiWeb](https://glutanimate.com/logos/ankiweb-rate.svg)](https://ankiweb.net/shared/info/1151815987)
 ![GitHub](https://img.shields.io/github/license/Ajatt-Tools/PasteImagesAsWebP)
-[![Patreon](https://img.shields.io/badge/support-patreon-orange)](https://www.patreon.com/tatsumoto_ren)
+[![Patreon](https://img.shields.io/badge/donate-black?logo=monero)](https://ajatt.top/blog/donating-to-tatsumoto.html)
 [![Matrix](https://img.shields.io/badge/chat-join-green.svg)](https://tatsumoto-ren.github.io/blog/join-our-community.html)
 
 > An Anki add-on that makes your images small.
