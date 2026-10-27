@@ -31,7 +31,8 @@ class FileNameEdit(MonoSpaceLineEdit):
         super().__init__()
         self.setMaxLength(self._edit_max_len)
         self._valid = False
-        qconnect(self.textChanged, self.validate)
+        # Discard Qt's text argument before calling the runtime-checked method.
+        qconnect(self.textChanged, lambda: self.validate())
         self.setText(text)
 
     @property
