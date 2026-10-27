@@ -63,6 +63,9 @@ class RichSlider:
     @value.setter
     def value(self, value: int) -> None:
         """Set the current value in both synchronized controls."""
+        # Explicit writes repair drift even when signals are blocked or the slider value does not change.
+        # https://doc.qt.io/qt-6/qabstractslider.html#valueChanged
+        # https://doc.qt.io/qt-6/qobject.html#blockSignals
         self._slider.setValue(value)
         self._spinbox.setValue(value)
 
