@@ -1,7 +1,7 @@
 name: CI
 
 on:
-  # Branch pushes run directly; release tags invoke these checks through workflow_call.
+  # Run CI on branch pushes without repeating checks for tag pushes.
   push:
     # https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onpushbranchestagsbranches-ignoretags-ignore
     branches:
