@@ -19,7 +19,7 @@ class RichSlider:
     """Keep a horizontal slider and a spin box synchronized."""
 
     def __init__(
-        self, title: str, unit: str = "px", lower_limit: int = 0, upper_limit: int = 100, step: int = SLIDER_STEP
+        self, title: str, unit: str = "px", *, lower_limit: int = 0, upper_limit: int = 100, step: int = SLIDER_STEP
     ) -> None:
         """Create synchronized controls with a label and configured range."""
         self._title = title
@@ -28,17 +28,17 @@ class RichSlider:
         self._unit_label = QLabel(unit)
         qconnect(self._slider.valueChanged, self._spinbox.setValue)
         qconnect(self._spinbox.valueChanged, self._slider.setValue)
-        self.set_range(lower_limit, upper_limit)
+        self.set_range(start=lower_limit, stop=upper_limit)
         self._set_step(step)
 
-    def set_range(self, start: int, stop: int) -> None:
+    def set_range(self, *, start: int, stop: int) -> None:
         """Set the inclusive range for both controls."""
         self._slider.setRange(start, stop)
         self._spinbox.setRange(start, stop)
 
     def set_upper_limit(self, limit: int) -> None:
         """Set the maximum value while retaining the zero lower bound."""
-        self.set_range(0, limit)
+        self.set_range(start=0, stop=limit)
 
     def set_tooltip(self, tooltip: str) -> None:
         """Set the same tooltip on every visible control."""
