@@ -1,3 +1,4 @@
+# Adapted from https://github.com/Ajatt-Tools/autocopy/blob/main/.github/workflows/ci.yml
 name: CI
 
 on:
