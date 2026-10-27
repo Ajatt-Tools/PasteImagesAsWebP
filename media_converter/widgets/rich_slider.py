@@ -4,7 +4,7 @@ import typing
 
 from aqt.qt import *
 
-SLIDER_STEP: int = 5
+from ..consts import SLIDER_STEP
 
 
 class RichSliderWidgets(typing.NamedTuple):
