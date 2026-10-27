@@ -7,6 +7,8 @@ on:
     # https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onpushbranchestagsbranches-ignoretags-ignore
     branches:
       - "**"
+  pull_request:
+  workflow_call:
 
 jobs:
   test:
