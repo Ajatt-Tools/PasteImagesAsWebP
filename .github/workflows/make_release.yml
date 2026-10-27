@@ -6,9 +6,14 @@ on:
       - "v*"
 
 jobs:
+  # Release tags must pass the same Python 3.10 checks as branch pushes.
+  checks:
+    uses: ./.github/workflows/ci.yml
+
   tagged-release:
     name: "Tagged Release"
     runs-on: "ubuntu-latest"
+    needs: checks
     permissions:
       contents: write
 
