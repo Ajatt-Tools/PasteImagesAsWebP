@@ -39,5 +39,11 @@ jobs:
         run: bash ./scripts/libwebp-dl.sh
         shell: bash
 
+      - name: Check formatting
+        run: hatch run hatch-static-analysis:format-check
+
+      - name: Lint
+        run: hatch run hatch-static-analysis:lint-check
+
       - name: Run tests
         run: hatch test -v
