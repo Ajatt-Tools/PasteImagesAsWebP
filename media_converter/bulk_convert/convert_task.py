@@ -5,12 +5,12 @@ import concurrent.futures
 import multiprocessing
 from collections.abc import Iterable, Sequence
 
-from anki.collection import Collection
+from anki.collection import Collection, OpChanges
 from anki.notes import Note, NoteId
 from anki.utils import join_fields
 from aqt import mw
 from aqt.browser import Browser
-from aqt.operations import CollectionOp, ResultWithChanges
+from aqt.operations import CollectionOp
 
 from ..bulk_convert.convert_result import ConvertResult
 from ..config import MediaConverterConfig
@@ -152,7 +152,9 @@ class ConvertTask:
         conv.convert_internal()
         return conv.new_filename
 
-    def _update_notes_op(self, col: Collection) -> ResultWithChanges:
+    def _update_notes_op(self, col: Collection) -> OpChanges:
+        """Update converted media references and return the merged undo changes."""
+        # The concrete result avoids Anki's runtime-uncheckable ResultWithChanges protocol constraint.
         pos = col.add_custom_undo_entry(f"Convert {len(self._result.converted)} images to WebP")
         to_update: dict[NoteId, Note] = {}
 
