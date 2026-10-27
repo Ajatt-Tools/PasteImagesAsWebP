@@ -1,9 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-from typing import cast
-
 from aqt.qt import *
-from PyQt6.QtWidgets import QWidget
 
 from ..ajt_common.restore_geom_dialog import AnkiSaveAndRestoreGeomDialog
 from ..bulk_convert.convert_task import ConvertTask

@@ -14,7 +14,6 @@ from collections.abc import Iterable, MutableSequence, Sequence
 import anki.collection
 import anki.errors
 from anki.notes import Note, NoteId
-from aqt.qt import *
 
 HASH_FUNC = hashlib.sha512
 CHUNK_SIZE: int = 8192

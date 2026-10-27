@@ -6,7 +6,6 @@ import os.path
 import aqt.editor
 from anki.notes import Note
 from aqt import mw
-from aqt.qt import *
 
 from ..config import MediaConverterConfig
 from ..utils.file_paths_factory import FilePathFactory

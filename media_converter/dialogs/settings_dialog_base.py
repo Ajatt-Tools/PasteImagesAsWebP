@@ -2,7 +2,6 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 from aqt.qt import *
-from aqt.utils import restoreGeom, saveGeom
 
 from ..ajt_common.about_menu import tweak_window
 from ..ajt_common.addon_config import MgrPropMixIn
