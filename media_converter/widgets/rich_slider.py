@@ -41,10 +41,9 @@ class RichSlider:
         self.set_range(start=0, stop=limit)
 
     def set_tooltip(self, tooltip: str) -> None:
-        """Set the same tooltip on every visible control."""
-        self._slider.setToolTip(tooltip)
-        self._spinbox.setToolTip(tooltip)
-        self._unit_label.setToolTip(tooltip)
+        """Set the same tooltip on the controls exposed by the widgets property."""
+        for widget in self.widgets:  # use the widgets @property
+            widget.setToolTip(tooltip)
 
     @property
     def title(self) -> str:
@@ -53,7 +52,7 @@ class RichSlider:
 
     @property
     def widgets(self) -> RichSliderWidgets:
-        """Return widgets in layout order."""
+        """Return an iterable NamedTuple of the slider, spin box, and unit label in layout order."""
         return RichSliderWidgets(self._slider, self._spinbox, self._unit_label)
 
     @property
