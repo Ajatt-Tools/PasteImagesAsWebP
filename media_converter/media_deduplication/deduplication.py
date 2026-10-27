@@ -9,7 +9,7 @@ import multiprocessing
 import os.path
 import pathlib
 import typing
-from collections.abc import MutableSequence
+from collections.abc import Iterable, MutableSequence, Sequence
 
 import anki.collection
 import anki.errors
@@ -102,14 +102,14 @@ def deduplicate_media_in_note(note: Note, dup_name: str, orig_name: str) -> Note
 T = typing.TypeVar("T")
 
 
-def split_list(input_list: typing.Sequence[T], n_chunks: int) -> typing.Iterable[typing.Sequence[T]]:
+def split_list(input_list: Sequence[T], n_chunks: int) -> Iterable[Sequence[T]]:
     """Splits a list into N chunks."""
     chunk_size = math.ceil(len(input_list) / n_chunks)
     for i in range(0, len(input_list), chunk_size):
         yield input_list[i : i + chunk_size]
 
 
-def hash_files(files: typing.Sequence[pathlib.Path]) -> dict[MediaDedupFileHash, list[pathlib.Path]]:
+def hash_files(files: Sequence[pathlib.Path]) -> dict[MediaDedupFileHash, list[pathlib.Path]]:
     """Hash files and group by hash value."""
     hash_to_names: dict[MediaDedupFileHash, list[pathlib.Path]] = collections.defaultdict(list)
 
@@ -135,7 +135,7 @@ class MediaDedup:
         self._col = col
         self._nproc = max(1, multiprocessing.cpu_count() - 1)
 
-    def collect_files(self) -> typing.Sequence[DuplicatesGroup]:
+    def collect_files(self) -> Sequence[DuplicatesGroup]:
         """
         Collect and hash all files, returning groups of duplicates.
         """
@@ -160,7 +160,7 @@ class MediaDedup:
         return [DuplicatesGroup.from_list(files) for files in result.values() if len(files) > 1]
 
     def deduplicate_notes_op(
-        self, files: typing.Sequence[DuplicatesGroup], row_count: int
+        self, files: Sequence[DuplicatesGroup], row_count: int
     ) -> anki.collection.OpChanges:
         """
         Wrapper for deduplication operation.
@@ -181,7 +181,7 @@ class MediaDedup:
                 deduplicate_media_in_note(to_update[note_id], dup.name, group.original.name)
         return to_update
 
-    def deduplicate(self, files: typing.Sequence[DuplicatesGroup]) -> anki.collection.OpChanges:
+    def deduplicate(self, files: Sequence[DuplicatesGroup]) -> anki.collection.OpChanges:
         """
         Process all duplicate groups and update note references.
         Files are left in place.

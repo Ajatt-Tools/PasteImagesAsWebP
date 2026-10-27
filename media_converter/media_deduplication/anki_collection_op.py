@@ -1,7 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import functools
-import typing
 from collections.abc import Sequence
 
 import anki.collection
@@ -41,7 +40,8 @@ class AnkiMediaDedup:
         self._dedup = MediaDedup(col)
         self._config = config
 
-    def collect_files(self) -> typing.Sequence[DuplicatesGroup]:
+    def collect_files(self) -> Sequence[DuplicatesGroup]:
+        """Return duplicate groups collected from the active collection's media."""
         return self._dedup.collect_files()
 
     def _deduplicate_media_files(self, files: Sequence[DuplicatesGroup], row_count: int) -> None:
