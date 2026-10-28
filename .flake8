@@ -1,0 +1,11 @@
+# Adapted from https://github.com/Ajatt-Tools/mergenotes/blob/154e9e2c18ea3b940d95fd3ea56b25d3e20f64fe/.flake8
+[flake8]
+max-line-length = 120
+# Black deliberately adds spaces around complex slices.
+# https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html#slices
+extend-ignore = E203
+# Anki's Qt compatibility module intentionally re-exports the supported Qt binding.
+# Keep these exceptions confined to add-on and playground code, not tests or unrelated lint rules.
+per-file-ignores =
+    media_converter/*: F403,F405
+    playground/*: F403,F405
