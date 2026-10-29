@@ -18,6 +18,7 @@ dist
 meta.json
 manifest.json
 meta.json
+/.coverage
 
 */user_files/user_data*
 *TODO*
