@@ -174,7 +174,7 @@ def test_convert_runnable_set_canceled() -> None:
     runnable = ConvertRunnable(mock_task, signals)
 
     # Exercise the actual signal connection instead of only calling its target.
-    signals.canceled.emit()
+    runnable.signals.canceled.emit()
 
     mock_task.set_canceled.assert_called_once()
 

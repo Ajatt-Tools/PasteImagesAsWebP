@@ -12,7 +12,8 @@ from media_converter.utils.config_types import SUPPORTED_IMAGE_FORMATS
 
 HTML = """
 <img src="1.webp">[sound:file1.ogg]
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 <img src="2.jpg">
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 <img src="3.avif">
@@ -88,9 +89,9 @@ def test_find_regex() -> None:
 @pytest.mark.parametrize(
     "image_filename, expected_extension, expected_image_html",
     [
-        ("image25.webp", ".webp", f'<img alt="webp image" src="image25.webp">'),
-        ("123.avif", ".avif", f'<img alt="avif image" src="123.avif">'),
-        ("1 2 3.jpg", ".jpg", f'<img alt="jpg image" src="1 2 3.jpg">'),
+        ("image25.webp", ".webp", '<img alt="webp image" src="image25.webp">'),
+        ("123.avif", ".avif", '<img alt="avif image" src="123.avif">'),
+        ("1 2 3.jpg", ".jpg", '<img alt="jpg image" src="1 2 3.jpg">'),
     ],
 )
 def test_image_html(image_filename: str, expected_extension: str, expected_image_html: str) -> None:
