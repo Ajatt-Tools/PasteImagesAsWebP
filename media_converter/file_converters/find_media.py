@@ -38,7 +38,8 @@ class FindMedia:
         """
         Find image files referenced by a note.
         :param html: Note content (joined fields).
-        :param include_converted: Reconvert files even if they already have been converted to the target format. E.g. to reduce size.
+        :param include_converted: Reconvert files even if they already have been converted to the target format.
+            E.g. to reduce size.
         :return: Filenames
         """
         if "<img" not in html:
@@ -53,7 +54,8 @@ class FindMedia:
         """
         Find audio files referenced by a note.
         :param html: Note content (joined fields).
-        :param include_converted: Reconvert files even if they already have been converted to the target format. E.g. to reduce size.
+        :param include_converted: Reconvert files even if they already have been converted to the target format.
+            E.g. to reduce size.
         :return: Filenames
         """
         if "[sound:" not in html:

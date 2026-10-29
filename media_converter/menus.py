@@ -44,7 +44,7 @@ def setup_mainwindow_menu(config: MediaConverterConfig) -> None:
     qconnect(action.triggered, lambda: open_media_converter_settings(config=config, parent=mw, modal=False))
     root_menu.addAction(action)
 
-    action = QAction(f"Deduplicate media...", root_menu)
+    action = QAction("Deduplicate media...", root_menu)
     # QAction's checked argument is not part of the runtime-checked operation's API.
     # https://doc.qt.io/qt-6/qaction.html#triggered
     qconnect(action.triggered, lambda: run_media_deduplication())
