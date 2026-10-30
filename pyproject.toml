@@ -92,6 +92,11 @@ reportUnusedCallResult = false
 [tool.pytest.ini_options]
 # Only collect tests from the tests/ directory, not from source files.
 testpaths = ["tests"]
+# Unsupported annotations can leave functions unchecked. Fail tests on beartype warnings instead.
+# https://docs.pytest.org/en/stable/how-to/capture-warnings.html#controlling-warnings
+filterwarnings = [
+    "error::beartype.roar.BeartypeWarning",
+]
 
 # https://hatch.pypa.io/latest/config/internal/testing/
 # https://hatch.pypa.io/latest/tutorials/testing/overview/
