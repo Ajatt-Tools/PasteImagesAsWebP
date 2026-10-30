@@ -97,6 +97,8 @@ testpaths = ["tests"]
 # https://hatch.pypa.io/latest/tutorials/testing/overview/
 [tool.hatch.envs.hatch-test]
 dependencies = [
+    # Hatch's --cover command needs the reporter installed in this environment.
+    "coverage[toml]",
     "mypy>=1.0.0",
     "pytest",
     "pytest-asyncio",
