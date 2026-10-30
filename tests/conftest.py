@@ -18,6 +18,7 @@ from media_converter.bulk_convert.convert_task import ConvertTask
 from playground.no_anki_config import NoAnkiConfigView
 
 
+@beartype
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
     """Runtime-check collected tests after Pytest has rewritten their imports.
     https://github.com/beartype/beartype

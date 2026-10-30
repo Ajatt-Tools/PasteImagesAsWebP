@@ -60,6 +60,30 @@ class TestAboutDialog:
         button.click()
         assert dialog.result() == QDialog.DialogCode.Accepted
 
+    @pytest.mark.parametrize(
+        ("index", "label", "link"),
+        [(2, "Join our community", about_menu.COMMUNITY_LINK), (3, "Donate", about_menu.DONATE_LINK)],
+    )
+    @pytest.mark.parametrize("checked", [False, True])
+    def test_link_button(self, index: int, label: str, link: str, checked: bool) -> None:
+        """Each link button opens its own destination without forwarding the checked flag."""
+        parent = QWidget()
+        dialog = make_about_dialog(parent)
+        with patch.object(about_menu, "openLink", autospec=True) as open_link:
+            buttons = dialog.make_button_box()
+            button = buttons.itemAt(index).widget()
+            assert isinstance(button, QPushButton)
+            button.setCheckable(True)
+            button.setChecked(not checked)
+            button.click()
+        assert button.text() == label
+        assert button.icon().isNull() is False
+        assert button.iconSize().width() == about_menu.ICON_SIDE_LEN
+        assert button.iconSize().height() == about_menu.ICON_SIDE_LEN
+        assert button.minimumHeight() == about_menu.BUTTON_HEIGHT
+        assert button.maximumHeight() == about_menu.BUTTON_HEIGHT
+        open_link.assert_called_once_with(link)
+
     @pytest.mark.parametrize("checked", [False, True])
     def test_about_action(self, checked: bool) -> None:
         """The real About action opens and executes a dialog without receiving the checked flag."""

@@ -5,6 +5,7 @@ import re
 
 import pytest
 
+from media_converter.ajt_common.utils import ui_translate
 from media_converter.common import RE_AUDIO_HTML_TAG, RE_IMAGE_HTML_TAG, image_html
 from media_converter.file_converters.common import get_file_extension
 from media_converter.file_converters.find_media import FindMedia
@@ -97,3 +98,23 @@ def test_find_regex() -> None:
 def test_image_html(image_filename: str, expected_extension: str, expected_image_html: str) -> None:
     assert get_file_extension(image_filename) == expected_extension
     assert image_html(image_filename) == expected_image_html
+
+
+class TestUiTranslate:
+    """Cover CSS labels alongside the shared helper's existing abbreviation rules."""
+
+    @pytest.mark.parametrize(
+        ("key", "expected"),
+        [
+            ("css", "CSS"),
+            ("css_class", "CSS class"),
+            ("CSS_class", "CSS class"),
+            ("html_color", "HTML color"),
+            ("svg_font", "SVG font"),
+            ("url", "URL"),
+            ("image_width", "Image width"),
+        ],
+    )
+    def test_label(self, key: str, expected: str) -> None:
+        """Normalize configuration keys while preserving recognized leading abbreviations."""
+        assert ui_translate(key) == expected
