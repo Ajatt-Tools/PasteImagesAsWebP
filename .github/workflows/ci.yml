@@ -40,10 +40,10 @@ jobs:
         shell: bash
 
       - name: Check formatting
-        run: hatch run hatch-static-analysis:format-check
+        run: hatch check fmt
 
       - name: Lint
-        run: hatch run hatch-static-analysis:lint-check
+        run: hatch check code
 
       - name: Run tests
         run: hatch test -v

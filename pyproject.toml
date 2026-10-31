@@ -120,23 +120,31 @@ randomize = true
 [[tool.hatch.envs.hatch-test.matrix]]
 python = ["3.10", ]
 
-[tool.hatch.envs.hatch-static-analysis]
+# Adapted from Card Management's separate Hatch formatter and linter environments.
+# https://github.com/Ajatt-Tools/learn-now-button/blob/bc9723e73666bbf48ecf4c4d51c624359989f8db/pyproject.toml#L116-L142
 # https://hatch.pypa.io/latest/how-to/static-analysis/behavior/
+[tool.hatch.envs.hatch-check-fmt]
+# pyupgrade>=3.22 needs Python 3.11+. Keep the tool runtime separate from Anki's compatibility target.
+python = "3.14"
 dependencies = [
-    "black",
-    "flake8",
-    "isort",
-    "pyupgrade",
+    "black>=26.10",
+    "isort>=9.0",
+    "pyupgrade>=3.22",
 ]
 
-[tool.hatch.envs.hatch-static-analysis.scripts]
+[tool.hatch.envs.hatch-check-fmt.scripts]
 format-check = [
-    "black --check --diff {args:.}",
-    "isort --check-only --diff {args:.}",
+    "bash \"$(git rev-parse --show-toplevel)/scripts/format.sh\" --check",
 ]
 format-fix = [
-    # run as: hatch fmt -f
+    # run as: hatch check fmt --fix
     "bash \"$(git rev-parse --show-toplevel)/scripts/format.sh\" ",
 ]
-lint-check = "flake8 --max-line-length 120 {args:.}"
+
+[tool.hatch.envs.hatch-check-code]
+dependencies = ["flake8"]
+
+[tool.hatch.envs.hatch-check-code.scripts]
+# Keep lint rules in .flake8 and preserve the existing whole-tree scope.
+lint-check = "flake8 {args:.}"
 lint-fix = "lint-check"
